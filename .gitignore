@@ -1,0 +1,28 @@
+# Секреты — никогда в git
+.env
+*.key
+
+# Окружение и кэши
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Данные (сотни МБ, восстанавливаются сборщиком tools/collect_hh.py)
+data/
+Raw_Jobs.csv
+hh_it_vacancies.csv
+
+# Персональные данные — не выкладываем
+*.pdf
+
+# Письма и локальные БД (генерируются приложением)
+outbox/
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+
+# Системный мусор
+Thumbs.db
+.DS_Store

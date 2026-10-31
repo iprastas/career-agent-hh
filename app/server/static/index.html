@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Карьерный агент hh.ru</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<!-- ===================== ЭКРАН ВХОДА ===================== -->
+<div id="auth" class="auth-overlay hidden">
+  <div class="auth-card">
+    <div class="logo-lg">◎</div>
+    <h1>Карьерный агент</h1>
+    <p class="muted">Вакансии hh.ru · навыки · зарплаты · письма · отклики</p>
+    <div class="auth-tabs">
+      <button id="tab-login" class="chip active" onclick="authMode('login')">Вход</button>
+      <button id="tab-reg" class="chip" onclick="authMode('register')">Регистрация</button>
+    </div>
+    <form id="auth-form" onsubmit="return doAuth(event)">
+      <input id="auth-email" type="email" placeholder="email" required autocomplete="username">
+      <input id="auth-pass" type="password" placeholder="пароль (мин. 8 символов)" required minlength="8" autocomplete="current-password">
+      <div id="auth-error" class="error-line"></div>
+      <button type="submit" class="btn-primary" id="auth-submit">Войти</button>
+    </form>
+    <p class="tiny muted">Данные синтетические; агент ничего не отправляет работодателям.</p>
+  </div>
+</div>
+
+<!-- ===================== ПРИЛОЖЕНИЕ ===================== -->
+<div id="app" class="app hidden">
+  <header class="topbar">
+    <div class="brand"><span class="logo">◎</span> Карьерный агент <span class="muted tiny">hh.ru</span></div>
+    <nav class="tabs" id="nav">
+      <button class="tab active" data-tab="chat">Чат</button>
+      <button class="tab" data-tab="vacancies">Вакансии</button>
+      <button class="tab" data-tab="salary">Зарплаты</button>
+      <button class="tab" data-tab="skills">Навыки</button>
+      <button class="tab" data-tab="letters">Письма</button>
+      <button class="tab" data-tab="tracker">Отклики</button>
+    </nav>
+    <div class="userbox">
+      <span id="user-email" class="muted tiny"></span>
+      <button class="btn-ghost tiny-btn" onclick="logout()">Выход</button>
+    </div>
+  </header>
+
+  <!-- ---------- ЧАТ ---------- -->
+  <main id="view-chat" class="view chat-layout">
+    <aside class="sessions">
+      <button class="btn-primary w100" onclick="newSession()">+ Новый диалог</button>
+      <div id="session-list" class="session-list"></div>
+    </aside>
+    <section class="chat">
+      <div id="messages" class="messages">
+        <div class="welcome">
+          <h2>Чем помочь?</h2>
+          <p class="muted">Агент ищет вакансии по датасету hh (585k+ вакансий), считает разрыв в навыках
+            и зарплатную статистику, готовит письма и ведёт учёт откликов. Всё, что касается отправки,
+            остаётся локально — копируете и отправляете сами.</p>
+          <div class="chips" id="quick-prompts">
+            <button class="chip" onclick="quick(this)">Подбери вакансии C#/.NET в Ростове-на-Дону</button>
+            <button class="chip" onclick="quick(this)">Какие навыки мне стоит подтянуть?</button>
+            <button class="chip" onclick="quick(this)">Какая зарплата у C#-разработчика?</button>
+            <button class="chip" onclick="quick(this)">Напиши сопроводительное письмо на вакансию 137311444</button>
+            <button class="chip" onclick="quick(this)">Покажи мои отклики</button>
+          </div>
+        </div>
+      </div>
+      <div class="composer">
+        <div id="pending" class="pending hidden"><span class="dot"></span><span class="dot"></span><span class="dot"></span> агент думает…</div>
+        <form id="chat-form" onsubmit="return send(event)">
+          <textarea id="input" rows="1" placeholder="Ваш вопрос… (Enter — отправить, Shift+Enter — новая строка)"
+                    oninput="autogrow(this)" onkeydown="return onKey(event)"></textarea>
+          <button type="submit" class="btn-primary" id="send-btn">Отправить</button>
+        </form>
+        <div class="tiny muted">Темы: вакансии, навыки, зарплаты, письма, отклики. На остальное агент вежливо откажет.</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ---------- ВАКАНСИИ ---------- -->
+  <main id="view-vacancies" class="view hidden">
+    <div class="panel">
+      <h2>Поиск вакансий</h2>
+      <form class="filters" onsubmit="return loadVacancies(event)">
+        <input id="v-q" placeholder="ключевые слова, напр. C# ASP.NET" value="C# .NET разработчик">
+        <input id="v-city" placeholder="город" value="Ростов-на-Дону">
+        <select id="v-exp">
+          <option value="">опыт — любой</option>
+          <option value="нет опыта">нет опыта</option>
+          <option value="от 1 года до 3 лет">от 1 года до 3 лет</option>
+          <option value="от 3 до 6 лет">от 3 до 6 лет</option>
+          <option value="более 6 лет">более 6 лет</option>
+        </select>
+        <input id="v-salary" type="number" placeholder="зарплата от, ₽">
+        <button class="btn-primary" type="submit">Найти</button>
+      </form>
+      <div class="row-actions">
+        <button class="btn-ghost" onclick="loadMatch()">Подобрать под мой профиль (match_profile)</button>
+        <span id="v-method" class="tiny muted"></span>
+      </div>
+      <div id="vacancy-cards" class="cards"></div>
+    </div>
+  </main>
+
+  <!-- ---------- ЗАРПЛАТЫ ---------- -->
+  <main id="view-salary" class="view hidden">
+    <div class="panel">
+      <h2>Статистика зарплат</h2>
+      <p class="muted">Считается по свежему срезу датасета (платный банк hh недоступен — 403).
+        Методика: net = вилка × 0.87 при gross, квантили по середине вилки.</p>
+      <form class="filters" onsubmit="return loadSalary(event)">
+        <input id="s-skill" placeholder="навык, напр. C#" value="C#">
+        <input id="s-city" placeholder="город (пусто — вся Россия)">
+        <select id="s-exp">
+          <option value="">опыт — любой</option>
+          <option value="нет опыта">нет опыта</option>
+          <option value="от 1 года до 3 лет">от 1 года до 3 лет</option>
+          <option value="от 3 до 6 лет">от 3 до 6 лет</option>
+          <option value="более 6 лет">более 6 лет</option>
+        </select>
+        <select id="s-period">
+          <option value="0">весь период</option>
+          <option value="30">30 дней</option>
+          <option value="60">60 дней</option>
+          <option value="90">90 дней</option>
+        </select>
+        <button class="btn-primary" type="submit">Считать</button>
+      </form>
+      <div id="salary-strip" class="stat-strip"></div>
+      <div id="salary-range" class="chart-box"></div>
+      <h3>Сравнение медиан по навыкам</h3>
+      <div id="salary-compare" class="chart-box"></div>
+    </div>
+  </main>
+
+  <!-- ---------- НАВЫКИ ---------- -->
+  <main id="view-skills" class="view hidden">
+    <div class="panel">
+      <h2>Разрыв в навыках</h2>
+      <p class="muted">Какие навыки рынка есть в вакансиях вашего стека, но отсутствуют в профиле.
+        Доля — % вакансий стека, где навык встречается.</p>
+      <div class="filters">
+        <select id="g-profile">
+          <option value="anastasia">anastasia (мой профиль)</option>
+          <option value="junior">junior (синтетический)</option>
+          <option value="mid">mid (синтетический)</option>
+          <option value="senior">senior (синтетический)</option>
+        </select>
+        <button class="btn-primary" onclick="loadGap()">Показать</button>
+      </div>
+      <div id="gap-table"></div>
+    </div>
+  </main>
+
+  <!-- ---------- ПИСЬМА ---------- -->
+  <main id="view-letters" class="view hidden">
+    <div class="panel">
+      <h2>Черновики писем</h2>
+      <p class="muted">Письма хранятся только локально и <b>никогда не отправляются</b> автоматически —
+        скопируйте текст и отправьте работодателю сами.</p>
+      <div id="letters-list" class="cards"></div>
+      <div id="letter-view" class="letter-view hidden">
+        <div class="row-actions">
+          <button class="btn-primary" onclick="copyLetter()">Копировать текст</button>
+          <button class="btn-ghost" onclick="closeLetter()">Закрыть</button>
+          <span id="copy-status" class="tiny muted"></span>
+        </div>
+        <pre id="letter-text" class="letter-text"></pre>
+      </div>
+    </div>
+  </main>
+
+  <!-- ---------- ОТКЛИКИ ---------- -->
+  <main id="view-tracker" class="view hidden">
+    <div class="panel">
+      <h2>Учёт откликов</h2>
+      <p class="muted">Статусы меняете только вы вручную: агент не отправляет отклики и не читает
+        переписку (API откликов hh недоступен для приложения).</p>
+      <form class="filters" onsubmit="return addTracker(event)">
+        <input id="t-vid" placeholder="id вакансии" required>
+        <select id="t-status">
+          <option>черновик</option><option>отправлено</option><option>просмотрено</option>
+          <option>приглашение</option><option>отказ</option>
+        </select>
+        <input id="t-note" placeholder="заметка">
+        <button class="btn-primary" type="submit">Добавить / обновить</button>
+      </form>
+      <div id="tracker-table"></div>
+    </div>
+  </main>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
