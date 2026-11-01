@@ -266,6 +266,8 @@ document.addEventListener("click", (e) => {
   document.querySelectorAll(".view").forEach((v) => v.classList.add("hidden"));
   $("#view-" + name).classList.remove("hidden");
   if (name === "salary" && !$("#salary-compare").dataset.loaded) salaryCompare();
+  if (name === "salary") loadTrend();
+  if (name === "skills") loadProfile();
   if (name === "letters") loadLetters();
   if (name === "tracker") loadTracker();
 });
@@ -516,6 +518,7 @@ function vacancyCard(v) {
     </div>
     <div class="foot">
       <span class="tiny muted">${esc(v.published_at || "")}</span>
+      <button class="link-btn" onclick="similarTo('${esc(v.vacancy_id)}')">похожие ↻</button>
       ${v.url ? `<a href="${esc(v.url)}" target="_blank" rel="noopener">открыть на hh.ru ↗</a>` : ""}
     </div>`;
   return div;
@@ -598,17 +601,57 @@ function handleFrame(frame, turn) {
 /* ================= вкладка «Вакансии» ================= */
 async function loadVacancies(e) {
   e && e.preventDefault();
-  const p = new URLSearchParams({
-    q: $("#v-q").value, city: $("#v-city").value,
-    experience: $("#v-exp").value, salary_min: $("#v-salary").value || 0, limit: 12,
-  });
-  const data = await api("/api/vacancies?" + p);
+  const sem = $("#v-mode").value === "sem";
   const box = $("#vacancy-cards");
+  box.innerHTML = '<p class="muted">Ищу…</p>';
+  try {
+    let data;
+    if (sem) {
+      const p = new URLSearchParams({
+        q: $("#v-q").value, city: $("#v-city").value, limit: 12,
+      });
+      data = await api("/api/semantic?" + p);
+    } else {
+      const p = new URLSearchParams({
+        q: $("#v-q").value, city: $("#v-city").value,
+        experience: $("#v-exp").value, salary_min: $("#v-salary").value || 0, limit: 12,
+      });
+      data = await api("/api/vacancies?" + p);
+    }
+    box.innerHTML = "";
+    for (const v of data.vacancies) box.appendChild(vacancyCard(v));
+    if (!data.vacancies.length) box.innerHTML = '<p class="muted">Ничего не найдено — измените фильтры.</p>';
+    $("#v-method").textContent = data.method || data.note || "";
+  } catch (err) {
+    box.innerHTML = `<p class="muted">Ошибка: ${esc(err.message)}</p>`;
+  }
+  return false;
+}
+
+async function loadFresh() {
+  const box = $("#vacancy-cards");
+  box.innerHTML = '<p class="muted">Смотрю свежие вакансии…</p>';
+  const data = await api("/api/fresh?days=7&limit=12");
   box.innerHTML = "";
   for (const v of data.vacancies) box.appendChild(vacancyCard(v));
-  if (!data.vacancies.length) box.innerHTML = '<p class="muted">Ничего не найдено — измените фильтры.</p>';
+  if (!data.vacancies.length) box.innerHTML = '<p class="muted">За 7 дней новых вакансий нет.</p>';
   $("#v-method").textContent = data.method || "";
-  return false;
+}
+
+async function similarTo(vid) {
+  // похожие вакансии — показываем на вкладке «Вакансии»
+  document.querySelector('[data-tab="vacancies"]').click();
+  const box = $("#vacancy-cards");
+  box.innerHTML = '<p class="muted">Ищу похожие вакансии…</p>';
+  try {
+    const data = await api(`/api/similar/${encodeURIComponent(vid)}?limit=8`);
+    box.innerHTML = "";
+    for (const v of data.vacancies) box.appendChild(vacancyCard(v));
+    if (!data.vacancies.length) box.innerHTML = '<p class="muted">Похожих не найдено.</p>';
+    $("#v-method").textContent = data.method || "";
+  } catch (err) {
+    box.innerHTML = `<p class="muted">Ошибка: ${esc(err.message)}</p>`;
+  }
 }
 
 async function loadMatch() {
@@ -642,6 +685,7 @@ async function loadSalary(e) {
       <div class="bar-val">${fmtMoney(data.median_net)}</div>
     </div>
     <p class="tiny muted">${esc(data.method || "")}</p>` : "";
+  loadTrend();
   return false;
 }
 
@@ -667,6 +711,64 @@ async function salaryCompare() {
       <div class="bar-track">${rangeBar(r.p25_net, r.median_net, r.p75_net, max)}</div>
       <div class="bar-val">${fmtMoney(r.median_net)} <span class="tiny muted">n=${r.n}</span></div>
     </div>`).join("") + '<p class="tiny muted">Полоса — диапазон P25…P75, засечка — медиана (net, на руки).</p>';
+}
+
+async function loadTrend() {
+  const box = $("#salary-trend");
+  box.innerHTML = '<p class="muted">Считаю динамику…</p>';
+  try {
+    const p = new URLSearchParams({
+      skill: $("#s-skill").value, city: $("#s-city").value, months: 24,
+    });
+    const data = await api("/api/stats/salary_trend?" + p);
+    if (!data.trend || !data.trend.length) {
+      box.innerHTML = `<p class="muted">${esc(data.note || "нет данных")}</p>`;
+      return;
+    }
+    const max = Math.max(...data.trend.map((t) => t.median_net), 1) * 1.15;
+    box.innerHTML = data.trend.map((t) => `
+      <div class="bar-row">
+        <div class="bar-label">${esc(t.month)}</div>
+        <div class="bar-track"><div class="bar-fill" style="left:0;width:${Math.max(2, (t.median_net / max) * 100)}%"></div></div>
+        <div class="bar-val">${fmtMoney(t.median_net)} <span class="tiny muted">n=${t.n}</span></div>
+      </div>`).join("") +
+      `<p class="tiny muted">${esc(data.method || "")}</p>`;
+  } catch (err) {
+    box.innerHTML = `<p class="muted">Ошибка: ${esc(err.message)}</p>`;
+  }
+}
+
+/* ================= профиль соискателя ================= */
+async function loadProfile() {
+  try {
+    const data = await api("/api/profile?profile_id=anastasia");
+    const d = data.data;
+    $("#p-title").value = d.title || "";
+    $("#p-city").value = d.location || "";
+    $("#p-exp").value = d.experience_years || "";
+    $("#p-salary").value = (d.preferences && d.preferences.salary_net) || "";
+    $("#p-status").textContent = `навыков в профиле: ${(d.skills || []).length} · id: ${data.profile_id}`;
+  } catch (err) {
+    $("#p-status").textContent = "ошибка загрузки: " + err.message;
+  }
+}
+
+async function saveProfile() {
+  try {
+    await api("/api/profile", {
+      method: "PUT",
+      body: JSON.stringify({
+        profile_id: "anastasia",
+        title: $("#p-title").value,
+        location: $("#p-city").value,
+        experience_years: parseInt($("#p-exp").value || "0", 10),
+        salary_net: parseInt($("#p-salary").value || "0", 10),
+      }),
+    });
+    $("#p-status").textContent = "профиль сохранён ✓ (пересчёт при следующем подборе)";
+  } catch (err) {
+    $("#p-status").textContent = "ошибка: " + err.message;
+  }
 }
 
 /* ================= вкладка «Навыки» ================= */
@@ -730,6 +832,7 @@ function letterItem(l) {
         <button class="btn-primary b-copy">Копировать текст</button>
         <button class="btn-ghost b-save">Сохранить правки</button>
         <button class="btn-ghost b-regen">Перегенерировать</button>
+        <button class="btn-ghost b-dl">Скачать .txt</button>
         <span class="tiny muted b-status"></span>
       </div>
     </div>`;
@@ -782,6 +885,13 @@ function letterItem(l) {
       status.textContent = "ошибка: " + e.message;
     }
   });
+  div.querySelector(".b-dl").addEventListener("click", () => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([ta.value], { type: "text/plain;charset=utf-8" }));
+    a.download = (l.title || "письмо").replace(/[\\/:*?"<>|]/g, "_") + ".txt";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
   return div;
 }
 
@@ -820,13 +930,20 @@ function trackerLookup(q) {
 async function loadTracker() {
   const data = await api("/api/tracker");
   const box = $("#tracker-table");
+  state.trackerRows = data.responses;
   if (!data.responses.length) {
     box.innerHTML = '<p class="muted">Откликов пока нет — найдите вакансию выше и добавьте первый.</p>';
     return;
   }
+  const today = new Date().toISOString().slice(0, 10);
+  const followCell = (r) => {
+    if (!r.follow_up_at) return '<span class="tiny muted">—</span>';
+    const due = r.follow_up_at <= today && r.status !== "отказ" && r.status !== "приглашение";
+    return `<span class="badge ${due ? "high" : "mid"}">🔔 ${esc(r.follow_up_at)}</span>`;
+  };
   box.innerHTML = `
     <table>
-      <tr><th>Вакансия</th><th>Название</th><th>Статус</th><th>Заметка</th><th>Обновлён</th></tr>
+      <tr><th>Вакансия</th><th>Название</th><th>Статус</th><th>Напомнить</th><th>Заметка</th><th>Обновлён</th></tr>
       ${data.responses.map((r) => `
         <tr>
           <td><a href="https://hh.ru/vacancy/${esc(r.vacancy_id)}" target="_blank" rel="noopener">${esc(r.vacancy_id)}</a></td>
@@ -837,12 +954,28 @@ async function loadTracker() {
                 .map((s) => `<option ${s === r.status ? "selected" : ""}>${s}</option>`).join("")}
             </select>
           </td>
+          <td>${followCell(r)}</td>
           <td>${esc(r.note || "")}</td>
           <td class="tiny muted">${esc((r.updated_at || "").replace("T", " "))}</td>
         </tr>`).join("")}
     </table>
     <p class="tiny muted" style="margin-top:10px">${esc(data.note || "")}</p>`;
   box.querySelectorAll("select").forEach(enhanceSelect);
+}
+
+function exportTrackerCsv() {
+  const rows = state.trackerRows || [];
+  if (!rows.length) return;
+  const head = ["vacancy_id", "name", "status", "follow_up_at", "note", "updated_at", "url"];
+  const q = (s) => '"' + String(s ?? "").replace(/"/g, '""') + '"';
+  const csv = "\uFEFF" + [head.join(";")].concat(rows.map((r) =>
+    [r.vacancy_id, r.name, r.status, r.follow_up_at, r.note, r.updated_at,
+     "https://hh.ru/vacancy/" + r.vacancy_id].map(q).join(";"))).join("\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  a.download = "отклики_" + new Date().toISOString().slice(0, 10) + ".csv";
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 
 async function addTracker(e) {
@@ -853,9 +986,11 @@ async function addTracker(e) {
       vacancy_id: $("#t-vid").value.trim(),
       status: $("#t-status").value,
       note: $("#t-note").value.trim(),
+      follow_up: $("#t-follow").value || "",
     }),
   });
   $("#t-vid").value = ""; $("#t-note").value = ""; $("#t-search").value = "";
+  $("#t-follow").value = "";
   $("#t-picked").textContent = "";
   loadTracker();
   return false;

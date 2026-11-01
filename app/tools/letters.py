@@ -7,6 +7,7 @@
 API откликов hh (/negotiations) не используется и недоступен (403 user_auth_expected).
 """
 import os
+import re
 import sqlite3
 import time
 
@@ -119,6 +120,31 @@ def draft_letter(vacancy_id: str, letter_text: str, tone: str = "деловой"
     }
 
 
+def parse_follow_up(text):
+    """Дата напоминания из фразы: '2026-11-07' | 'через 7 дней' | 'через неделю' | 'через месяц'.
+
+    Возвращает 'YYYY-MM-DD' или '' (нет напоминания)."""
+    import datetime as _dt
+    t = (text or "").strip().lower()
+    if not t:
+        return ""
+    m = re.match(r"^(\d{4})-(\d{2})-(\d{2})$", t)
+    if m:
+        return t
+    words = {"неделю": 7, "недели": 7, "неделя": 7, "месяц": 30, "месяца": 30,
+             "два месяца": 60, "две недели": 14, "дня": 2, "день": 1, "дней": 7}
+    m = re.search(r"через\s+(\d+)\s+(дн\w*|недел\w*|месяц\w*)", t)
+    if m:
+        n = int(m.group(1))
+        unit = m.group(2)
+        mult = 1 if unit.startswith("дн") else (7 if unit.startswith("недел") else 30)
+        return (_dt.date.today() + _dt.timedelta(days=n * mult)).isoformat()
+    m = re.search(r"через\s+(\S+)", t)
+    if m and m.group(1) in words:
+        return (_dt.date.today() + _dt.timedelta(days=words[m.group(1)])).isoformat()
+    return ""
+
+
 _TRACKER_SCHEMA = """CREATE TABLE IF NOT EXISTS responses (
     vacancy_id TEXT NOT NULL,
     user_id    TEXT NOT NULL DEFAULT 'local',
@@ -143,18 +169,23 @@ def _tracker_con():
                        FROM responses_old""")
         con.execute("DROP TABLE responses_old")
         con.commit()
+    if "follow_up_at" not in [r[1] for r in con.execute("PRAGMA table_info(responses)")]:
+        con.execute("ALTER TABLE responses ADD COLUMN follow_up_at TEXT NOT NULL DEFAULT ''")
+        con.commit()
     return con
 
 
 def track_response(vacancy_id: str = "", status: str = "", note: str = "",
-                   tool_context: ToolContext = None):
-    """Учёт откликов ЛОКАЛЬНО: поставить/обновить статус или показать список.
+                   follow_up: str = "", tool_context: ToolContext = None):
+    """Учёт откликов ЛОКАЛЬНО: поставить/обновить статус, заметку и напоминание или показать список.
 
     Args:
         vacancy_id: id вакансии. Если пусто — вернуть список отслеживаемых откликов.
         status: "черновик" | "отправлено" | "просмотрено" | "приглашение" | "отказ"
         (статус ставит пользователь вручную — агент ничего не отправляет).
         note: заметка пользователя (например "написал рекрутеру в телеграме").
+        follow_up: напоминание «связаться позже»: дата "2026-11-07" или фраза
+        "через неделю" / "через 10 дней" / "через месяц" (пусто — не менять/без напоминания).
 
     Returns:
         dict: обновлённая запись или список откликов (топ-20 по дате обновления).
@@ -171,6 +202,7 @@ def track_response(vacancy_id: str = "", status: str = "", note: str = "",
     if st not in VALID_STATUSES:
         con.close()
         return {"error": "недопустимый статус: " + str(status), "valid": VALID_STATUSES}
+    fu = parse_follow_up(follow_up) if follow_up else ""
     name = ""
     c2 = sqlite3.connect(config.APP_DB, timeout=30)
     c2.execute("PRAGMA query_only=ON")
@@ -178,11 +210,15 @@ def track_response(vacancy_id: str = "", status: str = "", note: str = "",
     c2.close()
     if row:
         name = row[0]
-    con.execute("""INSERT INTO responses (vacancy_id, user_id, name, status, note, updated_at)
-                   VALUES (?,?,?,?,?,?)
+    con.execute("""INSERT INTO responses (vacancy_id, user_id, name, status, note, updated_at, follow_up_at)
+                   VALUES (?,?,?,?,?,?,?)
                    ON CONFLICT(user_id, vacancy_id) DO UPDATE SET status=excluded.status,
-                       note=excluded.note, updated_at=excluded.updated_at""",
-                (vid, uid, name, st, (note or "").strip(), time.strftime("%Y-%m-%dT%H:%M:%S")))
+                       note=excluded.note, updated_at=excluded.updated_at,
+                       follow_up_at=CASE WHEN excluded.follow_up_at != ''
+                                         THEN excluded.follow_up_at
+                                         ELSE responses.follow_up_at END""",
+                (vid, uid, name, st, (note or "").strip(),
+                 time.strftime("%Y-%m-%dT%H:%M:%S"), fu))
     con.commit()
     rec = dict(con.execute("SELECT * FROM responses WHERE user_id=? AND vacancy_id=?",
                            (uid, vid)).fetchone())

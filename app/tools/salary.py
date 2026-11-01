@@ -83,3 +83,58 @@ def salary_stats(skill: str = "", city: str = "", experience: str = "", period_d
     if len(vals) < 5:
         out["warning"] = "малая выборка (<5 вакансий) — цифры ориентировочные"
     return out
+
+
+def salary_trend(skill: str = "", city: str = "", months: int = 24):
+    """Динамика зарплат по месяцам публикации вакансий (медиана net + размер выборки).
+
+    Использует весь датасет (в т.ч. исторические вакансии 2023 г.) — видно тренд.
+
+    Args:
+        skill: навык (например "C#"), пусто — все вакансии с зарплатой.
+        city: город, пусто — вся Россия.
+        months: сколько последних месяцев вернуть (6-36).
+
+    Returns:
+        dict: trend — [{month: "2023-03", median_net, n}] по возрастанию, методика.
+    """
+    months = max(6, min(int(months or 24), 36))
+    where = ["(v.salary_rur_from IS NOT NULL OR v.salary_rur_to IS NOT NULL)",
+             "v.published_at IS NOT NULL AND v.published_at != ''"]
+    params = []
+    if city:
+        where.append("v.city = ?")
+        params.append(city)
+    if skill:
+        where.append("v.vacancy_id IN (SELECT vacancy_id FROM vacancy_skills "
+                     "WHERE skill_canon = ? COLLATE NOCASE)")
+        params.append(skill.strip())
+    con = _con_ro()
+    rows = con.execute(
+        f"SELECT substr(v.published_at, 1, 7) AS m, v.salary_rur_from, v.salary_rur_to, v.gross "
+        f"FROM vacancies v WHERE {' AND '.join(where)}", params).fetchall()
+    con.close()
+
+    by_month = {}
+    for r in rows:
+        fr, to = r["salary_rur_from"], r["salary_rur_to"]
+        mid = (fr + to) / 2.0 if (fr is not None and to is not None) else (fr if fr is not None else to)
+        if mid is None or not r["m"]:
+            continue
+        by_month.setdefault(r["m"], []).append(mid * (GROSS_K if r["gross"] else 1.0))
+
+    trend = []
+    for m in sorted(by_month)[-months:]:
+        vals = sorted(by_month[m])
+        if len(vals) < 3:  # слишком мало для медианы — пропускаем месяц
+            continue
+        trend.append({"month": m, "median_net": int(vals[len(vals) // 2]), "n": len(vals)})
+    if not trend:
+        return {"trend": [], "note": "нет данных по месяцам — измените фильтры",
+                "filters": {"skill": skill, "city": city, "months": months}}
+    return {
+        "trend": trend,
+        "filters": {"skill": skill, "city": city, "months": months},
+        "method": "медиана вилки по середине (net = gross × 0.87), по месяцам публикации вакансии; "
+                  f"выборка по всему датасету, месяцев в выдаче: {len(trend)}",
+    }

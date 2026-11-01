@@ -89,6 +89,10 @@
       <form class="filters" onsubmit="return loadVacancies(event)">
         <input id="v-q" placeholder="ключевые слова, напр. C# ASP.NET" value="C# .NET разработчик">
         <input id="v-city" placeholder="город" value="Ростов-на-Дону">
+        <select id="v-mode">
+          <option value="kw">поиск: по ключевым словам</option>
+          <option value="sem">поиск: по смыслу (LSA)</option>
+        </select>
         <select id="v-exp">
           <option value="">опыт — любой</option>
           <option value="нет опыта">нет опыта</option>
@@ -101,6 +105,7 @@
       </form>
       <div class="row-actions">
         <button class="btn-ghost" onclick="loadMatch()">Подобрать под мой профиль (match_profile)</button>
+        <button class="btn-ghost" onclick="loadFresh()">Свежие за 7 дней под профиль</button>
         <span id="v-method" class="tiny muted"></span>
       </div>
       <div id="vacancy-cards" class="cards"></div>
@@ -133,6 +138,8 @@
       </form>
       <div id="salary-strip" class="stat-strip"></div>
       <div id="salary-range" class="chart-box"></div>
+      <h3>Динамика медианы по месяцам</h3>
+      <div id="salary-trend" class="chart-box"></div>
       <h3>Сравнение медиан по навыкам</h3>
       <div id="salary-compare" class="chart-box"></div>
     </div>
@@ -141,6 +148,18 @@
   <!-- ---------- НАВЫКИ ---------- -->
   <main id="view-skills" class="view hidden">
     <div class="panel">
+      <h2>Профиль соискателя</h2>
+      <p class="muted">Синтетические данные на основе резюме. Правки влияют на подбор, разрыв
+        в навыках и свежие вакансии. PDF-резюме можно разобрать офлайн:
+        <code>.venv\Scripts\python tools\parse_resume.py</code>.</p>
+      <div class="filters">
+        <input id="p-title" placeholder="должность">
+        <input id="p-city" placeholder="город">
+        <input id="p-exp" type="number" placeholder="опыт, лет" style="max-width:120px">
+        <input id="p-salary" type="number" placeholder="зарплата на руки, ₽">
+        <button class="btn-primary" onclick="saveProfile()">Сохранить профиль</button>
+        <span id="p-status" class="tiny muted"></span>
+      </div>
       <h2>Разрыв в навыках</h2>
       <p class="muted">Какие навыки рынка есть в вакансиях вашего стека, но отсутствуют в профиле.
         Доля — % вакансий стека, где навык встречается.</p>
@@ -188,9 +207,13 @@
           <option>приглашение</option><option>отказ</option>
         </select>
         <input id="t-note" placeholder="заметка">
+        <input id="t-follow" type="date" title="напомнить связаться (необязательно)">
         <button class="btn-primary" type="submit">Добавить / обновить</button>
       </form>
-      <div id="t-picked" class="tiny muted"></div>
+      <div class="row-actions">
+        <span id="t-picked" class="tiny muted"></span>
+        <button class="btn-ghost" onclick="exportTrackerCsv()">Экспорт откликов (CSV)</button>
+      </div>
       <div id="tracker-table"></div>
     </div>
   </main>

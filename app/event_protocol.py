@@ -83,8 +83,9 @@ async def stream_turn(runner, user_id, session_id, text):
 
     answer_text = "".join(buf).strip()
     if answer_text:
-        from .system_prompt import BASE_PROMPT
-        safe = guardrails.post_filter(answer_text, BASE_PROMPT)
+        from .system_prompt import all_instructions
+        # пост-фильтр знает все инструкции дерева агентов (координатор + суб-агенты)
+        safe = guardrails.post_filter(answer_text, all_instructions())
         if safe != answer_text:
             yield {"type": "refusal", "reason": "post_filter", "text": safe}
             answer_text = ""

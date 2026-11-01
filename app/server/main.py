@@ -32,8 +32,9 @@ from .. import guardrails  # noqa: E402
 from ..agent import build_agent, APP_NAME  # noqa: E402
 from ..event_protocol import stream_turn  # noqa: E402
 from ..memory import compact_if_needed, dialog_title, extract_messages  # noqa: E402
-from ..tools import (draft_letter, match_profile, search_vacancies,  # noqa: E402
-                     skill_gap, salary_stats, track_response)
+from ..tools import (draft_letter, fresh_vacancies, match_profile,  # noqa: E402
+                     salary_stats, salary_trend, search_vacancies, semantic_search,
+                     similar_vacancies, skill_gap, track_response)
 from ..tools.letters import make_letter_title, parse_letter, render_letter  # noqa: E402
 from . import store  # noqa: E402
 
@@ -71,6 +72,15 @@ class TrackerIn(BaseModel):
     vacancy_id: str
     status: str
     note: str = ""
+    follow_up: str = ""
+
+
+class ProfileIn(BaseModel):
+    profile_id: str = "anastasia"
+    title: str = ""
+    location: str = ""
+    experience_years: int = 0
+    salary_net: int = 0
 
 
 class SessionPatch(BaseModel):
@@ -300,6 +310,62 @@ def stats(skill: str = "", city: str = "", experience: str = "", period_days: in
     return salary_stats(skill=skill, city=city, experience=experience, period_days=period_days)
 
 
+@app.get("/api/stats/salary_trend")
+def stats_trend(skill: str = "", city: str = "", months: int = 24, user=Depends(current_user)):
+    return salary_trend(skill=skill, city=city, months=months)
+
+
+@app.get("/api/semantic")
+def semantic(q: str, city: str = "", limit: int = 8, user=Depends(current_user)):
+    return semantic_search(q, city=city, limit=limit)
+
+
+@app.get("/api/similar/{vacancy_id}")
+def similar(vacancy_id: str, limit: int = 6, user=Depends(current_user)):
+    return similar_vacancies(vacancy_id, limit=limit)
+
+
+@app.get("/api/fresh")
+def fresh(profile: str = "anastasia", days: int = 7, limit: int = 8, user=Depends(current_user)):
+    return fresh_vacancies(profile_id=profile, days=days, limit=limit)
+
+
+# ---------------------------------------------------------------- профиль соискателя
+def _profile_path(profile_id):
+    pid = os.path.basename((profile_id or "anastasia").strip()) or "anastasia"
+    if not pid.replace("-", "").replace("_", "").isalnum():
+        raise HTTPException(400, "некорректный id профиля")
+    return os.path.join(config.PROFILES_DIR, pid + ".json"), pid
+
+
+@app.get("/api/profile")
+def profile_get(profile_id: str = "anastasia", user=Depends(current_user)):
+    path, pid = _profile_path(profile_id)
+    if not os.path.exists(path):
+        raise HTTPException(404, "профиль не найден: " + pid)
+    data = json.load(open(path, encoding="utf-8"))
+    files = sorted(f[:-5] for f in os.listdir(config.PROFILES_DIR)
+                   if f.endswith(".json") and f != "synthetic.json")
+    return {"profile_id": pid, "profiles": files, "data": data}
+
+
+@app.put("/api/profile")
+def profile_put(body: ProfileIn, user=Depends(current_user)):
+    """Правка профиля соискателя вручную (см. также tools/parse_resume.py для PDF)."""
+    path, pid = _profile_path(body.profile_id)
+    if not os.path.exists(path):
+        raise HTTPException(404, "профиль не найден: " + pid)
+    data = json.load(open(path, encoding="utf-8"))
+    data["title"] = (body.title or "").strip()[:120]
+    data["location"] = (body.location or "").strip()[:80]
+    data["experience_years"] = max(0, int(body.experience_years or 0))
+    pref = data.setdefault("preferences", {})
+    pref["salary_net"] = max(0, int(body.salary_net or 0))
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    return {"profile_id": pid, "data": data}
+
+
 # ------------------------------------------------- outbox (локальные черновики)
 def _letter_path(user, fname):
     fname = os.path.basename(fname)  # защита от выхода из каталога пользователя
@@ -408,7 +474,8 @@ def tracker_list(user=Depends(current_user)):
 
 @app.post("/api/tracker")
 def tracker_update(body: TrackerIn, user=Depends(current_user)):
-    res = track_response(body.vacancy_id, body.status, body.note, tool_context=_ctx(user))
+    res = track_response(body.vacancy_id, body.status, body.note, follow_up=body.follow_up,
+                         tool_context=_ctx(user))
     if "error" in res:
         raise HTTPException(400, res["error"])
     return res

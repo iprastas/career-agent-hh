@@ -58,7 +58,11 @@ FORBIDDEN_CLAIMS = [
 
 
 def pre_filter(text):
-    """Слой 1. Возвращает (ok, reason). Отказ происходит БЕЗ вызова модели."""
+    """Слой 1. Возвращает (ok, reason). Отказ происходит БЕЗ вызова модели.
+
+    1a. Регэкспы форм инъекций (слой 1), 1b. семантический классификатор тем
+    (слой 1.5, app/topic_gate.py): «просто не по теме» тоже отсекается до модели.
+    """
     t = (text or "").strip()
     if not t:
         return False, "empty"
@@ -67,6 +71,9 @@ def pre_filter(text):
     for rx in _INJ:
         if rx.search(t):
             return False, "injection"
+    from . import topic_gate
+    if topic_gate.is_offtopic(t):
+        return False, "offtopic"
     return True, None
 
 
