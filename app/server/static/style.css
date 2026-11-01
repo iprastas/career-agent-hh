@@ -124,7 +124,17 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .row-actions { display: flex; align-items: center; gap: 12px; margin: 10px 0 18px; flex-wrap: wrap; }
 
 /* ---------- чат ---------- */
-.chat-layout { display: flex; overflow: hidden; }
+.chat-layout { display: flex; overflow: hidden; position: relative; }
+.chat-toolbar {
+  display: flex; align-items: center; gap: 8px; padding: 8px 24px; flex-shrink: 0;
+  border-bottom: 1px solid var(--border-subtle); background: var(--panel);
+}
+.chat-toolbar .chat-title {
+  margin-left: auto; max-width: 55%; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+/* свернутая панель диалогов (десктоп) */
+body.sessions-collapsed .sessions { display: none; }
 .sessions {
   width: 230px; flex-shrink: 0; background: var(--panel); border-right: 1px solid var(--border-subtle);
   padding: 14px 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
@@ -433,7 +443,15 @@ select.mini {
 #t-search-menu { min-width: 320px; }
 
 @media (max-width: 860px) {
-  .sessions { display: none; }
   .topbar { flex-wrap: wrap; height: auto; padding: 8px 12px; gap: 8px; }
   .tabs { order: 3; width: 100%; overflow-x: auto; }
+  /* панель диалогов на маленьких экранах — выдвижная плашка сверху */
+  .sessions {
+    display: none; position: absolute; top: 6px; left: 8px; right: 8px; z-index: 40;
+    max-height: 55vh; border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: rgba(0,0,0,0.5) 0 10px 30px;
+  }
+  body.sessions-collapsed .sessions { display: none; }
+  body.sessions-open .sessions { display: flex; }
+  .chat-toolbar { padding: 8px 12px; }
 }

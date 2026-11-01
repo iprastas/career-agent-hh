@@ -55,6 +55,11 @@
       <div id="session-list" class="session-list"></div>
     </aside>
     <section class="chat">
+      <div class="chat-toolbar">
+        <button class="btn-ghost tiny-btn" id="sessions-toggle" onclick="toggleSessions()">☰ Диалоги</button>
+        <button class="btn-ghost tiny-btn" onclick="newSession()">+ Новый</button>
+        <span class="tiny muted chat-title" id="current-dialog-title"></span>
+      </div>
       <div id="messages" class="messages">
         <div class="welcome">
           <h2>Чем помочь?</h2>

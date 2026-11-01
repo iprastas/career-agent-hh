@@ -350,6 +350,18 @@ function onKey(e) {
 }
 
 /* ---- список диалогов: название + переименование/удаление ---- */
+function toggleSessions() {
+  if (window.innerWidth <= 860) {
+    document.body.classList.toggle("sessions-open");
+    document.body.classList.remove("sessions-collapsed");
+  } else {
+    document.body.classList.remove("sessions-open");
+    document.body.classList.toggle("sessions-collapsed");
+    localStorage.setItem("ca_sessions_collapsed",
+      document.body.classList.contains("sessions-collapsed") ? "1" : "");
+  }
+}
+
 async function loadSessions() {
   try {
     const data = await api("/api/sessions");
@@ -370,6 +382,12 @@ async function loadSessions() {
       del.onclick = (e) => { e.stopPropagation(); deleteSessionAsk(s); };
       list.appendChild(div);
     }
+    // плашка: счётчик диалогов и название текущего
+    const toggle = $("#sessions-toggle");
+    if (toggle) toggle.textContent = `☰ Диалоги${data.sessions.length ? " (" + data.sessions.length + ")" : ""}`;
+    const cur = data.sessions.find((s) => s.session_id === state.sessionId);
+    const titleEl = $("#current-dialog-title");
+    if (titleEl) titleEl.textContent = cur ? cur.title || "Диалог" : "";
   } catch (e) { /* список не критичен */ }
 }
 
@@ -393,6 +411,7 @@ async function deleteSessionAsk(s) {
 
 async function newSession() {
   state.sessionId = "";
+  document.body.classList.remove("sessions-open");  // на мобильном — закрыть плашку
   $("#messages").innerHTML = "";
   addWelcome();
   loadSessions();
@@ -417,6 +436,7 @@ function addWelcome() {
 
 async function openSession(id) {
   state.sessionId = id;
+  document.body.classList.remove("sessions-open");  // на мобильном — закрыть плашку
   const data = await api(`/api/sessions/${id}/history`);
   const box = $("#messages");
   box.innerHTML = "";
@@ -1119,6 +1139,9 @@ async function startApp() {
   } catch (e) { return; }
   $("#auth").classList.add("hidden");
   $("#app").classList.remove("hidden");
+  if (localStorage.getItem("ca_sessions_collapsed") === "1" && window.innerWidth > 860) {
+    document.body.classList.add("sessions-collapsed");
+  }
   if (!$("#messages").children.length) addWelcome();
   initEnhancements();
   loadSessions();
