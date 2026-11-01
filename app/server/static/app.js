@@ -18,27 +18,91 @@ function esc(s) {
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
-// мини-маркдаун: абзацы, **жирный**, `код`, списки, ссылки (после экранирования!)
+// мини-маркдаун: заголовки, таблицы, списки (марк. и нумер.), цитаты, код-блоки,
+// hr, **жирный**, *курсив*, ~~зачёркнутый~~, `код`, ссылки (после экранирования!)
 function md(text) {
   const lines = esc(text).split(/\r?\n/);
-  let out = "", inList = false;
   const inline = (s) => s
-    .replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")
     .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")
+    .replace(/(^|[\s(])\*([^*\n]+)\*/g, "$1<i>$2</i>")
+    .replace(/(^|[\s(])_([^_\n]+)_/g, "$1<i>$2</i>")
+    .replace(/~~([^~]+)~~/g, "<s>$1</s>")
     .replace(/(https?:\/\/[^\s<)]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
-  for (const raw of lines) {
+  let out = "", i = 0;
+  let listOpen = "";   // "", "ul", "ol"
+  let quoteOpen = false;
+  const endBlocks = () => {
+    if (listOpen) { out += "</" + listOpen + ">"; listOpen = ""; }
+    if (quoteOpen) { out += "</blockquote>"; quoteOpen = false; }
+  };
+  while (i < lines.length) {
+    const raw = lines[i];
     const l = raw.trim();
-    if (!l) { if (inList) { out += "</ul>"; inList = false; } out += "<p></p>"; continue; }
-    const m = l.match(/^[-•*]\s+(.*)/);
-    if (m) {
-      if (!inList) { out += "<ul>"; inList = true; }
-      out += "<li>" + inline(m[1]) + "</li>";
+    // код-блок ``` … ```
+    if (l.startsWith("```")) {
+      endBlocks();
+      const buf = [];
+      i++;
+      while (i < lines.length && !lines[i].trim().startsWith("```")) { buf.push(lines[i]); i++; }
+      i++;
+      out += "<pre><code>" + buf.join("\n") + "</code></pre>";
       continue;
     }
-    if (inList) { out += "</ul>"; inList = false; }
+    // таблица | … |
+    if (l.startsWith("|") && l.endsWith("|") && i + 1 < lines.length &&
+        /^\|[\s:|-]+\|$/.test(lines[i + 1].trim())) {
+      endBlocks();
+      const cells = (row) => row.trim().slice(1, -1).split("|").map((c) => c.trim());
+      const head = cells(lines[i]);
+      i += 2;
+      const rows = [];
+      while (i < lines.length && lines[i].trim().startsWith("|") && lines[i].trim().endsWith("|")) {
+        rows.push(cells(lines[i])); i++;
+      }
+      out += '<table class="md-table"><thead><tr>' +
+        head.map((c) => "<th>" + inline(c) + "</th>").join("") + "</tr></thead><tbody>" +
+        rows.map((r) => "<tr>" + r.map((c) => "<td>" + inline(c) + "</td>").join("") + "</tr>").join("") +
+        "</tbody></table>";
+      continue;
+    }
+    if (!l) { endBlocks(); i++; continue; }
+    // горизонтальная линия
+    if (/^(-{3,}|\*{3,}|_{3,})$/.test(l)) { endBlocks(); out += "<hr>"; i++; continue; }
+    // заголовки
+    const h = l.match(/^(#{1,6})\s+(.*)/);
+    if (h) {
+      endBlocks();
+      const lvl = Math.min(h[1].length, 4);
+      out += `<div class="md-h md-h${lvl}">${inline(h[2])}</div>`;
+      i++; continue;
+    }
+    // цитата
+    if (l.startsWith("&gt; ") || l.startsWith("&gt;")) {
+      if (!quoteOpen) { endBlocks(); out += "<blockquote>"; quoteOpen = true; }
+      out += "<p>" + inline(l.replace(/^&gt;\s?/, "")) + "</p>";
+      i++; continue;
+    }
+    // нумерованный список
+    const ol = l.match(/^(\d+)[.)]\s+(.*)/);
+    if (ol) {
+      if (listOpen !== "ol") { endBlocks(); out += "<ol>"; listOpen = "ol"; }
+      out += "<li>" + inline(ol[2]) + "</li>";
+      i++; continue;
+    }
+    // маркированный список
+    const ul = l.match(/^[-•*+]\s+(.*)/);
+    if (ul) {
+      if (listOpen !== "ul") { endBlocks(); out += "<ul>"; listOpen = "ul"; }
+      out += "<li>" + inline(ul[1]) + "</li>";
+      i++; continue;
+    }
+    // обычный абзац
+    endBlocks();
     out += "<p>" + inline(l) + "</p>";
+    i++;
   }
-  if (inList) out += "</ul>";
+  endBlocks();
   return out.replace(/<p><\/p>/g, "");
 }
 
@@ -499,28 +563,71 @@ function renderCards(name, data, box) {
   }
 }
 
+// человекочитаемые подписи справочников hh
+const EXP_LABELS = { noExperience: "нет опыта", between1And3: "от 1 года до 3 лет",
+  between3And6: "от 3 до 6 лет", moreThan6: "более 6 лет" };
+const SCHEDULE_LABELS = { remote: "удалённо", fullDay: "полный день", flexible: "гибкий график",
+  shift: "сменный", flyInFlyOut: "вахта" };
+const EMPLOYMENT_LABELS = { full: "полная занятость", part: "частичная занятость",
+  project: "проектная работа", volunteer: "волонтёрство", probation: "стажировка" };
+
+async function loadVacancyDetails(vid, box) {
+  box.dataset.loaded = "1";
+  box.innerHTML = '<p class="tiny muted">загружаю карточку…</p>';
+  try {
+    const d = await api("/api/vacancies/" + encodeURIComponent(vid));
+    const ks = (d.key_skills || []).map((s) => s.canon || s).slice(0, 12);
+    box.innerHTML = `
+      <div class="vd-grid">
+        <div><span>опыт</span>${esc(EXP_LABELS[d.experience] || d.experience || "—")}</div>
+        <div><span>график</span>${esc(SCHEDULE_LABELS[d.schedule] || d.schedule || "—")}</div>
+        <div><span>занятость</span>${esc(EMPLOYMENT_LABELS[d.employment] || d.employment || "—")}</div>
+        <div><span>опубликовано</span>${esc((d.published_at || "").slice(0, 10) || "—")}</div>
+      </div>
+      ${ks.length ? `<div class="tags">${ks.map((s) => `<span class="tag">${esc(s)}</span>`).join("")}</div>` : ""}
+      ${d.requirement ? `<h4>Требования</h4><div class="vd-text">${md(d.requirement)}</div>` : ""}
+      ${d.responsibility ? `<h4>Обязанности</h4><div class="vd-text">${md(d.responsibility)}</div>` : ""}
+      ${d.description ? `<h4>Описание</h4><div class="vd-text">${md(d.description)}</div>` : ""}
+      ${d.url ? `<div class="row-actions"><a class="btn-ghost" href="${esc(d.url)}" target="_blank" rel="noopener">Открыть вакансию на hh.ru ↗</a></div>` : ""}`;
+  } catch (err) {
+    box.innerHTML = `<p class="tiny muted">не удалось загрузить карточку: ${esc(err.message)}</p>`;
+  }
+}
+
 function vacancyCard(v) {
   const div = document.createElement("div");
-  div.className = "vcard";
+  div.className = "vcard expandable";
   const sal = (v.salary_net_from || v.salary_net_to)
     ? `${v.salary_net_from ? fmtMoney(v.salary_net_from) : ""}${v.salary_net_from && v.salary_net_to ? " – " : ""}${v.salary_net_to ? fmtMoney(v.salary_net_to) : ""} на руки`
     : "з/п не указана";
   const skills = (v.top_skills || v.matched_skills || []).slice(0, 5);
   const missing = (v.missing_skills || []).slice(0, 3);
   div.innerHTML = `
-    ${v.score ? `<span class="score-badge">скор ${v.score}</span>` : ""}
-    <div class="title">${esc(v.name)}</div>
-    <div class="meta">${esc(v.employer || "")}${v.city ? " · " + esc(v.city) : ""}</div>
-    <div class="salary ${(v.salary_net_from || v.salary_net_to) ? "" : "none"}">${esc(sal)}</div>
-    <div class="tags">
-      ${skills.map((s) => `<span class="tag">${esc(s)}</span>`).join("")}
-      ${missing.map((s) => `<span class="tag miss">нет: ${esc(s)}</span>`).join("")}
+    <div class="vcard-head">
+      ${v.score ? `<span class="score-badge">скор ${v.score}</span>` : ""}
+      <div class="title">${esc(v.name)}</div>
+      <div class="meta">${esc(v.employer || "")}${v.city ? " · " + esc(v.city) : ""}</div>
+      <div class="salary ${(v.salary_net_from || v.salary_net_to) ? "" : "none"}">${esc(sal)}</div>
+      <div class="tags">
+        ${skills.map((s) => `<span class="tag">${esc(s)}</span>`).join("")}
+        ${missing.map((s) => `<span class="tag miss">нет: ${esc(s)}</span>`).join("")}
+      </div>
+      <div class="foot">
+        <span class="tiny muted">${esc(v.published_at || "")}</span>
+        <button class="link-btn" onclick="event.stopPropagation(); similarTo('${esc(v.vacancy_id)}')">похожие ↻</button>
+        ${v.url ? `<a href="${esc(v.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">hh.ru ↗</a>` : ""}
+      </div>
+      <div class="expand-hint tiny muted">подробнее ▾</div>
     </div>
-    <div class="foot">
-      <span class="tiny muted">${esc(v.published_at || "")}</span>
-      <button class="link-btn" onclick="similarTo('${esc(v.vacancy_id)}')">похожие ↻</button>
-      ${v.url ? `<a href="${esc(v.url)}" target="_blank" rel="noopener">открыть на hh.ru ↗</a>` : ""}
-    </div>`;
+    <div class="vcard-details hidden"></div>`;
+  const head = div.querySelector(".vcard-head");
+  const det = div.querySelector(".vcard-details");
+  head.addEventListener("click", () => {
+    const open = det.classList.toggle("hidden") === false;
+    div.classList.toggle("open", open);
+    div.querySelector(".expand-hint").textContent = open ? "свернуть ▴" : "подробнее ▾";
+    if (open && !det.dataset.loaded) loadVacancyDetails(v.vacancy_id, det);
+  });
   return div;
 }
 

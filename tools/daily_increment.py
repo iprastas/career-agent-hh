@@ -65,20 +65,24 @@ def db_counts():
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--smoke", action="store_true",
-                    help="быстрая проверка цепочки (сбор вхолостую с period=1)")
+                    help="быстрая проверка цепочки (сбор вхолостую)")
     ap.add_argument("--details", type=int, default=300,
                     help="сколько описаний догрузить (0 — пропустить шаг)")
+    ap.add_argument("--period", type=int, default=1,
+                    help="за сколько последних дней собрать вакансии (1-7)")
     args = ap.parse_args()
+    period = max(1, min(int(args.period), 7))
 
-    log("=== Ежедневный инкремент: старт ===")
+    log(f"=== Ежедневный инкремент: старт (period={period}) ===")
     if args.smoke:
-        run("сбор списков (smoke)", ["collect_hh.py", "--smoke", "--period", "1"])
+        run("сбор списков (smoke)", ["collect_hh.py", "--smoke", "--period", str(period)])
     else:
-        run("сбор списков (period=1)", ["collect_hh.py", "--period", "1"])
+        run(f"сбор списков (period={period})", ["collect_hh.py", "--period", str(period)])
     if args.details > 0:
         run(f"догрузка описаний ({args.details})",
             ["collect_hh.py", "--details", str(args.details)])
     run("импорт в SQLite", ["build_db.py", "--incremental"])
+    run("семантический индекс (TF-IDF+LSA)", ["build_semantic.py"])
 
     total, det, new_today = db_counts()
     flag = (" ВНИМАНИЕ: за сегодня 0 новых вакансий — проверьте сбор/сеть!"

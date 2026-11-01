@@ -152,11 +152,15 @@
       <p class="muted">Синтетические данные на основе резюме. Правки влияют на подбор, разрыв
         в навыках и свежие вакансии. PDF-резюме можно разобрать офлайн:
         <code>.venv\Scripts\python tools\parse_resume.py</code>.</p>
-      <div class="filters">
-        <input id="p-title" placeholder="должность">
-        <input id="p-city" placeholder="город">
-        <input id="p-exp" type="number" placeholder="опыт, лет" style="max-width:120px">
-        <input id="p-salary" type="number" placeholder="зарплата на руки, ₽">
+      <div class="profile-form">
+        <label class="field"><span>Должность</span>
+          <input id="p-title" placeholder="напр. C#/.NET-разработчик"></label>
+        <label class="field"><span>Город</span>
+          <input id="p-city" placeholder="напр. Ростов-на-Дону"></label>
+        <label class="field"><span>Опыт работы, лет</span>
+          <input id="p-exp" type="number" min="0" max="50" placeholder="напр. 3"></label>
+        <label class="field"><span>Ожидаемая зарплата на руки, ₽</span>
+          <input id="p-salary" type="number" min="0" placeholder="напр. 100000"></label>
         <button class="btn-primary" onclick="saveProfile()">Сохранить профиль</button>
         <span id="p-status" class="tiny muted"></span>
       </div>

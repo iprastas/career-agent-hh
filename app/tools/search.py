@@ -185,6 +185,8 @@ def vacancy_details(vacancy_id: str):
         "requirement": (det["requirement"] if det else r["requirement_snippet"])[:600],
         "responsibility": (det["responsibility"] if det else r["responsibility_snippet"])[:600],
         "key_skills": skills,
+        "schedule": r["schedule"],
+        "employment": r["employment"],
         "published_at": r["published_at"],
     })
     return card

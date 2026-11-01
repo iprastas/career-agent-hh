@@ -88,6 +88,14 @@ class TestSemantic:
         assert "error" not in r or not r.get("error")
         assert r["vacancies"] and r["scores"]
 
+    def test_vacancy_details_full_card(self):
+        from app.tools import search_vacancies, vacancy_details
+        vid = search_vacancies("C# разработчик", limit=1)["vacancies"][0]["vacancy_id"]
+        d = vacancy_details(vid)
+        assert "error" not in d
+        assert "schedule" in d and "employment" in d
+        assert d.get("description") or d.get("requirement")
+
     def test_similar_vacancies(self):
         r = similar_vacancies("137311444", limit=3)
         if r.get("error"):

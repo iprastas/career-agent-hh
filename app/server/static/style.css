@@ -111,6 +111,16 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
   border-radius: var(--radius-s); padding: 9px 12px; font: inherit; min-width: 150px;
 }
 .filters input:focus, .filters select:focus { outline: none; border-color: var(--accent); }
+.profile-form { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; margin-bottom: 20px; }
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field span {
+  font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: .06em;
+}
+.field input {
+  background: rgba(255,255,255,0.02); color: var(--text); border: 1px solid var(--border);
+  border-radius: var(--radius-s); padding: 9px 12px; font: inherit; min-width: 190px;
+}
+.field input:focus { outline: none; border-color: var(--accent); }
 .row-actions { display: flex; align-items: center; gap: 12px; margin: 10px 0 18px; flex-wrap: wrap; }
 
 /* ---------- чат ---------- */
@@ -178,6 +188,34 @@ details.think .think-text {
 .answer ul, .answer ol { margin: 8px 0 8px 22px; }
 .answer li { margin: 3px 0; }
 .answer code { font-family: var(--mono); font-size: 13px; background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px; }
+.answer .md-h { color: var(--text); font-weight: 600; margin: 12px 0 6px; }
+.answer .md-h1 { font-size: 17px; }
+.answer .md-h2 { font-size: 16px; }
+.answer .md-h3 { font-size: 15px; }
+.answer .md-h4 { font-size: 14px; }
+.answer hr { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+.answer blockquote {
+  border-left: 3px solid var(--accent); background: rgba(113,112,255,0.07);
+  margin: 8px 0; padding: 6px 12px; border-radius: 0 var(--radius-s) var(--radius-s) 0;
+}
+.answer blockquote p { margin: 3px 0; }
+.answer pre {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-s);
+  padding: 12px; overflow-x: auto; margin: 8px 0;
+}
+.answer pre code { background: none; padding: 0; font-size: 12.5px; line-height: 1.5; }
+.answer .md-table {
+  border-collapse: collapse; margin: 10px 0; font-size: 13.5px; width: 100%;
+}
+.answer .md-table th {
+  background: rgba(255,255,255,0.04); color: var(--text); text-transform: none;
+  letter-spacing: 0; font-size: 12.5px; border: 1px solid var(--border);
+  padding: 7px 10px;
+}
+.answer .md-table td {
+  border: 1px solid var(--border-subtle); padding: 6px 10px; vertical-align: top;
+}
+.answer .md-table tr:hover td { background: rgba(255,255,255,0.02); }
 .answer .cursor { display: inline-block; width: 7px; height: 15px; background: var(--accent-hi); vertical-align: text-bottom; animation: blink 1s steps(1) infinite; }
 @keyframes blink { 50% { opacity: 0; } }
 .refusal {
@@ -214,6 +252,31 @@ details.think .think-text {
   border-radius: var(--radius); padding: 15px 16px; transition: border-color .15s;
 }
 .vcard:hover { border-color: rgba(113,112,255,0.4); }
+.vcard.expandable .vcard-head { cursor: pointer; }
+.vcard.expandable.open { border-color: rgba(113,112,255,0.55); }
+.vcard .expand-hint {
+  margin-top: 8px; text-align: center; color: var(--text-4);
+  border-top: 1px dashed var(--border-subtle); padding-top: 7px;
+}
+.vcard-head:hover .expand-hint { color: var(--accent-hover); }
+.vcard-details { padding-top: 10px; border-top: 1px solid var(--border-subtle); margin-top: 10px; }
+.vcard-details h4 {
+  color: var(--text); font-size: 12px; text-transform: uppercase; letter-spacing: .06em;
+  margin: 12px 0 6px;
+}
+.vd-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px;
+}
+.vd-grid > div {
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-s); padding: 7px 10px; font-size: 13px; color: var(--text-2);
+}
+.vd-grid > div span {
+  display: block; font-size: 10.5px; color: var(--text-4);
+  text-transform: uppercase; letter-spacing: .06em;
+}
+.vd-text { font-size: 13.5px; color: var(--text-2); line-height: 1.55; }
+.vd-text p { margin: 5px 0; }
 .vcard .title { color: var(--text); font-weight: 600; font-size: 15px; line-height: 1.35; }
 .vcard .meta { color: var(--text-3); font-size: 13px; margin: 4px 0; }
 .vcard .salary { color: var(--green); font-weight: 500; font-size: 14px; margin: 6px 0; }

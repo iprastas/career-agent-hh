@@ -34,7 +34,7 @@ from ..event_protocol import stream_turn  # noqa: E402
 from ..memory import compact_if_needed, dialog_title, extract_messages  # noqa: E402
 from ..tools import (draft_letter, fresh_vacancies, match_profile,  # noqa: E402
                      salary_stats, salary_trend, search_vacancies, semantic_search,
-                     similar_vacancies, skill_gap, track_response)
+                     similar_vacancies, skill_gap, track_response, vacancy_details)
 from ..tools.letters import make_letter_title, parse_letter, render_letter  # noqa: E402
 from . import store  # noqa: E402
 
@@ -292,6 +292,15 @@ def vacancies(q: str, city: str = "", experience: str = "", salary_min: int = 0,
               schedule: str = "", limit: int = 5, user=Depends(current_user)):
     return search_vacancies(q, city=city, experience=experience, salary_min=salary_min,
                             schedule=schedule, limit=limit)
+
+
+@app.get("/api/vacancies/{vacancy_id}")
+def vacancy_card(vacancy_id: str, user=Depends(current_user)):
+    """Полная карточка вакансии (для раскрытия карточки в интерфейсе)."""
+    res = vacancy_details(vacancy_id)
+    if "error" in res:
+        raise HTTPException(404, res["error"])
+    return res
 
 
 @app.get("/api/match")
