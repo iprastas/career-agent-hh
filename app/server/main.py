@@ -16,9 +16,10 @@ FastAPI-бэкенд карьерного агента.
 """
 import json
 import os
+import sys
 import types
 
-from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi import Depends, FastAPI, File, Header, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -76,11 +77,14 @@ class TrackerIn(BaseModel):
 
 
 class ProfileIn(BaseModel):
-    profile_id: str = "anastasia"
+    profile_id: str = ""  # пусто — собственный профиль; чужие id не изменяются
+    name: str = ""
     title: str = ""
     location: str = ""
     experience_years: int = 0
     salary_net: int = 0
+    summary: str = ""
+    skills: list[str] = []
 
 
 class SessionPatch(BaseModel):
@@ -289,9 +293,11 @@ async def chat_stream(body: ChatIn, user=Depends(current_user)):
 # ---------------------------------------------------------------- REST-данные
 @app.get("/api/vacancies")
 def vacancies(q: str, city: str = "", experience: str = "", salary_min: int = 0,
-              schedule: str = "", limit: int = 5, user=Depends(current_user)):
+              schedule: str = "", employer: str = "", actual_only: bool = False,
+              limit: int = 5, user=Depends(current_user)):
     return search_vacancies(q, city=city, experience=experience, salary_min=salary_min,
-                            schedule=schedule, limit=limit)
+                            schedule=schedule, employer=employer, actual_only=actual_only,
+                            limit=limit)
 
 
 @app.get("/api/vacancies/{vacancy_id}")
@@ -304,13 +310,14 @@ def vacancy_card(vacancy_id: str, user=Depends(current_user)):
 
 
 @app.get("/api/match")
-def match(profile: str = "anastasia", top: int = 5, user=Depends(current_user)):
-    return match_profile(profile, top_n=top)
+def match(profile: str = "", top: int = 5, user=Depends(current_user)):
+    """Подбор под профиль: profile пуст — собственное резюме пользователя (его user_id)."""
+    return match_profile(profile, top_n=top, tool_context=_ctx(user))
 
 
 @app.get("/api/gap")
-def gap(profile: str = "anastasia", top: int = 10, user=Depends(current_user)):
-    return skill_gap(profile, top_n=top)
+def gap(profile: str = "", top: int = 10, user=Depends(current_user)):
+    return skill_gap(profile, top_n=top, tool_context=_ctx(user))
 
 
 @app.get("/api/stats/salary")
@@ -335,44 +342,179 @@ def similar(vacancy_id: str, limit: int = 6, user=Depends(current_user)):
 
 
 @app.get("/api/fresh")
-def fresh(profile: str = "anastasia", days: int = 7, limit: int = 8, user=Depends(current_user)):
-    return fresh_vacancies(profile_id=profile, days=days, limit=limit)
+def fresh(profile: str = "", days: int = 7, employer: str = "", limit: int = 8,
+          user=Depends(current_user)):
+    return fresh_vacancies(profile_id=profile, days=days, employer=employer, limit=limit,
+                           tool_context=_ctx(user))
 
 
 # ---------------------------------------------------------------- профиль соискателя
-def _profile_path(profile_id):
-    pid = os.path.basename((profile_id or "anastasia").strip()) or "anastasia"
+_RESUME_MAX_BYTES = 5 * 1024 * 1024
+
+
+class ResumeTextIn(BaseModel):
+    text: str
+
+
+def _own_profile_path(user):
+    """Собственный профиль пользователя: data/profiles/u<id>.json (изоляция по user_id)."""
+    pid = _uid(user)
     if not pid.replace("-", "").replace("_", "").isalnum():
         raise HTTPException(400, "некорректный id профиля")
     return os.path.join(config.PROFILES_DIR, pid + ".json"), pid
 
 
-@app.get("/api/profile")
-def profile_get(profile_id: str = "anastasia", user=Depends(current_user)):
-    path, pid = _profile_path(profile_id)
+def _shared_profile_path(profile_id):
+    """Путь к ОБЩЕМУ примеру профиля (anastasia/junior/...) — только чтение."""
+    pid = os.path.basename((profile_id or "").strip())
+    if not pid or not pid.replace("-", "").replace("_", "").isalnum():
+        raise HTTPException(400, "некорректный id профиля")
+    return os.path.join(config.PROFILES_DIR, pid + ".json"), pid
+
+
+def _empty_profile(pid):
+    return {
+        "profile_id": pid, "source": "", "name": "", "title": "", "location": "",
+        "relocation": False, "business_trips": False, "experience_years": 0,
+        "summary": "", "education": [], "languages": {"Русский": "родной"},
+        "skills": [],
+        "preferences": {"salary_net": 0, "salary_note": "",
+                        "employment": ["полная занятость"],
+                        "work_format": ["на месте работодателя", "удалённо", "гибрид"]},
+    }
+
+
+def _read_profile(path):
     if not os.path.exists(path):
-        raise HTTPException(404, "профиль не найден: " + pid)
-    data = json.load(open(path, encoding="utf-8"))
-    files = sorted(f[:-5] for f in os.listdir(config.PROFILES_DIR)
-                   if f.endswith(".json") and f != "synthetic.json")
-    return {"profile_id": pid, "profiles": files, "data": data}
+        return None
+    try:
+        return json.load(open(path, encoding="utf-8"))
+    except Exception:
+        return None
+
+
+def _is_empty(data):
+    return not (data.get("title") or data.get("skills") or data.get("experience_years"))
+
+
+def _clean_skills(skills):
+    """['C#', 'docker', ...] -> [{'name': 'C#', 'weight': 'core'}, ...] без дублей."""
+    out, seen = [], set()
+    for s in skills or []:
+        name = str(s or "").strip()[:60]
+        key = name.lower()
+        if not name or key in seen:
+            continue
+        seen.add(key)
+        out.append({"name": name, "weight": "core"})
+        if len(out) >= 40:
+            break
+    return out
+
+
+@app.get("/api/profile")
+def profile_get(profile_id: str = "", user=Depends(current_user)):
+    """Собственное резюме (profile_id пуст — файл u<id>.json) или общий пример для
+    чтения (anastasia/junior/mid/senior). Чужие резюме никогда не подставляются:
+    новый аккаунт видит только пустую форму своего профиля."""
+    own = not (profile_id or "").strip()
+    if own:
+        path, pid = _own_profile_path(user)
+        data = _read_profile(path)
+        if data is None:  # первое открытие — создаём пустую заготовку
+            data = _empty_profile(pid)
+            os.makedirs(config.PROFILES_DIR, exist_ok=True)
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+    else:
+        path, pid = _shared_profile_path(profile_id)
+        data = _read_profile(path)
+        if data is None:
+            raise HTTPException(404, "профиль не найден: " + pid)
+    return {"profile_id": pid, "own": own, "empty": _is_empty(data), "data": data,
+            "examples": ["anastasia", "junior", "mid", "senior"]}
 
 
 @app.put("/api/profile")
 def profile_put(body: ProfileIn, user=Depends(current_user)):
-    """Правка профиля соискателя вручную (см. также tools/parse_resume.py для PDF)."""
-    path, pid = _profile_path(body.profile_id)
-    if not os.path.exists(path):
-        raise HTTPException(404, "профиль не найден: " + pid)
-    data = json.load(open(path, encoding="utf-8"))
+    """Сохранение СОБСТВЕННОГО резюме (создаётся при первом сохранении).
+    Изменять можно только своё резюме — чужие id отклоняются."""
+    if (body.profile_id or "").strip() and body.profile_id.strip() != _uid(user):
+        raise HTTPException(403, "изменять можно только своё резюме")
+    path, pid = _own_profile_path(user)
+    data = _read_profile(path) or _empty_profile(pid)
+    data["name"] = (body.name or "").strip()[:120]
     data["title"] = (body.title or "").strip()[:120]
     data["location"] = (body.location or "").strip()[:80]
     data["experience_years"] = max(0, int(body.experience_years or 0))
+    data["summary"] = (body.summary or "").strip()[:2000]
+    data["skills"] = _clean_skills(body.skills)
     pref = data.setdefault("preferences", {})
     pref["salary_net"] = max(0, int(body.salary_net or 0))
+    os.makedirs(config.PROFILES_DIR, exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
-    return {"profile_id": pid, "data": data}
+    return {"profile_id": pid, "data": data, "empty": _is_empty(data)}
+
+
+def _draft_from_text(text, source=""):
+    """Детерминированный разбор текста резюме -> черновик полей (ничего не сохраняет:
+    пользователь проверяет данные и жмёт «Сохранить резюме»)."""
+    sys.path.insert(0, os.path.join(config.PROJECT, "tools"))
+    import parse_resume as _pr
+    skills = [s["name"] for s in _pr.detect_skills(text)]
+    draft = {
+        "name": "",
+        "title": _pr.detect_title(text),
+        "location": _pr.detect_city(text),
+        "experience_years": _pr.detect_experience_years(text),
+        "skills": skills[:40],
+        "summary": "",
+    }
+    return {"draft": draft, "source": source,
+            "note": "Поля разобраны из резюме автоматически — проверьте и поправьте "
+                    "их в форме, затем нажмите «Сохранить резюме»."}
+
+
+@app.post("/api/profile/parse")
+def profile_parse_text(body: ResumeTextIn, user=Depends(current_user)):
+    """Разбор резюме из вставленного текста -> черновик для формы (без сохранения)."""
+    text = (body.text or "").strip()
+    if len(text) < 50:
+        raise HTTPException(400, "текст резюме слишком короткий (минимум 50 символов)")
+    if len(text) > 200_000:
+        raise HTTPException(400, "текст резюме слишком длинный (максимум 200 000 символов)")
+    return _draft_from_text(text, source="вставленный текст")
+
+
+@app.post("/api/profile/parse_file")
+async def profile_parse_file(file: UploadFile = File(...), user=Depends(current_user)):
+    """Загрузка существующего резюме (PDF/TXT/MD) -> черновик для формы (без сохранения).
+    Файл разбирается офлайн, никуда не отправляется и не сохраняется на диск."""
+    data = await file.read()
+    if not data:
+        raise HTTPException(400, "пустой файл")
+    if len(data) > _RESUME_MAX_BYTES:
+        raise HTTPException(400, "файл слишком большой (максимум 5 МБ)")
+    fname = (file.filename or "").strip()
+    low = fname.lower()
+    if low.endswith(".pdf") or (file.content_type or "") == "application/pdf":
+        import io
+        from pypdf import PdfReader
+        try:
+            reader = PdfReader(io.BytesIO(data))
+            text = "\n".join((page.extract_text() or "") for page in reader.pages)
+        except Exception:
+            raise HTTPException(400, "не удалось прочитать PDF — попробуйте TXT "
+                                     "или вставьте текст резюме")
+    elif low.endswith((".txt", ".md")) or (file.content_type or "").startswith("text/"):
+        text = data.decode("utf-8", errors="replace")
+    else:
+        raise HTTPException(400, "поддерживаются файлы PDF, TXT и MD")
+    if len(text.strip()) < 50:
+        raise HTTPException(400, "в файле не нашлось текста резюме — попробуйте "
+                                 "вставить текст вручную")
+    return _draft_from_text(text, source=fname or "файл")
 
 
 # ------------------------------------------------- outbox (локальные черновики)
@@ -457,7 +599,7 @@ async def outbox_regenerate(fname: str, user=Depends(current_user)):
                   f"Работодатель: {meta.get('работодатель', '')}",
                   f"Ссылка: {meta.get('ссылка', '')}",
                   f"Тон: {meta.get('тон', 'деловой')}",
-                  profile_summary("anastasia"),
+                  profile_summary(_uid(user)),
                   "Текущий вариант письма:\n" + data["body"]]
     try:
         resp = await litellm.acompletion(

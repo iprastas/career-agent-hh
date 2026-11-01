@@ -82,6 +82,15 @@ async def main(use_judge=False, limit=0, only=""):
     tmp_db = os.path.join(config.DATA, "evals_sessions.db")
     if os.path.exists(tmp_db):
         os.remove(tmp_db)
+
+    # eval-user должен иметь своё резюме: инструменты профиля работают по user_id
+    # (изоляция), а часть эталона спрашивает «под мой профиль». Если резюме нет —
+    # берём демо-резюме anastasia как тестовые данные (в рабочие профили не пишем).
+    import shutil
+    eval_profile = os.path.join(config.PROFILES_DIR, "eval-user.json")
+    demo = os.path.join(config.PROFILES_DIR, "anastasia.json")
+    if not os.path.exists(eval_profile) and os.path.exists(demo):
+        shutil.copy(demo, eval_profile)
     svc = DatabaseSessionService(db_url="sqlite+aiosqlite:///" + tmp_db.replace("\\", "/"))
     runner = Runner(agent=build_agent(), app_name=APP_NAME, session_service=svc)
 

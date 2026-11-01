@@ -1,0 +1,231 @@
+{
+  "analysis_period_days": 90,
+  "stats": {
+    "total_commits": 5,
+    "total_authors": 1
+  },
+  "hotspots": [
+    {
+      "path": "app/server/static/app.js",
+      "changes": 5,
+      "risk": "medium"
+    },
+    {
+      "path": "app/server/static/index.html",
+      "changes": 5,
+      "risk": "medium"
+    },
+    {
+      "path": "app/server/static/style.css",
+      "changes": 5,
+      "risk": "medium"
+    },
+    {
+      "path": "app/server/main.py",
+      "changes": 4,
+      "risk": "low"
+    },
+    {
+      "path": "PLAN.md",
+      "changes": 3,
+      "risk": "low"
+    },
+    {
+      "path": "README.md",
+      "changes": 3,
+      "risk": "low"
+    },
+    {
+      "path": "app/system_prompt.py",
+      "changes": 3,
+      "risk": "low"
+    },
+    {
+      "path": "app/tools/letters.py",
+      "changes": 3,
+      "risk": "low"
+    },
+    {
+      "path": "app/tools/search.py",
+      "changes": 2,
+      "risk": "low"
+    },
+    {
+      "path": "tests/test_new_features.py",
+      "changes": 2,
+      "risk": "low"
+    },
+    {
+      "path": "tools/daily_increment.py",
+      "changes": 2,
+      "risk": "low"
+    },
+    {
+      "path": "app/agent.py",
+      "changes": 2,
+      "risk": "low"
+    },
+    {
+      "path": "app/event_protocol.py",
+      "changes": 2,
+      "risk": "low"
+    },
+    {
+      "path": "app/guardrails.py",
+      "changes": 2,
+      "risk": "low"
+    },
+    {
+      "path": "app/tools/__init__.py",
+      "changes": 2,
+      "risk": "low"
+    },
+    {
+      "path": "app/tools/salary.py",
+      "changes": 2,
+      "risk": "low"
+    },
+    {
+      "path": "app/server/store.py",
+      "changes": 2,
+      "risk": "low"
+    },
+    {
+      "path": "tests/test_server.py",
+      "changes": 2,
+      "risk": "low"
+    },
+    {
+      "path": "app/evals.py",
+      "changes": 1,
+      "risk": "low"
+    },
+    {
+      "path": "app/tools/fresh.py",
+      "changes": 1,
+      "risk": "low"
+    }
+  ],
+  "coupling_pairs": [
+    {
+      "file_a": "app/server/static/app.js",
+      "file_b": "app/server/static/index.html",
+      "co_changes": 5,
+      "coupling_score": 1.0
+    },
+    {
+      "file_a": "app/server/static/app.js",
+      "file_b": "app/server/static/style.css",
+      "co_changes": 5,
+      "coupling_score": 1.0
+    },
+    {
+      "file_a": "app/server/static/index.html",
+      "file_b": "app/server/static/style.css",
+      "co_changes": 5,
+      "coupling_score": 1.0
+    },
+    {
+      "file_a": "app/server/main.py",
+      "file_b": "app/server/static/app.js",
+      "co_changes": 4,
+      "coupling_score": 1.0
+    },
+    {
+      "file_a": "app/server/main.py",
+      "file_b": "app/server/static/index.html",
+      "co_changes": 4,
+      "coupling_score": 1.0
+    },
+    {
+      "file_a": "app/server/main.py",
+      "file_b": "app/server/static/style.css",
+      "co_changes": 4,
+      "coupling_score": 1.0
+    },
+    {
+      "file_a": "PLAN.md",
+      "file_b": "README.md",
+      "co_changes": 3,
+      "coupling_score": 1.0
+    },
+    {
+      "file_a": "PLAN.md",
+      "file_b": "app/server/main.py",
+      "co_changes": 3,
+      "coupling_score": 1.0
+    },
+    {
+      "file_a": "PLAN.md",
+      "file_b": "app/server/static/app.js",
+      "co_changes": 3,
+      "coupling_score": 1.0
+    },
+    {
+      "file_a": "PLAN.md",
+      "file_b": "app/server/static/index.html",
+      "co_changes": 3,
+      "coupling_score": 1.0
+    },
+    {
+      "file_a": "PLAN.md",
+      "file_b": "app/server/static/style.css",
+      "co_changes": 3,
+      "coupling_score": 1.0
+    },
+    {
+      "file_a": "PLAN.md",
+      "file_b": "app/system_prompt.py",
+      "co_changes": 3,
+      "coupling_score": 1.0
+    },
+    {
+      "file_a": "PLAN.md",
+      "file_b": "app/tools/letters.py",
+      "co_changes": 3,
+      "coupling_score": 1.0
+    },
+    {
+      "file_a": "README.md",
+      "file_b": "app/server/main.py",
+      "co_changes": 3,
+      "coupling_score": 1.0
+    },
+    {
+      "file_a": "README.md",
+      "file_b": "app/server/static/app.js",
+      "co_changes": 3,
+      "coupling_score": 1.0
+    },
+    {
+      "file_a": "README.md",
+      "file_b": "app/server/static/index.html",
+      "co_changes": 3,
+      "coupling_score": 1.0
+    },
+    {
+      "file_a": "README.md",
+      "file_b": "app/server/static/style.css",
+      "co_changes": 3,
+      "coupling_score": 1.0
+    },
+    {
+      "file_a": "README.md",
+      "file_b": "app/system_prompt.py",
+      "co_changes": 3,
+      "coupling_score": 1.0
+    },
+    {
+      "file_a": "README.md",
+      "file_b": "app/tools/letters.py",
+      "co_changes": 3,
+      "coupling_score": 1.0
+    },
+    {
+      "file_a": "app/server/main.py",
+      "file_b": "app/system_prompt.py",
+      "co_changes": 3,
+      "coupling_score": 1.0
+    }
+  ]
+}

@@ -11,6 +11,7 @@ const state = {
   sessionId: "",
   busy: false,
 };
+let abortCtrl = null;  // прерывание текущей генерации (кнопка «Стоп»)
 
 /* ================= утилиты ================= */
 function esc(s) {
@@ -276,6 +277,27 @@ function initEnhancements() {
     tSearch.addEventListener("blur",
       () => setTimeout(() => $("#t-search-menu").classList.add("hidden"), 150));
   }
+  // загрузка резюме: drag&drop + выбор файла
+  const dz = $("#drop-zone"), fileInput = $("#resume-file");
+  if (dz && !dz.dataset.wired) {
+    dz.dataset.wired = "1";
+    dz.addEventListener("click", (e) => {
+      if (e.target.tagName !== "BUTTON") fileInput.click();
+    });
+    ["dragenter", "dragover"].forEach((ev) =>
+      dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.add("drag"); }));
+    ["dragleave", "drop"].forEach((ev) =>
+      dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.remove("drag"); }));
+    dz.addEventListener("drop", (e) => {
+      const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (f) parseResumeFile(f);
+    });
+    fileInput.addEventListener("change", () => {
+      const f = fileInput.files && fileInput.files[0];
+      fileInput.value = "";
+      if (f) parseResumeFile(f);
+    });
+  }
 }
 
 /* ================= авторизация ================= */
@@ -320,13 +342,34 @@ function logout() {
   showAuth();
 }
 
-/* ================= вкладки ================= */
+/* ================= вкладки (компактное бургер-меню) ================= */
+const TAB_LABELS = { chat: "Чат", vacancies: "Вакансии", salary: "Зарплаты",
+  skills: "Навыки", letters: "Письма", tracker: "Отклики" };
+
+function toggleNav(e) {
+  e && e.stopPropagation();
+  const nav = $("#nav");
+  const open = nav.classList.toggle("hidden") === false;
+  $("#nav-burger").setAttribute("aria-expanded", open ? "true" : "false");
+}
+function closeNav() {
+  $("#nav").classList.add("hidden");
+  const b = $("#nav-burger");
+  if (b) b.setAttribute("aria-expanded", "false");
+}
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".nav-wrap")) closeNav();
+});
+
 document.addEventListener("click", (e) => {
   const t = e.target.closest(".tab");
   if (!t) return;
   document.querySelectorAll(".tab").forEach((x) => x.classList.remove("active"));
   t.classList.add("active");
   const name = t.dataset.tab;
+  const label = $("#nav-current");
+  if (label) label.textContent = TAB_LABELS[name] || "Чат";
+  closeNav();
   document.querySelectorAll(".view").forEach((v) => v.classList.add("hidden"));
   $("#view-" + name).classList.remove("hidden");
   if (name === "salary" && !$("#salary-compare").dataset.loaded) salaryCompare();
@@ -343,23 +386,29 @@ function quick(btn) {
 }
 function autogrow(el) {
   el.style.height = "auto";
-  el.style.height = Math.min(el.scrollHeight, 160) + "px";
+  el.style.height = Math.min(el.scrollHeight, 220) + "px";
 }
 function onKey(e) {
   if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(e); return false; }
 }
+function stopGeneration() {
+  if (abortCtrl) abortCtrl.abort();
+}
 
 /* ---- список диалогов: название + переименование/удаление ---- */
 function toggleSessions() {
+  // мобильные: выдвижная плашка поверх чата; десктоп: свернуть/развернуть панель
   if (window.innerWidth <= 860) {
     document.body.classList.toggle("sessions-open");
     document.body.classList.remove("sessions-collapsed");
   } else {
-    document.body.classList.remove("sessions-open");
     document.body.classList.toggle("sessions-collapsed");
-    localStorage.setItem("ca_sessions_collapsed",
-      document.body.classList.contains("sessions-collapsed") ? "1" : "");
+    document.body.classList.remove("sessions-open");
   }
+}
+function closeSessions() {
+  if (window.innerWidth <= 860) document.body.classList.remove("sessions-open");
+  else document.body.classList.add("sessions-collapsed");
 }
 
 async function loadSessions() {
@@ -383,8 +432,8 @@ async function loadSessions() {
       list.appendChild(div);
     }
     // плашка: счётчик диалогов и название текущего
-    const toggle = $("#sessions-toggle");
-    if (toggle) toggle.textContent = `☰ Диалоги${data.sessions.length ? " (" + data.sessions.length + ")" : ""}`;
+    const count = $("#sessions-count");
+    if (count) count.textContent = "Диалоги" + (data.sessions.length ? " (" + data.sessions.length + ")" : "");
     const cur = data.sessions.find((s) => s.session_id === state.sessionId);
     const titleEl = $("#current-dialog-title");
     if (titleEl) titleEl.textContent = cur ? cur.title || "Диалог" : "";
@@ -424,10 +473,10 @@ function addWelcome() {
     <p class="muted">Агент ищет вакансии по датасету hh (585k+), считает разрыв в навыках и
     зарплатную статистику, готовит письма и ведёт учёт откликов. Ничего не отправляется автоматически.</p>
     <div class="chips">
-      <button class="chip" onclick="quick(this)">Подбери вакансии C#/.NET в Ростове-на-Дону</button>
+      <button class="chip" onclick="quick(this)">Подбери вакансии под мои навыки</button>
       <button class="chip" onclick="quick(this)">Какие навыки мне стоит подтянуть?</button>
-      <button class="chip" onclick="quick(this)">Какая зарплата у C#-разработчика?</button>
-      <button class="chip" onclick="quick(this)">Напиши сопроводительное письмо на вакансию 137311444</button>
+      <button class="chip" onclick="quick(this)">Сколько платят в моей сфере?</button>
+      <button class="chip" onclick="quick(this)">Помоги составить сопроводительное письмо</button>
       <button class="chip" onclick="quick(this)">Покажи мои отклики</button>
     </div>`;
   $("#messages").appendChild(div);
@@ -441,8 +490,14 @@ async function openSession(id) {
   const box = $("#messages");
   box.innerHTML = "";
   for (const m of data.messages) {
-    if (m.role === "user") addUserMsg(m.text);
-    else { const t = newTurn(); t.setAnswer(m.text); t.finish([], 0); }
+    if (m.role === "user") { addUserMsg(m.text); continue; }
+    // ход агента восстанавливается целиком: рассуждения (think), карточки инструментов
+    // (кликабельные, как в живом потоке) и текст ответа
+    const t = newTurn();
+    if (m.think) t.addThink(m.think);
+    for (const tl of m.tools || []) t.addToolResult(tl.name, tl.payload);
+    if (m.text) t.setAnswer(m.text);
+    t.finish([], 0);
   }
   loadSessions();
   scrollChat();
@@ -662,8 +717,10 @@ async function send(e) {
   addUserMsg(text);
   const turn = newTurn();
   state.busy = true;
+  abortCtrl = new AbortController();
   $("#pending").classList.remove("hidden");
   $("#send-btn").disabled = true;
+  $("#stop-btn").classList.remove("hidden");
 
   try {
     const resp = await fetch("/api/chat/stream", {
@@ -673,6 +730,7 @@ async function send(e) {
         Authorization: "Bearer " + state.token,
       },
       body: JSON.stringify({ message: text, session_id: state.sessionId }),
+      signal: abortCtrl.signal,
     });
     if (!resp.ok) throw new Error("ошибка сервера " + resp.status);
     const reader = resp.body.getReader();
@@ -690,11 +748,19 @@ async function send(e) {
       }
     }
   } catch (err) {
-    turn.setRefusal("Ошибка связи: " + err.message);
+    if (err && err.name === "AbortError") {
+      // пользователь нажал «Стоп» — не ошибка
+      turn.addStatus("⏹ генерация остановлена");
+      turn.finish([], 0);
+    } else {
+      turn.setRefusal("Ошибка связи: " + err.message);
+    }
   } finally {
     state.busy = false;
+    abortCtrl = null;
     $("#pending").classList.add("hidden");
     $("#send-btn").disabled = false;
+    $("#stop-btn").classList.add("hidden");
   }
   loadSessions();
   return false;
@@ -758,11 +824,21 @@ async function loadVacancies(e) {
 async function loadFresh() {
   const box = $("#vacancy-cards");
   box.innerHTML = '<p class="muted">Смотрю свежие вакансии…</p>';
-  const data = await api("/api/fresh?days=7&limit=12");
-  box.innerHTML = "";
-  for (const v of data.vacancies) box.appendChild(vacancyCard(v));
-  if (!data.vacancies.length) box.innerHTML = '<p class="muted">За 7 дней новых вакансий нет.</p>';
-  $("#v-method").textContent = data.method || "";
+  try {
+    await flushProfileIfDirty();
+    const data = await api("/api/fresh?days=7&limit=12");
+    box.innerHTML = "";
+    if (data.error) {
+      box.innerHTML = `<p class="muted">${esc(data.error)}. ${esc(data.hint || "")}</p>`;
+    } else if (!data.vacancies.length) {
+      box.innerHTML = '<p class="muted">За 7 дней новых вакансий нет.</p>';
+    } else {
+      for (const v of data.vacancies) box.appendChild(vacancyCard(v));
+    }
+    $("#v-method").textContent = data.method || "";
+  } catch (err) {
+    box.innerHTML = `<p class="muted">Ошибка: ${esc(err.message)}</p>`;
+  }
 }
 
 async function similarTo(vid) {
@@ -782,11 +858,22 @@ async function similarTo(vid) {
 }
 
 async function loadMatch() {
-  const data = await api("/api/match?profile=anastasia&top=8");
   const box = $("#vacancy-cards");
-  box.innerHTML = "";
-  for (const v of data.vacancies) box.appendChild(vacancyCard(v));
-  $("#v-method").textContent = data.method || "";
+  box.innerHTML = '<p class="muted">Подбираю под ваше резюме…</p>';
+  try {
+    await flushProfileIfDirty();
+    const data = await api("/api/match?top=8");
+    box.innerHTML = "";
+    if (data.error) {
+      box.innerHTML = `<p class="muted">${esc(data.error)}. ${esc(data.hint || "")}</p>`;
+      $("#v-method").textContent = "";
+      return;
+    }
+    for (const v of data.vacancies) box.appendChild(vacancyCard(v));
+    $("#v-method").textContent = data.method || "";
+  } catch (err) {
+    box.innerHTML = `<p class="muted">Ошибка: ${esc(err.message)}</p>`;
+  }
 }
 
 /* ================= вкладка «Зарплаты» ================= */
@@ -865,56 +952,195 @@ async function loadTrend() {
   }
 }
 
-/* ================= профиль соискателя ================= */
+/* ================= моё резюме (вкладка «Навыки») ================= */
+let profileSkills = [];   // [{name, weight}] — чипсы в форме
+let profileDirty = false; // форма изменена и ещё не сохранена на сервер
+
+function renderSkillChips() {
+  const box = $("#p-skills");
+  box.innerHTML = "";
+  if (!profileSkills.length) {
+    box.innerHTML = '<span class="tiny muted">пока нет навыков — добавьте стек (C#, .NET, SQL…)</span>';
+    return;
+  }
+  for (const s of profileSkills) {
+    const chip = document.createElement("span");
+    chip.className = "skill-chip";
+    chip.innerHTML = `${esc(s.name)}<button type="button" title="убрать">✕</button>`;
+    chip.querySelector("button").onclick = () => {
+      profileSkills = profileSkills.filter((x) => x.name !== s.name);
+      profileDirty = true;
+      renderSkillChips();
+    };
+    box.appendChild(chip);
+  }
+}
+
+function addSkillKey(e) {
+  if (e.key === "Enter") { e.preventDefault(); addSkill(); return false; }
+}
+function addSkill() {
+  const input = $("#p-skill-input");
+  const name = (input.value || "").trim();
+  if (!name) return;
+  if (!profileSkills.some((s) => s.name.toLowerCase() === name.toLowerCase())) {
+    profileSkills.push({ name, weight: "core" });
+    profileDirty = true;
+    renderSkillChips();
+  }
+  input.value = "";
+  input.focus();
+}
+
+function focusProfileForm() {
+  $("#profile-form").scrollIntoView({ behavior: "smooth", block: "center" });
+  setTimeout(() => $("#p-name").focus(), 250);
+}
+
 async function loadProfile() {
   try {
-    const data = await api("/api/profile?profile_id=anastasia");
+    const data = await api("/api/profile");
     const d = data.data;
+    state.profileId = data.profile_id;
+    $("#p-name").value = d.name || "";
     $("#p-title").value = d.title || "";
     $("#p-city").value = d.location || "";
     $("#p-exp").value = d.experience_years || "";
     $("#p-salary").value = (d.preferences && d.preferences.salary_net) || "";
-    $("#p-status").textContent = `навыков в профиле: ${(d.skills || []).length} · id: ${data.profile_id}`;
+    $("#p-summary").value = d.summary || "";
+    profileSkills = (d.skills || []).map((s) =>
+      typeof s === "string" ? { name: s, weight: "core" } : { name: s.name, weight: s.weight || "core" });
+    profileDirty = false;
+    renderSkillChips();
+    $("#resume-empty").classList.toggle("hidden", !data.empty);
+    $("#p-status").textContent = data.empty
+      ? "резюме ещё не заполнено — прикрепите файл или заполните форму"
+      : `навыков: ${profileSkills.length} · id: ${data.profile_id}`;
   } catch (err) {
     $("#p-status").textContent = "ошибка загрузки: " + err.message;
   }
 }
 
-async function saveProfile() {
+async function saveProfile(quiet) {
+  addSkill();  // последний введённый навык — тоже в дело
   try {
-    await api("/api/profile", {
+    const r = await api("/api/profile", {
       method: "PUT",
       body: JSON.stringify({
-        profile_id: "anastasia",
+        name: $("#p-name").value,
         title: $("#p-title").value,
         location: $("#p-city").value,
         experience_years: parseInt($("#p-exp").value || "0", 10),
         salary_net: parseInt($("#p-salary").value || "0", 10),
+        summary: $("#p-summary").value,
+        skills: profileSkills.map((s) => s.name),
       }),
     });
-    $("#p-status").textContent = "профиль сохранён ✓ (пересчёт при следующем подборе)";
+    profileSkills = (r.data.skills || []).map((s) =>
+      typeof s === "string" ? { name: s, weight: "core" } : { name: s.name, weight: s.weight || "core" });
+    profileDirty = false;
+    renderSkillChips();
+    $("#resume-empty").classList.add("hidden");
+    if (!quiet) $("#p-status").textContent = "резюме сохранено ✓ (подбор и навыки пересчитаются)";
+    return true;
   } catch (err) {
-    $("#p-status").textContent = "ошибка: " + err.message;
+    if (!quiet) $("#p-status").textContent = "ошибка: " + err.message;
+    return false;
+  }
+}
+
+async function flushProfileIfDirty() {
+  // расчёты (разрыв навыков, подбор, свежие) всегда идут по сохранённому резюме:
+  // несохранённые правки формы сначала фиксируем на сервере
+  if (profileDirty) await saveProfile(true);
+}
+
+function applyDraft(draft, note) {
+  if (draft.name) $("#p-name").value = draft.name;
+  if (draft.title) $("#p-title").value = draft.title;
+  if (draft.location) $("#p-city").value = draft.location;
+  if (draft.experience_years) $("#p-exp").value = draft.experience_years;
+  if (draft.summary) $("#p-summary").value = draft.summary;
+  const parsed = draft.skills || [];
+  if (parsed.length) {
+    profileSkills = parsed.map((n) => ({ name: n, weight: "core" }));
+    renderSkillChips();
+  }
+  profileDirty = true;
+  $("#resume-empty").classList.add("hidden");
+  $("#p-status").textContent = note || "проверьте данные и нажмите «Сохранить резюме»";
+  $("#profile-form").scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+async function parseResumeFile(file) {
+  if (!file) return;
+  const status = $("#p-status");
+  status.textContent = "разбираю файл «" + file.name + "»…";
+  try {
+    const fd = new FormData();
+    fd.append("file", file);
+    const r = await fetch("/api/profile/parse_file", {
+      method: "POST",
+      headers: { Authorization: "Bearer " + state.token },
+      body: fd,
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.detail || ("ошибка " + r.status));
+    applyDraft(data.draft, data.note + " (файл: " + (data.source || file.name) + ")");
+  } catch (err) {
+    status.textContent = "не удалось разобрать файл: " + err.message;
+  }
+}
+
+async function parseResumeText() {
+  const text = ($("#resume-text").value || "").trim();
+  const status = $("#p-status");
+  if (text.length < 50) {
+    status.textContent = "вставьте текст резюме (минимум 50 символов)";
+    return;
+  }
+  status.textContent = "разбираю текст…";
+  try {
+    const data = await api("/api/profile/parse", {
+      method: "POST",
+      body: JSON.stringify({ text }),
+    });
+    applyDraft(data.draft, data.note);
+  } catch (err) {
+    status.textContent = "не удалось разобрать текст: " + err.message;
   }
 }
 
 /* ================= вкладка «Навыки» ================= */
 async function loadGap() {
   const prof = $("#g-profile").value;
-  const data = await api(`/api/gap?profile=${encodeURIComponent(prof)}&top=25`);
-  const maxShare = Math.max(...data.skills.map((s) => s.share_pct), 1);
-  $("#gap-table").innerHTML = `
-    <table>
-      <tr><th>Навык</th><th>Доля на рынке</th><th>В профиле</th><th>Приоритет</th></tr>
-      ${data.skills.map((s) => `
-        <tr>
-          <td>${esc(s.skill)}</td>
-          <td><span class="share-bar" style="width:${(s.share_pct / maxShare) * 90}px"></span>${s.share_pct}% <span class="tiny muted">(${s.vacancies})</span></td>
-          <td>${s.in_profile ? '<span class="badge ok">есть</span>' : '<span class="badge">нет</span>'}</td>
-          <td>${badge(s.priority)}</td>
-        </tr>`).join("")}
-    </table>
-    <p class="tiny muted" style="margin-top:10px">${esc(data.method || "")}</p>`;
+  const box = $("#gap-table");
+  try {
+    if (!prof) await flushProfileIfDirty();  // разрыв — по актуальному резюме
+    const data = await api(`/api/gap?profile=${encodeURIComponent(prof)}&top=25`);
+    if (data.error) {
+      box.innerHTML = `<p class="muted">${esc(data.error)}. ${esc(data.hint || "")}</p>`;
+      return;
+    }
+    const rows = [...(data.skills || []), ...(data.covered || [])];
+    const maxShare = Math.max(...rows.map((s) => s.share_pct), 1);
+    const rowHtml = (s) => `
+          <tr>
+            <td>${esc(s.skill)}</td>
+            <td><span class="share-bar" style="width:${(s.share_pct / maxShare) * 90}px"></span>${s.share_pct}% <span class="tiny muted">(${s.vacancies})</span></td>
+            <td>${s.in_profile ? '<span class="badge ok">есть</span>' : '<span class="badge">нет</span>'}</td>
+            <td>${badge(s.priority)}</td>
+          </tr>`;
+    box.innerHTML = `
+      <table>
+        <tr><th>Навык</th><th>Доля на рынке</th><th>В резюме</th><th>Приоритет</th></tr>
+        ${(data.skills || []).map(rowHtml).join("")}
+        ${(data.covered || []).map(rowHtml).join("")}
+      </table>
+      <p class="tiny muted" style="margin-top:10px">${esc(data.method || "")}</p>`;
+  } catch (err) {
+    box.innerHTML = `<p class="muted">Ошибка: ${esc(err.message)}</p>`;
+  }
 }
 function badge(p) {
   if (p === "высокий") return '<span class="badge high">высокий</span>';
@@ -1139,9 +1365,6 @@ async function startApp() {
   } catch (e) { return; }
   $("#auth").classList.add("hidden");
   $("#app").classList.remove("hidden");
-  if (localStorage.getItem("ca_sessions_collapsed") === "1" && window.innerWidth > 860) {
-    document.body.classList.add("sessions-collapsed");
-  }
   if (!$("#messages").children.length) addWelcome();
   initEnhancements();
   loadSessions();

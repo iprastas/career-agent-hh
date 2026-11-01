@@ -92,14 +92,33 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 }
 .brand { font-weight: 600; color: var(--text); white-space: nowrap; }
 .logo { color: var(--accent-hi); margin-right: 4px; }
-.tabs { display: flex; gap: 2px; flex: 1; }
-.tab {
-  background: none; border: none; color: var(--text-3); font: inherit; font-size: 13px;
-  font-weight: 500; padding: 7px 12px; border-radius: var(--radius-s); cursor: pointer;
+/* большой экран: справа прижаты — аккаунт, вкладки, «Выход» (в таком порядке) */
+.account-email {
+  order: 1; margin-left: auto; min-width: 0; max-width: 240px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.tab:hover { color: var(--text); background: rgba(255,255,255,0.04); }
-.tab.active { color: var(--text); background: rgba(255,255,255,0.07); }
-.userbox { display: flex; align-items: center; gap: 10px; }
+#logout-btn { order: 3; }
+.nav-wrap { order: 2; position: relative; }
+.burger {
+  display: none; align-items: center; gap: 8px;
+  background: rgba(255,255,255,0.03); color: var(--text-2);
+  border: 1px solid var(--border); border-radius: var(--radius-s);
+  padding: 7px 12px; font: inherit; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: background .15s;
+}
+.burger:hover { background: rgba(255,255,255,0.07); color: var(--text); }
+.burger .burger-icon { font-size: 15px; line-height: 1; }
+.burger .burger-caret { color: var(--text-4); font-size: 10px; }
+/* вкладки разделов — постоянный ряд в шапке */
+.tabs { display: flex; align-items: center; gap: 4px; }
+.topbar .tabs.hidden { display: flex !important; }
+.tab {
+  background: none; border: none; color: var(--text-2); font: inherit; font-size: 13.5px;
+  font-weight: 500; padding: 8px 13px; border-radius: var(--radius-s); cursor: pointer;
+  text-align: center; white-space: nowrap;
+}
+.tab:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.tab.active { color: var(--text); background: rgba(113,112,255,0.16); }
 
 /* ---------- общие view/панели ---------- */
 .view { flex: 1; overflow-y: auto; }
@@ -123,22 +142,94 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .field input:focus { outline: none; border-color: var(--accent); }
 .row-actions { display: flex; align-items: center; gap: 12px; margin: 10px 0 18px; flex-wrap: wrap; }
 
+/* ---------- резюме (вкладка «Навыки») ---------- */
+.resume-empty {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px; margin: 18px 0 26px;
+}
+.resume-choice {
+  background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 18px 20px;
+}
+.resume-choice h3 { margin: 0 0 6px; }
+.resume-choice p { margin-bottom: 12px; }
+.drop-zone {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  border: 1.5px dashed rgba(113,112,255,0.45); border-radius: var(--radius);
+  padding: 22px 16px; color: var(--text-3); font-size: 13px; text-align: center;
+  transition: all .15s; cursor: pointer;
+}
+.drop-zone.drag { border-color: var(--accent-hover); background: rgba(113,112,255,0.10); color: var(--text); }
+.paste-block { margin-top: 12px; font-size: 13px; }
+.paste-block summary { cursor: pointer; color: var(--text-3); user-select: none; }
+.paste-block textarea {
+  width: 100%; margin: 10px 0 8px; resize: vertical;
+  background: var(--surface); color: var(--text-2); border: 1px solid var(--border);
+  border-radius: var(--radius-s); padding: 11px 13px; font: inherit; font-size: 13.5px;
+}
+.paste-block textarea:focus { outline: none; border-color: var(--accent); }
+.skill-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 10px; min-height: 26px; }
+.skill-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(113,112,255,0.13); border: 1px solid rgba(113,112,255,0.35);
+  color: var(--text); border-radius: 9999px; padding: 3px 6px 3px 11px; font-size: 12.5px;
+}
+.skill-chip button {
+  background: none; border: none; color: var(--text-3); cursor: pointer;
+  font-size: 13px; line-height: 1; padding: 2px 5px; border-radius: 50%;
+}
+.skill-chip button:hover { color: var(--red); background: rgba(229,72,77,0.15); }
+.skill-add { display: flex; gap: 8px; }
+.skill-add input {
+  flex: 1; max-width: 320px;
+  background: rgba(255,255,255,0.02); color: var(--text); border: 1px solid var(--border);
+  border-radius: var(--radius-s); padding: 9px 12px; font: inherit;
+}
+.skill-add input:focus { outline: none; border-color: var(--accent); }
+.field.w100 { width: 100%; }
+.field textarea {
+  width: 100%; resize: vertical;
+  background: rgba(255,255,255,0.02); color: var(--text); border: 1px solid var(--border);
+  border-radius: var(--radius-s); padding: 9px 12px; font: inherit;
+}
+.field textarea:focus { outline: none; border-color: var(--accent); }
+
 /* ---------- чат ---------- */
 .chat-layout { display: flex; overflow: hidden; position: relative; }
 .chat-toolbar {
-  display: flex; align-items: center; gap: 8px; padding: 8px 24px; flex-shrink: 0;
+  display: flex; align-items: center; gap: 10px; padding: 8px 24px; flex-shrink: 0;
   border-bottom: 1px solid var(--border-subtle); background: var(--panel);
 }
 .chat-toolbar .chat-title {
-  margin-left: auto; max-width: 55%; white-space: nowrap;
+  margin-left: 4px; max-width: 55%; white-space: nowrap;
   overflow: hidden; text-overflow: ellipsis;
 }
-/* свернутая панель диалогов (десктоп) */
-body.sessions-collapsed .sessions { display: none; }
-.sessions {
-  width: 230px; flex-shrink: 0; background: var(--panel); border-right: 1px solid var(--border-subtle);
-  padding: 14px 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+.icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; flex-shrink: 0;
+  background: transparent; color: var(--text-3);
+  border: 1px solid transparent; border-radius: var(--radius-s);
+  cursor: pointer; transition: background .15s, color .15s;
 }
+.icon-btn:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+/* боковая панель диалогов: на десктопе открыта по умолчанию, сворачивается кнопкой */
+.sessions {
+  width: 270px; flex-shrink: 0;
+  background: var(--panel); border-right: 1px solid var(--border);
+  padding: 12px 12px 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+}
+body.sessions-collapsed .sessions { display: none; }
+.sessions-backdrop {
+  display: none; position: absolute; inset: 0; z-index: 44;
+  background: rgba(0,0,0,0.45);
+}
+body.sessions-open .sessions-backdrop { display: block; }
+.sessions-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 2px 2px 0 8px;
+  color: var(--text-3); font-size: 12px; text-transform: uppercase; letter-spacing: .06em;
+}
+.sessions-head .s-btn { font-size: 14px; padding: 4px 8px; }
 .session-list { display: flex; flex-direction: column; gap: 4px; }
 .session-item {
   padding: 8px 10px; border-radius: var(--radius-s); cursor: pointer; font-size: 13px;
@@ -239,9 +330,10 @@ details.think .think-text {
 #input {
   flex: 1; resize: none; background: rgba(255,255,255,0.02); color: var(--text);
   border: 1px solid var(--border); border-radius: var(--radius-s); padding: 11px 14px;
-  font: inherit; max-height: 160px; line-height: 1.5;
+  font: inherit; min-height: 66px; max-height: 220px; line-height: 1.5;
 }
 #input:focus { outline: none; border-color: var(--accent); }
+#stop-btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
 .composer .tiny { display: block; text-align: center; }
 .pending {
   display: flex; gap: 6px; align-items: center; color: var(--text-3); font-size: 13px;
@@ -444,11 +536,26 @@ select.mini {
 
 @media (max-width: 860px) {
   .topbar { flex-wrap: wrap; height: auto; padding: 8px 12px; gap: 8px; }
-  .tabs { order: 3; width: 100%; overflow-x: auto; }
-  /* панель диалогов на маленьких экранах — выдвижная плашка сверху */
+  .brand { display: block; order: 1; }
+  .account-email { order: 2; margin-left: auto; }
+  #logout-btn { order: 3; margin-left: 0; }
+  .nav-wrap { order: 4; }
+  .burger { display: flex; }
+  /* компактное бургер-меню разделов — выпадающий список */
+  .topbar .tabs.hidden { display: none !important; }
+  .tabs {
+    position: absolute; top: calc(100% + 6px); left: 0; z-index: 80;
+    display: flex; flex-direction: column; gap: 2px;
+    min-width: 210px; padding: 6px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: rgba(0,0,0,0.45) 0 10px 28px;
+  }
+  .tab { text-align: left; padding: 9px 12px; }
+  /* панель диалогов на маленьких экранах — выдвижная плашка сверху, уже */
   .sessions {
-    display: none; position: absolute; top: 6px; left: 8px; right: 8px; z-index: 40;
-    max-height: 55vh; border: 1px solid var(--border); border-radius: var(--radius);
+    display: none; position: absolute; top: 6px; bottom: auto; left: 8px; right: auto;
+    width: min(300px, calc(100vw - 64px)); max-height: 55vh; z-index: 45;
+    border: 1px solid var(--border); border-radius: var(--radius);
     box-shadow: rgba(0,0,0,0.5) 0 10px 30px;
   }
   body.sessions-collapsed .sessions { display: none; }

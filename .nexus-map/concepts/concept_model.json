@@ -1,0 +1,1223 @@
+{
+  "$schema": "nexus-mapper/concept-model/v1",
+  "generated_at": "2026-11-01T14:23:26Z",
+  "repo_path": "C:/Users/Windows/Desktop/чудо мага/Брушкин/project",
+  "generator": "nexus-mapper v2",
+  "nodes": [
+    {
+      "id": "agent-core",
+      "type": "System",
+      "label": "Agent Core",
+      "responsibility": "Ядро агента: сборка ADK LlmAgent, guardrails-слои 1/1.5/3, сжатие памяти, конверт событий (app/ без server/ и tools/)",
+      "implementation_status": "implemented",
+      "code_path": "app/",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "google-adk",
+        "litellm",
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "medium",
+      "hotspot": false
+    },
+    {
+      "id": "agent-tools",
+      "type": "System",
+      "label": "Agent Tools",
+      "responsibility": "7 read-only инструментов поверх SQLite: поиск, семантика, матчинг, разрыв навыков, зарплаты, свежие, письма и отклики",
+      "implementation_status": "implemented",
+      "code_path": "app/tools/",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "sqlite",
+        "fts5",
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "medium",
+      "hotspot": false
+    },
+    {
+      "id": "server-ui",
+      "type": "System",
+      "label": "Server & UI",
+      "responsibility": "FastAPI: auth (PBKDF2), SSE-чат, REST, изоляция по user_id; vanilla JS фронтенд с вкладками и модальными окнами",
+      "implementation_status": "implemented",
+      "code_path": "app/server/",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "fastapi",
+        "uvicorn",
+        "vanilla-js"
+      ],
+      "related_reqs": [],
+      "complexity": "high",
+      "hotspot": false
+    },
+    {
+      "id": "data-pipeline",
+      "type": "System",
+      "label": "Data Pipeline",
+      "responsibility": "Сбор hh API, склейка слоёв Kaggle+API, сборка SQLite+FTS5 и семантического индекса, ежедневный инкремент",
+      "implementation_status": "implemented",
+      "code_path": "tools/",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "requests",
+        "pandas",
+        "sqlite"
+      ],
+      "related_reqs": [],
+      "complexity": "high",
+      "hotspot": false
+    },
+    {
+      "id": "evals-qa",
+      "type": "System",
+      "label": "Evals & QA",
+      "responsibility": "Метрики качества: отказы off-topic, ожидаемые инструменты, анти-галлюцинация чисел; раннер tools/run_evals.py",
+      "implementation_status": "implemented",
+      "code_path": "app/evals.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "app-init",
+      "type": "Module",
+      "label": "app",
+      "responsibility": "Пакет ядра агента: маркер пакета и экспорт конфигурации приложения",
+      "implementation_status": "implemented",
+      "code_path": "app/__init__.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "app-agent",
+      "type": "Module",
+      "label": "agent",
+      "responsibility": "Сборка ADK LlmAgent: координатор и суб-агенты, регистрация 7 инструментов, имя APP_NAME",
+      "implementation_status": "implemented",
+      "code_path": "app/agent.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "app-config",
+      "type": "Module",
+      "label": "config",
+      "responsibility": "Пути проекта, безопасный парсинг .env, имя модели с префиксом openai/ для реестра ADK",
+      "implementation_status": "implemented",
+      "code_path": "app/config.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "app-evals",
+      "type": "Module",
+      "label": "evals",
+      "responsibility": "Детерминированные метрики evals: числа из текста, маркеры отказа, сверка ответа с выдачей инструментов",
+      "implementation_status": "implemented",
+      "code_path": "app/evals.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "app-event-protocol",
+      "type": "Module",
+      "label": "event_protocol",
+      "responsibility": "Конверт событий refusal/status/tool_call/think/delta/answer/done для консоли и SSE",
+      "implementation_status": "implemented",
+      "code_path": "app/event_protocol.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "app-guardrails",
+      "type": "Module",
+      "label": "guardrails",
+      "responsibility": "Guardrails-слои 1 и 3: пред-фильтр инъекций и пост-фильтр утечек промпта и запрещённых заявлений",
+      "implementation_status": "implemented",
+      "code_path": "app/guardrails.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "app-memory",
+      "type": "Module",
+      "label": "memory",
+      "responsibility": "Сжатие истории длинных диалогов в сводку перед ходом, заголовки диалогов, фолбэк без модели",
+      "implementation_status": "implemented",
+      "code_path": "app/memory.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "app-runner-cli",
+      "type": "Module",
+      "label": "runner_cli",
+      "responsibility": "Консольный прогон агента без сервера через python -m app.runner_cli",
+      "implementation_status": "implemented",
+      "code_path": "app/runner_cli.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "app-server-init",
+      "type": "Module",
+      "label": "server",
+      "responsibility": "Пакет серверного модуля FastAPI: маркер пакета и общий экспорт сервера",
+      "implementation_status": "implemented",
+      "code_path": "app/server/__init__.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "app-server-main",
+      "type": "Module",
+      "label": "main",
+      "responsibility": "FastAPI-приложение: auth, SSE-чат, REST-эндпоинты диалогов, писем, откликов и профиля",
+      "implementation_status": "implemented",
+      "code_path": "app/server/main.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "app-server-static-app",
+      "type": "Module",
+      "label": "app",
+      "responsibility": "Фронтенд vanilla JS: чат с SSE-событиями, вкладки Вакансии/Зарплаты/Навыки/Письма/Отклики",
+      "implementation_status": "implemented",
+      "code_path": "app/server/static/app.js",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "javascript"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "app-server-store",
+      "type": "Module",
+      "label": "store",
+      "responsibility": "Хранилище сервера: users.db и sessions.db, PBKDF2-хэши паролей, токены, изоляция по user_id",
+      "implementation_status": "implemented",
+      "code_path": "app/server/store.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "app-system-prompt",
+      "type": "Module",
+      "label": "system_prompt",
+      "responsibility": "Системный промпт слоя 2 с белым списком тем и профилем соискателя из data/profiles/",
+      "implementation_status": "implemented",
+      "code_path": "app/system_prompt.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "app-tools-init",
+      "type": "Module",
+      "label": "tools",
+      "responsibility": "Экспорт 7 инструментов агента: search, semantic, match, salary, fresh, letters",
+      "implementation_status": "implemented",
+      "code_path": "app/tools/__init__.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "app-tools-fresh",
+      "type": "Module",
+      "label": "fresh",
+      "responsibility": "Свежие вакансии за N дней, ранжирование под профиль по методике app/tools/match.py",
+      "implementation_status": "implemented",
+      "code_path": "app/tools/fresh.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "app-tools-letters",
+      "type": "Module",
+      "label": "letters",
+      "responsibility": "Письма работодателям и отклики: генерация, разбор файла, локальный трекер, заголовки",
+      "implementation_status": "implemented",
+      "code_path": "app/tools/letters.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "app-tools-match",
+      "type": "Module",
+      "label": "match",
+      "responsibility": "Матчинг профиля и разрыв навыков: прозрачный скор, канонические навыки и алиасы",
+      "implementation_status": "implemented",
+      "code_path": "app/tools/match.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "app-tools-salary",
+      "type": "Module",
+      "label": "salary",
+      "responsibility": "Статистика зарплат P25/медиана/P75 net и динамика медианы по месяцам из salary_agg",
+      "implementation_status": "implemented",
+      "code_path": "app/tools/salary.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "app-tools-search",
+      "type": "Module",
+      "label": "search",
+      "responsibility": "FTS5-поиск вакансий по датасету и карточки вакансий с лимитами выдачи",
+      "implementation_status": "implemented",
+      "code_path": "app/tools/search.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "app-tools-semantic",
+      "type": "Module",
+      "label": "semantic",
+      "responsibility": "Семантический поиск TF-IDF+LSA: гибрид с лексикой и похожие вакансии по косинусу",
+      "implementation_status": "implemented",
+      "code_path": "app/tools/semantic.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "app-topic-gate",
+      "type": "Module",
+      "label": "topic_gate",
+      "responsibility": "Классификатор тем на TF-IDF-центроидах как guardrails-слой 1.5 до вызова модели",
+      "implementation_status": "implemented",
+      "code_path": "app/topic_gate.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "tests-conftest",
+      "type": "Module",
+      "label": "conftest",
+      "responsibility": "Общие фикстуры pytest для тестов агента, инструментов и сервера",
+      "implementation_status": "implemented",
+      "code_path": "tests/conftest.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "tests-test-guardrails",
+      "type": "Module",
+      "label": "test_guardrails",
+      "responsibility": "Тесты guardrails: инъекции RU/EN, утечка промпта, запрещённые заявления об отправке",
+      "implementation_status": "implemented",
+      "code_path": "tests/test_guardrails.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "tests-test-memory",
+      "type": "Module",
+      "label": "test_memory",
+      "responsibility": "Тесты сжатия истории длинных диалогов и заголовков диалогов",
+      "implementation_status": "implemented",
+      "code_path": "tests/test_memory.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "tests-test-new-features",
+      "type": "Module",
+      "label": "test_new_features",
+      "responsibility": "Тесты новых функций: семантика, свежие, динамика зарплат, напоминания, профиль, evals",
+      "implementation_status": "implemented",
+      "code_path": "tests/test_new_features.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "tests-test-server",
+      "type": "Module",
+      "label": "test_server",
+      "responsibility": "Тесты сервера: авторизация, изоляция пользователей, SSE-конверт, диалоги, письма",
+      "implementation_status": "implemented",
+      "code_path": "tests/test_server.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "tests-test-tools",
+      "type": "Module",
+      "label": "test_tools",
+      "responsibility": "Тесты инструментов: лимиты выдачи, фильтры, квантили, локальные записи",
+      "implementation_status": "implemented",
+      "code_path": "tests/test_tools.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "tools-build-db",
+      "type": "Module",
+      "label": "build_db",
+      "responsibility": "Сборка data/app.db: SQLite+FTS5, vacancy_skills, salary_agg, режимы --full и --incremental",
+      "implementation_status": "implemented",
+      "code_path": "tools/build_db.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "tools-build-semantic",
+      "type": "Module",
+      "label": "build_semantic",
+      "responsibility": "Семантический индекс TF-IDF+LSA: модель и матрицы в data/semantic_*",
+      "implementation_status": "implemented",
+      "code_path": "tools/build_semantic.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "tools-check-token",
+      "type": "Module",
+      "label": "check_token",
+      "responsibility": "Проверка и дозапись .env с токенами hh, токен нигде не печатается",
+      "implementation_status": "implemented",
+      "code_path": "tools/check_token.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "tools-clean-merge",
+      "type": "Module",
+      "label": "clean_merge",
+      "responsibility": "Склейка слоёв Kaggle и API в единый CSV: курсы ЦБ, канонизация опыта, chunked-чтение",
+      "implementation_status": "implemented",
+      "code_path": "tools/clean_merge.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "tools-collect-hh",
+      "type": "Module",
+      "label": "collect_hh",
+      "responsibility": "Сбор вакансий с hh API: списки в JSONL/CSV, догрузка описаний, дедуп, ретраи на 429/5xx",
+      "implementation_status": "implemented",
+      "code_path": "tools/collect_hh.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "tools-daily-increment",
+      "type": "Module",
+      "label": "daily_increment",
+      "responsibility": "Ежедневная цепочка: сбор за сутки, догрузка описаний, импорт в SQLite, сводка в data/collect.log",
+      "implementation_status": "implemented",
+      "code_path": "tools/daily_increment.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "tools-hh-client",
+      "type": "Module",
+      "label": "hh_client",
+      "responsibility": "HTTP-клиент hh API: HH-User-Agent, OAuth2 application-токен, классы HHError и HHClient",
+      "implementation_status": "implemented",
+      "code_path": "tools/hh_client.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "tools-match-gap",
+      "type": "Module",
+      "label": "match_gap",
+      "responsibility": "Карта алиасов навыков и скор матчинга 0.45·coverage+0.2·name+0.2·city+0.15·salary, отчёт skill gap",
+      "implementation_status": "implemented",
+      "code_path": "tools/match_gap.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "tools-parse-resume",
+      "type": "Module",
+      "label": "parse_resume",
+      "responsibility": "Офлайн-разбор PDF-резюме в профиль data/profiles/anastasia.json",
+      "implementation_status": "implemented",
+      "code_path": "tools/parse_resume.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "tools-run-evals",
+      "type": "Module",
+      "label": "run_evals",
+      "responsibility": "Прогон эталона evals/benchmark.json через агента, метрики и LLM-as-judge, отчёт в data/reports/",
+      "implementation_status": "implemented",
+      "code_path": "tools/run_evals.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    },
+    {
+      "id": "tools-stats-preview",
+      "type": "Module",
+      "label": "stats_preview",
+      "responsibility": "Первичная аналитика зарплат и навыков по собранному датасету",
+      "implementation_status": "implemented",
+      "code_path": "tools/stats_preview.py",
+      "evidence_path": null,
+      "evidence_gap": null,
+      "tech_stack": [
+        "python"
+      ],
+      "related_reqs": [],
+      "complexity": "low",
+      "hotspot": false
+    }
+  ],
+  "edges": [
+    {
+      "source": "agent-core",
+      "target": "app-init",
+      "type": "contains"
+    },
+    {
+      "source": "agent-core",
+      "target": "app-agent",
+      "type": "contains"
+    },
+    {
+      "source": "agent-core",
+      "target": "app-config",
+      "type": "contains"
+    },
+    {
+      "source": "evals-qa",
+      "target": "app-evals",
+      "type": "contains"
+    },
+    {
+      "source": "agent-core",
+      "target": "app-event-protocol",
+      "type": "contains"
+    },
+    {
+      "source": "agent-core",
+      "target": "app-guardrails",
+      "type": "contains"
+    },
+    {
+      "source": "agent-core",
+      "target": "app-memory",
+      "type": "contains"
+    },
+    {
+      "source": "agent-core",
+      "target": "app-runner-cli",
+      "type": "contains"
+    },
+    {
+      "source": "server-ui",
+      "target": "app-server-init",
+      "type": "contains"
+    },
+    {
+      "source": "server-ui",
+      "target": "app-server-main",
+      "type": "contains"
+    },
+    {
+      "source": "server-ui",
+      "target": "app-server-static-app",
+      "type": "contains"
+    },
+    {
+      "source": "server-ui",
+      "target": "app-server-store",
+      "type": "contains"
+    },
+    {
+      "source": "agent-core",
+      "target": "app-system-prompt",
+      "type": "contains"
+    },
+    {
+      "source": "agent-tools",
+      "target": "app-tools-init",
+      "type": "contains"
+    },
+    {
+      "source": "agent-tools",
+      "target": "app-tools-fresh",
+      "type": "contains"
+    },
+    {
+      "source": "agent-tools",
+      "target": "app-tools-letters",
+      "type": "contains"
+    },
+    {
+      "source": "agent-tools",
+      "target": "app-tools-match",
+      "type": "contains"
+    },
+    {
+      "source": "agent-tools",
+      "target": "app-tools-salary",
+      "type": "contains"
+    },
+    {
+      "source": "agent-tools",
+      "target": "app-tools-search",
+      "type": "contains"
+    },
+    {
+      "source": "agent-tools",
+      "target": "app-tools-semantic",
+      "type": "contains"
+    },
+    {
+      "source": "agent-core",
+      "target": "app-topic-gate",
+      "type": "contains"
+    },
+    {
+      "source": "data-pipeline",
+      "target": "tools-build-db",
+      "type": "contains"
+    },
+    {
+      "source": "data-pipeline",
+      "target": "tools-build-semantic",
+      "type": "contains"
+    },
+    {
+      "source": "data-pipeline",
+      "target": "tools-check-token",
+      "type": "contains"
+    },
+    {
+      "source": "data-pipeline",
+      "target": "tools-clean-merge",
+      "type": "contains"
+    },
+    {
+      "source": "data-pipeline",
+      "target": "tools-collect-hh",
+      "type": "contains"
+    },
+    {
+      "source": "data-pipeline",
+      "target": "tools-daily-increment",
+      "type": "contains"
+    },
+    {
+      "source": "data-pipeline",
+      "target": "tools-hh-client",
+      "type": "contains"
+    },
+    {
+      "source": "data-pipeline",
+      "target": "tools-match-gap",
+      "type": "contains"
+    },
+    {
+      "source": "data-pipeline",
+      "target": "tools-parse-resume",
+      "type": "contains"
+    },
+    {
+      "source": "evals-qa",
+      "target": "tools-run-evals",
+      "type": "contains"
+    },
+    {
+      "source": "data-pipeline",
+      "target": "tools-stats-preview",
+      "type": "contains"
+    },
+    {
+      "source": "tests-test-guardrails",
+      "target": "app-init",
+      "type": "imports"
+    },
+    {
+      "source": "tests-test-guardrails",
+      "target": "app-system-prompt",
+      "type": "imports"
+    },
+    {
+      "source": "tests-test-memory",
+      "target": "app-init",
+      "type": "imports"
+    },
+    {
+      "source": "tests-test-new-features",
+      "target": "app-init",
+      "type": "imports"
+    },
+    {
+      "source": "tests-test-new-features",
+      "target": "app-tools-fresh",
+      "type": "imports"
+    },
+    {
+      "source": "tests-test-new-features",
+      "target": "app-tools-letters",
+      "type": "imports"
+    },
+    {
+      "source": "tests-test-new-features",
+      "target": "app-tools-salary",
+      "type": "imports"
+    },
+    {
+      "source": "tests-test-new-features",
+      "target": "app-tools-semantic",
+      "type": "imports"
+    },
+    {
+      "source": "tests-test-new-features",
+      "target": "app-tools-init",
+      "type": "imports"
+    },
+    {
+      "source": "tests-test-new-features",
+      "target": "app-server-init",
+      "type": "imports"
+    },
+    {
+      "source": "tests-test-server",
+      "target": "app-init",
+      "type": "imports"
+    },
+    {
+      "source": "tests-test-server",
+      "target": "app-tools-letters",
+      "type": "imports"
+    },
+    {
+      "source": "tests-test-server",
+      "target": "app-server-init",
+      "type": "imports"
+    },
+    {
+      "source": "tests-test-server",
+      "target": "app-server-main",
+      "type": "imports"
+    },
+    {
+      "source": "tests-test-server",
+      "target": "app-tools-init",
+      "type": "imports"
+    },
+    {
+      "source": "tests-test-tools",
+      "target": "app-init",
+      "type": "imports"
+    },
+    {
+      "source": "tests-test-tools",
+      "target": "app-tools-init",
+      "type": "imports"
+    },
+    {
+      "source": "tools-run-evals",
+      "target": "app-init",
+      "type": "imports"
+    },
+    {
+      "source": "tools-run-evals",
+      "target": "app-agent",
+      "type": "imports"
+    },
+    {
+      "source": "tools-run-evals",
+      "target": "app-event-protocol",
+      "type": "imports"
+    },
+    {
+      "source": "tools-run-evals",
+      "target": "app-system-prompt",
+      "type": "imports"
+    },
+    {
+      "source": "app-agent",
+      "target": "app-config",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-agent",
+      "target": "app-tools-init",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-agent",
+      "target": "app-system-prompt",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-event-protocol",
+      "target": "app-config",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-event-protocol",
+      "target": "app-guardrails",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-memory",
+      "target": "app-config",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-runner-cli",
+      "target": "app-agent",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-runner-cli",
+      "target": "app-event-protocol",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-server-main",
+      "target": "app-config",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-server-main",
+      "target": "app-guardrails",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-server-main",
+      "target": "app-agent",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-server-main",
+      "target": "app-event-protocol",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-server-main",
+      "target": "app-memory",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-server-main",
+      "target": "app-tools-init",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-server-main",
+      "target": "app-tools-letters",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-server-main",
+      "target": "app-server-store",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-server-store",
+      "target": "app-config",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-system-prompt",
+      "target": "app-config",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-tools-fresh",
+      "target": "app-config",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-tools-fresh",
+      "target": "app-tools-match",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-tools-fresh",
+      "target": "app-tools-search",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-tools-letters",
+      "target": "app-config",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-tools-match",
+      "target": "app-config",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-tools-salary",
+      "target": "app-config",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-tools-salary",
+      "target": "app-tools-search",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-tools-search",
+      "target": "app-config",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-tools-semantic",
+      "target": "app-config",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-tools-semantic",
+      "target": "app-tools-search",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-tools-init",
+      "target": "app-tools-search",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-tools-init",
+      "target": "app-tools-semantic",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-tools-init",
+      "target": "app-tools-match",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-tools-init",
+      "target": "app-tools-salary",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-tools-init",
+      "target": "app-tools-fresh",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "app-tools-init",
+      "target": "app-tools-letters",
+      "type": "imports",
+      "description": "relative import, verified by manual inspection (AST covers absolute imports only)"
+    },
+    {
+      "source": "server-ui",
+      "target": "agent-core",
+      "type": "depends_on",
+      "description": "main.py вызывает build_agent/stream_turn; SSE-ходы агента"
+    },
+    {
+      "source": "server-ui",
+      "target": "agent-tools",
+      "type": "depends_on",
+      "description": "REST-эндпоинты писем и откликов вызывают инструменты напрямую"
+    },
+    {
+      "source": "agent-core",
+      "target": "agent-tools",
+      "type": "depends_on",
+      "description": "agent.py регистрирует 7 инструментов в LlmAgent"
+    },
+    {
+      "source": "evals-qa",
+      "target": "agent-core",
+      "type": "depends_on",
+      "description": "tools/run_evals.py строит агента и прогоняет эталонные вопросы (verified)"
+    },
+    {
+      "source": "agent-tools",
+      "target": "data-pipeline",
+      "type": "depends_on",
+      "description": "инструменты читают data/app.db и semantic_*; скоринг общий с tools/match_gap.py (runtime data dependency, inferred from manual inspection)"
+    },
+    {
+      "source": "agent-core",
+      "target": "data-pipeline",
+      "type": "depends_on",
+      "description": "профиль и конфигурация берутся из data/profiles/ и .env, датасет строится конвейером (runtime data dependency, inferred from manual inspection)"
+    }
+  ],
+  "metadata": {
+    "total_files": 38,
+    "total_lines": 6339,
+    "languages": [
+      "javascript",
+      "python"
+    ],
+    "git_commits_analyzed": 5,
+    "analysis_days": 90,
+    "git_hotspot_note": "hotspot=false everywhere: 5-commit history makes change counts non-discriminative (every file has changes=5)",
+    "relative_import_note": "module-level 'imports' edges marked 'manual inspection' come from source grep; extract_ast.py captures absolute imports only"
+  }
+}

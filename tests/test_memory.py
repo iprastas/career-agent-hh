@@ -30,6 +30,56 @@ class TestExtractAndTitle:
             "Подбери вакансии C# в Ростове-на-Дону."
         assert memory.dialog_title("   ") == "Диалог"
 
+    def test_think_not_in_answer(self):
+        """Рассуждения (thought) не смешиваются с ответом: они идут отдельным полем think."""
+        s = types.SimpleNamespace(events=[
+            _event("user", "привет", "1"),
+            types.SimpleNamespace(id="2", content=types.SimpleNamespace(role="model", parts=[
+                types.SimpleNamespace(text="сначала подумаю", thought=True),
+                types.SimpleNamespace(text="готово", thought=False),
+            ])),
+        ])
+        msgs = memory.extract_messages(s)
+        assert msgs[1]["text"] == "готово"
+        assert msgs[1]["think"] == "сначала подумаю"
+
+    def test_tool_results_kept_for_cards(self):
+        """Результаты инструментов сохраняются в истории — по ним UI восстанавливает
+        кликабельные карточки вакансий при переключении диалогов."""
+        part = types.SimpleNamespace(
+            text=None, thought=False, function_call=None,
+            function_response=types.SimpleNamespace(
+                name="search_vacancies",
+                response={"found": 1, "vacancies": [{"vacancy_id": "42", "name": "X"}]}))
+        s = types.SimpleNamespace(events=[
+            _event("user", "найди вакансии", "1"),
+            types.SimpleNamespace(id="2", content=types.SimpleNamespace(
+                role="model", parts=[part, types.SimpleNamespace(text="нашёл", thought=False)])),
+        ])
+        msgs = memory.extract_messages(s)
+        assert msgs[1]["tools"][0]["name"] == "search_vacancies"
+        assert msgs[1]["tools"][0]["payload"]["vacancies"][0]["vacancy_id"] == "42"
+        assert msgs[1]["text"] == "нашёл"
+
+    def test_tool_events_with_user_role_join_agent_turn(self):
+        """ADK кладёт function_response в события с role='user' — они должны попадать
+        в ход агента (для карточек), а не превращаться в пустые реплики пользователя."""
+        def tool_event(ev_id, name, payload):
+            return types.SimpleNamespace(id=ev_id, content=types.SimpleNamespace(
+                role="user", parts=[types.SimpleNamespace(
+                    text=None, thought=False, function_call=None,
+                    function_response=types.SimpleNamespace(name=name, response=payload))]))
+        s = types.SimpleNamespace(events=[
+            _event("user", "найди вакансии", "1"),
+            _event("model", "сейчас поищу", "2"),
+            tool_event("3", "search_vacancies", {"vacancies": [{"vacancy_id": "7"}]}),
+            _event("model", "вот подборка", "4"),
+        ])
+        msgs = memory.extract_messages(s)
+        assert [m["role"] for m in msgs] == ["user", "agent"]
+        assert msgs[1]["text"] == "сейчас поищу\nвот подборка"
+        assert msgs[1]["tools"][0]["payload"]["vacancies"][0]["vacancy_id"] == "7"
+
     def test_dialog_title_truncates_long(self):
         t = memory.dialog_title("очень длинный вопрос про вакансии и зарплаты " * 10)
         assert len(t) <= 61 and t.endswith("…")

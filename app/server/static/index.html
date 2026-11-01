@@ -34,30 +34,47 @@
 <div id="app" class="app hidden">
   <header class="topbar">
     <div class="brand"><span class="logo">◎</span> Карьерный агент <span class="muted tiny">hh.ru</span></div>
-    <nav class="tabs" id="nav">
-      <button class="tab active" data-tab="chat">Чат</button>
-      <button class="tab" data-tab="vacancies">Вакансии</button>
-      <button class="tab" data-tab="salary">Зарплаты</button>
-      <button class="tab" data-tab="skills">Навыки</button>
-      <button class="tab" data-tab="letters">Письма</button>
-      <button class="tab" data-tab="tracker">Отклики</button>
-    </nav>
-    <div class="userbox">
-      <span id="user-email" class="muted tiny"></span>
-      <button class="btn-ghost tiny-btn" onclick="logout()">Выход</button>
+    <span id="user-email" class="account-email muted tiny"></span>
+    <button id="logout-btn" class="btn-ghost tiny-btn" onclick="logout()">Выход</button>
+    <div class="nav-wrap">
+      <button class="burger" id="nav-burger" onclick="toggleNav(event)"
+              aria-haspopup="true" aria-expanded="false" title="Меню разделов">
+        <span class="burger-icon">☰</span>
+        <span id="nav-current">Чат</span>
+        <span class="burger-caret">▾</span>
+      </button>
+      <nav class="tabs hidden" id="nav">
+        <button class="tab active" data-tab="chat">Чат</button>
+        <button class="tab" data-tab="vacancies">Вакансии</button>
+        <button class="tab" data-tab="salary">Зарплаты</button>
+        <button class="tab" data-tab="skills">Навыки</button>
+        <button class="tab" data-tab="letters">Письма</button>
+        <button class="tab" data-tab="tracker">Отклики</button>
+      </nav>
     </div>
   </header>
 
   <!-- ---------- ЧАТ ---------- -->
   <main id="view-chat" class="view chat-layout">
     <aside class="sessions">
+      <div class="sessions-head">
+        <span id="sessions-count">Диалоги</span>
+        <button class="s-btn" onclick="closeSessions()" title="Скрыть боковую панель">✕</button>
+      </div>
       <button class="btn-primary w100" onclick="newSession()">+ Новый диалог</button>
       <div id="session-list" class="session-list"></div>
     </aside>
+    <div class="sessions-backdrop" onclick="closeSessions()"></div>
     <section class="chat">
       <div class="chat-toolbar">
-        <button class="btn-ghost tiny-btn" id="sessions-toggle" onclick="toggleSessions()">☰ Диалоги</button>
-        <button class="btn-ghost tiny-btn" onclick="newSession()">+ Новый</button>
+        <button class="icon-btn" id="sessions-toggle" onclick="toggleSessions()"
+                title="Боковая панель (диалоги)" aria-label="Боковая панель">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="16" rx="2.5"></rect>
+            <line x1="9.5" y1="4" x2="9.5" y2="20"></line>
+          </svg>
+        </button>
         <span class="tiny muted chat-title" id="current-dialog-title"></span>
       </div>
       <div id="messages" class="messages">
@@ -67,10 +84,10 @@
             и зарплатную статистику, готовит письма и ведёт учёт откликов. Всё, что касается отправки,
             остаётся локально — копируете и отправляете сами.</p>
           <div class="chips" id="quick-prompts">
-            <button class="chip" onclick="quick(this)">Подбери вакансии C#/.NET в Ростове-на-Дону</button>
+            <button class="chip" onclick="quick(this)">Подбери вакансии под мои навыки</button>
             <button class="chip" onclick="quick(this)">Какие навыки мне стоит подтянуть?</button>
-            <button class="chip" onclick="quick(this)">Какая зарплата у C#-разработчика?</button>
-            <button class="chip" onclick="quick(this)">Напиши сопроводительное письмо на вакансию 137311444</button>
+            <button class="chip" onclick="quick(this)">Сколько платят в моей сфере?</button>
+            <button class="chip" onclick="quick(this)">Помоги составить сопроводительное письмо</button>
             <button class="chip" onclick="quick(this)">Покажи мои отклики</button>
           </div>
         </div>
@@ -78,9 +95,16 @@
       <div class="composer">
         <div id="pending" class="pending hidden"><span class="dot"></span><span class="dot"></span><span class="dot"></span> агент думает…</div>
         <form id="chat-form" onsubmit="return send(event)">
-          <textarea id="input" rows="1" placeholder="Ваш вопрос… (Enter — отправить, Shift+Enter — новая строка)"
+          <textarea id="input" rows="2" placeholder="Ваш вопрос… (Enter — отправить, Shift+Enter — новая строка)"
                     oninput="autogrow(this)" onkeydown="return onKey(event)"></textarea>
           <button type="submit" class="btn-primary" id="send-btn">Отправить</button>
+          <button type="button" class="btn-ghost hidden" id="stop-btn" onclick="stopGeneration()"
+                  title="Остановить генерацию">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <rect x="5" y="5" width="14" height="14" rx="3"></rect>
+            </svg>
+            Стоп
+          </button>
         </form>
         <div class="tiny muted">Темы: вакансии, навыки, зарплаты, письма, отклики.</div>
       </div>
@@ -150,14 +174,41 @@
     </div>
   </main>
 
-  <!-- ---------- НАВЫКИ ---------- -->
+  <!-- ---------- НАВЫКИ / МОЁ РЕЗЮМЕ ---------- -->
   <main id="view-skills" class="view hidden">
     <div class="panel">
-      <h2>Профиль соискателя</h2>
-      <p class="muted">Синтетические данные на основе резюме. Правки влияют на подбор, разрыв
-        в навыках и свежие вакансии. PDF-резюме можно разобрать офлайн:
-        <code>.venv\Scripts\python tools\parse_resume.py</code>.</p>
-      <div class="profile-form">
+      <h2>Моё резюме</h2>
+      <p class="muted">Резюме видно только вам — оно влияет на подбор вакансий, разрыв в навыках
+        и свежие вакансии. Данные хранятся локально, ничего никуда не отправляется.</p>
+
+      <div id="resume-empty" class="resume-empty hidden">
+        <div class="resume-choice">
+          <h3>📎 Прикрепить резюме</h3>
+          <p class="muted tiny">PDF или TXT — поля заполнятся автоматически, останется проверить
+            и сохранить.</p>
+          <div id="drop-zone" class="drop-zone">
+            <span class="dz-label">Перетащите файл резюме сюда</span>
+            <button type="button" class="btn-ghost"
+                    onclick="document.getElementById('resume-file').click()">Выбрать файл</button>
+            <input type="file" id="resume-file" accept=".pdf,.txt,.md" hidden>
+          </div>
+          <details class="paste-block">
+            <summary>или вставьте текст резюме</summary>
+            <textarea id="resume-text" rows="5" placeholder="Вставьте текст резюме сюда…"></textarea>
+            <button type="button" class="btn-ghost" onclick="parseResumeText()">Разобрать текст</button>
+          </details>
+        </div>
+        <div class="resume-choice">
+          <h3>✍ Заполнить форму</h3>
+          <p class="muted tiny">Должность, город, опыт, навыки и ожидания по зарплате —
+            за минуту.</p>
+          <button type="button" class="btn-primary" onclick="focusProfileForm()">Перейти к форме</button>
+        </div>
+      </div>
+
+      <div class="profile-form" id="profile-form">
+        <label class="field"><span>Имя (для подписи в письмах)</span>
+          <input id="p-name" placeholder="напр. Иван Петров"></label>
         <label class="field"><span>Должность</span>
           <input id="p-title" placeholder="напр. C#/.NET-разработчик"></label>
         <label class="field"><span>Город</span>
@@ -166,18 +217,33 @@
           <input id="p-exp" type="number" min="0" max="50" placeholder="напр. 3"></label>
         <label class="field"><span>Ожидаемая зарплата на руки, ₽</span>
           <input id="p-salary" type="number" min="0" placeholder="напр. 100000"></label>
-        <button class="btn-primary" onclick="saveProfile()">Сохранить профиль</button>
-        <span id="p-status" class="tiny muted"></span>
+        <div class="field w100"><span>Навыки</span>
+          <div class="skill-chips" id="p-skills"></div>
+          <div class="skill-add">
+            <input id="p-skill-input" placeholder="добавить навык и нажать Enter"
+                   onkeydown="return addSkillKey(event)">
+            <button type="button" class="btn-ghost" onclick="addSkill()">Добавить</button>
+          </div>
+        </div>
+        <label class="field w100"><span>О себе (кратко)</span>
+          <textarea id="p-summary" rows="3"
+                    placeholder="Пара предложений о себе — пригодится для сопроводительных писем"></textarea></label>
+        <div class="row-actions">
+          <button class="btn-primary" onclick="saveProfile()">Сохранить резюме</button>
+          <button class="btn-ghost" onclick="document.getElementById('resume-file').click()">Заменить файлом</button>
+          <span id="p-status" class="tiny muted"></span>
+        </div>
       </div>
+
       <h2>Разрыв в навыках</h2>
-      <p class="muted">Какие навыки рынка есть в вакансиях вашего стека, но отсутствуют в профиле.
+      <p class="muted">Какие навыки рынка есть в вакансиях вашего стека, но отсутствуют в резюме.
         Доля — % вакансий стека, где навык встречается.</p>
       <div class="filters">
         <select id="g-profile">
-          <option value="anastasia">anastasia (мой профиль)</option>
-          <option value="junior">junior (синтетический)</option>
-          <option value="mid">mid (синтетический)</option>
-          <option value="senior">senior (синтетический)</option>
+          <option value="">моё резюме</option>
+          <option value="junior">junior (пример)</option>
+          <option value="mid">mid (пример)</option>
+          <option value="senior">senior (пример)</option>
         </select>
         <button class="btn-primary" onclick="loadGap()">Показать</button>
       </div>

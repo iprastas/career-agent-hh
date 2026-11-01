@@ -140,7 +140,9 @@ class TestFollowUp:
 
 
 class TestProfileAPI:
-    def test_profile_get_and_put(self, tmp_path, monkeypatch):
+    def test_profile_isolated_per_user(self, tmp_path, monkeypatch):
+        """Каждый пользователь видит только своё резюме: новый аккаунт получает пустую
+        форму, резюме другого пользователя (anastasia) не подставляется и не изменяется."""
         from fastapi.testclient import TestClient
         from app.server import store
         import app.server.main as main
@@ -156,22 +158,59 @@ class TestProfileAPI:
         tok = client.post("/api/register", json={"email": "p@test.ru",
                                                  "password": "password123"}).json()["token"]
         h = {"Authorization": "Bearer " + tok}
+        # новый аккаунт: пустое СОБСТВЕННОЕ резюме (u1), а не профиль anastasia
         got = client.get("/api/profile", headers=h).json()
-        assert got["profile_id"] == "anastasia" and got["data"]["title"]
+        assert got["own"] is True and got["empty"] is True
+        assert got["profile_id"] == "u1"
+        assert got["data"]["title"] == "" and got["data"]["skills"] == []
+        # сохранение собственного резюме (форма)
         upd = client.put("/api/profile", headers=h,
-                         json={"profile_id": "anastasia", "title": "C# Senior",
+                         json={"name": "Иван", "title": "C# Senior",
                                "location": "Казань", "experience_years": 5,
-                               "salary_net": 150000})
+                               "salary_net": 150000,
+                               "skills": ["C#", ".NET", "docker", "c#"]})
         assert upd.status_code == 200
         assert upd.json()["data"]["title"] == "C# Senior"
-        saved = json.load(open(prof_dir / "anastasia.json", encoding="utf-8"))
+        assert upd.json()["empty"] is False
+        saved = json.load(open(prof_dir / "u1.json", encoding="utf-8"))
         assert saved["location"] == "Казань" and saved["preferences"]["salary_net"] == 150000
+        # дубль навыка складывается, порядок сохраняется
+        assert [s["name"] for s in saved["skills"]] == ["C#", ".NET", "docker"]
+        # чужое резюме изменить нельзя
         assert client.put("/api/profile", headers=h,
-                          json={"profile_id": "bad id!", "title": "x",
+                          json={"profile_id": "anastasia", "title": "x",
                                 "location": "", "experience_years": 0,
-                                "salary_net": 0}).status_code == 400
-        # выход из каталога невозможен: basename + проверка id -> «не найден», не запись
+                                "salary_net": 0}).status_code == 403
         assert client.put("/api/profile", headers=h,
                           json={"profile_id": "../evil", "title": "x",
                                 "location": "", "experience_years": 0,
-                                "salary_net": 0}).status_code == 404
+                                "salary_net": 0}).status_code == 403
+        # общий пример доступен только для чтения; выхода из каталога нет
+        ex = client.get("/api/profile?profile_id=anastasia", headers=h).json()
+        assert ex["own"] is False and ex["data"]["title"]
+        assert client.get("/api/profile?profile_id=no_such", headers=h).status_code == 404
+
+    def test_parse_resume_text_draft(self, tmp_path, monkeypatch):
+        """Текст резюме разбирается в черновик формы (без сохранения)."""
+        from fastapi.testclient import TestClient
+        from app.server import store
+        import app.server.main as main
+        monkeypatch.setattr(store, "USERS_DB", str(tmp_path / "users.db"))
+        monkeypatch.setattr(config, "DATA", str(tmp_path))
+        monkeypatch.setattr(config, "PROFILES_DIR", str(tmp_path / "profiles"))
+        monkeypatch.setattr(main, "_RUNNER", None)
+        client = TestClient(main.app)
+        tok = client.post("/api/register", json={"email": "p2@test.ru",
+                                                 "password": "password123"}).json()["token"]
+        h = {"Authorization": "Bearer " + tok}
+        text = ("Иван Петров — C#/.NET разработчик. Опыт 4 года. Стек: C#, ASP.NET, "
+                "PostgreSQL, Docker. Город: Ростов-на-Дону.")
+        r = client.post("/api/profile/parse", json={"text": text}, headers=h)
+        assert r.status_code == 200
+        d = r.json()["draft"]
+        assert "c#" in [s.lower() for s in d["skills"]]
+        assert d["location"] == "Ростов-на-Дону"
+        assert d["experience_years"] == 4
+        # слишком короткий текст — отказ
+        assert client.post("/api/profile/parse", json={"text": "мало"},
+                           headers=h).status_code == 400

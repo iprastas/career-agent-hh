@@ -1,0 +1,6109 @@
+{
+  "languages": [
+    "javascript",
+    "python"
+  ],
+  "stats": {
+    "total_files": 38,
+    "total_lines": 6339,
+    "parse_errors": 0,
+    "truncated": false,
+    "truncated_nodes": 0,
+    "supported_file_counts": {
+      "python": 37,
+      "javascript": 1
+    },
+    "languages_with_structural_queries": [
+      "c",
+      "cpp",
+      "csharp",
+      "elixir",
+      "gdscript",
+      "go",
+      "java",
+      "javascript",
+      "kotlin",
+      "lua",
+      "php",
+      "python",
+      "ruby",
+      "rust",
+      "scala",
+      "swift",
+      "tsx",
+      "typescript"
+    ],
+    "languages_with_custom_queries": [],
+    "module_only_file_counts": {},
+    "known_unsupported_file_counts": {},
+    "configured_but_unavailable_file_counts": {},
+    "custom_language_config_paths": []
+  },
+  "nodes": [
+    {
+      "id": "app",
+      "type": "Module",
+      "label": "app",
+      "path": "app/__init__.py",
+      "lines": 3,
+      "lang": "python"
+    },
+    {
+      "id": "app.agent",
+      "type": "Module",
+      "label": "agent",
+      "path": "app/agent.py",
+      "lines": 66,
+      "lang": "python"
+    },
+    {
+      "id": "app.agent.build_agent",
+      "type": "Function",
+      "label": "build_agent",
+      "path": "app/agent.py",
+      "parent": "app.agent",
+      "start_line": 35,
+      "end_line": 65
+    },
+    {
+      "id": "app.config",
+      "type": "Module",
+      "label": "config",
+      "path": "app/config.py",
+      "lines": 62,
+      "lang": "python"
+    },
+    {
+      "id": "app.config.load_env",
+      "type": "Function",
+      "label": "load_env",
+      "path": "app/config.py",
+      "parent": "app.config",
+      "start_line": 22,
+      "end_line": 37
+    },
+    {
+      "id": "app.config.apply_env",
+      "type": "Function",
+      "label": "apply_env",
+      "path": "app/config.py",
+      "parent": "app.config",
+      "start_line": 40,
+      "end_line": 49
+    },
+    {
+      "id": "app.config.model_name",
+      "type": "Function",
+      "label": "model_name",
+      "path": "app/config.py",
+      "parent": "app.config",
+      "start_line": 52,
+      "end_line": 61
+    },
+    {
+      "id": "app.evals",
+      "type": "Module",
+      "label": "evals",
+      "path": "app/evals.py",
+      "lines": 99,
+      "lang": "python"
+    },
+    {
+      "id": "app.evals.numbers_in",
+      "type": "Function",
+      "label": "numbers_in",
+      "path": "app/evals.py",
+      "parent": "app.evals",
+      "start_line": 28,
+      "end_line": 46
+    },
+    {
+      "id": "app.evals.is_refusal",
+      "type": "Function",
+      "label": "is_refusal",
+      "path": "app/evals.py",
+      "parent": "app.evals",
+      "start_line": 49,
+      "end_line": 51
+    },
+    {
+      "id": "app.evals.check_numbers",
+      "type": "Function",
+      "label": "check_numbers",
+      "path": "app/evals.py",
+      "parent": "app.evals",
+      "start_line": 54,
+      "end_line": 70
+    },
+    {
+      "id": "app.evals.check_tools",
+      "type": "Function",
+      "label": "check_tools",
+      "path": "app/evals.py",
+      "parent": "app.evals",
+      "start_line": 73,
+      "end_line": 77
+    },
+    {
+      "id": "app.evals.score_answer",
+      "type": "Function",
+      "label": "score_answer",
+      "path": "app/evals.py",
+      "parent": "app.evals",
+      "start_line": 80,
+      "end_line": 93
+    },
+    {
+      "id": "app.evals.load_benchmark",
+      "type": "Function",
+      "label": "load_benchmark",
+      "path": "app/evals.py",
+      "parent": "app.evals",
+      "start_line": 96,
+      "end_line": 98
+    },
+    {
+      "id": "app.event_protocol",
+      "type": "Module",
+      "label": "event_protocol",
+      "path": "app/event_protocol.py",
+      "lines": 96,
+      "lang": "python"
+    },
+    {
+      "id": "app.event_protocol._part_text",
+      "type": "Function",
+      "label": "_part_text",
+      "path": "app/event_protocol.py",
+      "parent": "app.event_protocol",
+      "start_line": 25,
+      "end_line": 26
+    },
+    {
+      "id": "app.event_protocol.stream_turn",
+      "type": "Function",
+      "label": "stream_turn",
+      "path": "app/event_protocol.py",
+      "parent": "app.event_protocol",
+      "start_line": 29,
+      "end_line": 95
+    },
+    {
+      "id": "app.guardrails",
+      "type": "Module",
+      "label": "guardrails",
+      "path": "app/guardrails.py",
+      "lines": 110,
+      "lang": "python"
+    },
+    {
+      "id": "app.guardrails.pre_filter",
+      "type": "Function",
+      "label": "pre_filter",
+      "path": "app/guardrails.py",
+      "parent": "app.guardrails",
+      "start_line": 60,
+      "end_line": 77
+    },
+    {
+      "id": "app.guardrails.refusal_for",
+      "type": "Function",
+      "label": "refusal_for",
+      "path": "app/guardrails.py",
+      "parent": "app.guardrails",
+      "start_line": 80,
+      "end_line": 83
+    },
+    {
+      "id": "app.guardrails._norm",
+      "type": "Function",
+      "label": "_norm",
+      "path": "app/guardrails.py",
+      "parent": "app.guardrails",
+      "start_line": 86,
+      "end_line": 87
+    },
+    {
+      "id": "app.guardrails._shingles",
+      "type": "Function",
+      "label": "_shingles",
+      "path": "app/guardrails.py",
+      "parent": "app.guardrails",
+      "start_line": 90,
+      "end_line": 92
+    },
+    {
+      "id": "app.guardrails.post_filter",
+      "type": "Function",
+      "label": "post_filter",
+      "path": "app/guardrails.py",
+      "parent": "app.guardrails",
+      "start_line": 95,
+      "end_line": 109
+    },
+    {
+      "id": "app.memory",
+      "type": "Module",
+      "label": "memory",
+      "path": "app/memory.py",
+      "lines": 144,
+      "lang": "python"
+    },
+    {
+      "id": "app.memory.extract_messages",
+      "type": "Function",
+      "label": "extract_messages",
+      "path": "app/memory.py",
+      "parent": "app.memory",
+      "start_line": 33,
+      "end_line": 43
+    },
+    {
+      "id": "app.memory.dialog_title",
+      "type": "Function",
+      "label": "dialog_title",
+      "path": "app/memory.py",
+      "parent": "app.memory",
+      "start_line": 46,
+      "end_line": 57
+    },
+    {
+      "id": "app.memory._fallback_summary",
+      "type": "Function",
+      "label": "_fallback_summary",
+      "path": "app/memory.py",
+      "parent": "app.memory",
+      "start_line": 60,
+      "end_line": 65
+    },
+    {
+      "id": "app.memory._llm_summarize",
+      "type": "Function",
+      "label": "_llm_summarize",
+      "path": "app/memory.py",
+      "parent": "app.memory",
+      "start_line": 68,
+      "end_line": 75
+    },
+    {
+      "id": "app.memory._delete_events",
+      "type": "Function",
+      "label": "_delete_events",
+      "path": "app/memory.py",
+      "parent": "app.memory",
+      "start_line": 78,
+      "end_line": 93
+    },
+    {
+      "id": "app.memory.compact_if_needed",
+      "type": "Function",
+      "label": "compact_if_needed",
+      "path": "app/memory.py",
+      "parent": "app.memory",
+      "start_line": 96,
+      "end_line": 143
+    },
+    {
+      "id": "app.runner_cli",
+      "type": "Module",
+      "label": "runner_cli",
+      "path": "app/runner_cli.py",
+      "lines": 73,
+      "lang": "python"
+    },
+    {
+      "id": "app.runner_cli.run",
+      "type": "Function",
+      "label": "run",
+      "path": "app/runner_cli.py",
+      "parent": "app.runner_cli",
+      "start_line": 17,
+      "end_line": 59
+    },
+    {
+      "id": "app.runner_cli.one_turn",
+      "type": "Function",
+      "label": "one_turn",
+      "path": "app/runner_cli.py",
+      "parent": "app.runner_cli",
+      "start_line": 25,
+      "end_line": 44
+    },
+    {
+      "id": "app.runner_cli.main",
+      "type": "Function",
+      "label": "main",
+      "path": "app/runner_cli.py",
+      "parent": "app.runner_cli",
+      "start_line": 62,
+      "end_line": 68
+    },
+    {
+      "id": "app.server",
+      "type": "Module",
+      "label": "server",
+      "path": "app/server/__init__.py",
+      "lines": 3,
+      "lang": "python"
+    },
+    {
+      "id": "app.server.main",
+      "type": "Module",
+      "label": "main",
+      "path": "app/server/main.py",
+      "lines": 503,
+      "lang": "python"
+    },
+    {
+      "id": "app.server.main._runner",
+      "type": "Function",
+      "label": "_runner",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 48,
+      "end_line": 57
+    },
+    {
+      "id": "app.server.main.AuthIn",
+      "type": "Class",
+      "label": "AuthIn",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 61,
+      "end_line": 63
+    },
+    {
+      "id": "app.server.main.ChatIn",
+      "type": "Class",
+      "label": "ChatIn",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 66,
+      "end_line": 68
+    },
+    {
+      "id": "app.server.main.TrackerIn",
+      "type": "Class",
+      "label": "TrackerIn",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 71,
+      "end_line": 75
+    },
+    {
+      "id": "app.server.main.ProfileIn",
+      "type": "Class",
+      "label": "ProfileIn",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 78,
+      "end_line": 83
+    },
+    {
+      "id": "app.server.main.SessionPatch",
+      "type": "Class",
+      "label": "SessionPatch",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 86,
+      "end_line": 87
+    },
+    {
+      "id": "app.server.main.LetterPatch",
+      "type": "Class",
+      "label": "LetterPatch",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 90,
+      "end_line": 92
+    },
+    {
+      "id": "app.server.main.current_user",
+      "type": "Function",
+      "label": "current_user",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 95,
+      "end_line": 101
+    },
+    {
+      "id": "app.server.main._uid",
+      "type": "Function",
+      "label": "_uid",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 104,
+      "end_line": 105
+    },
+    {
+      "id": "app.server.main._ctx",
+      "type": "Function",
+      "label": "_ctx",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 108,
+      "end_line": 110
+    },
+    {
+      "id": "app.server.main.health",
+      "type": "Function",
+      "label": "health",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 114,
+      "end_line": 115
+    },
+    {
+      "id": "app.server.main.register",
+      "type": "Function",
+      "label": "register",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 119,
+      "end_line": 123
+    },
+    {
+      "id": "app.server.main.login",
+      "type": "Function",
+      "label": "login",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 127,
+      "end_line": 131
+    },
+    {
+      "id": "app.server.main.logout",
+      "type": "Function",
+      "label": "logout",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 135,
+      "end_line": 137
+    },
+    {
+      "id": "app.server.main.me",
+      "type": "Function",
+      "label": "me",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 141,
+      "end_line": 142
+    },
+    {
+      "id": "app.server.main.create_session",
+      "type": "Function",
+      "label": "create_session",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 147,
+      "end_line": 149
+    },
+    {
+      "id": "app.server.main.list_sessions",
+      "type": "Function",
+      "label": "list_sessions",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 153,
+      "end_line": 184
+    },
+    {
+      "id": "app.server.main.history",
+      "type": "Function",
+      "label": "history",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 188,
+      "end_line": 198
+    },
+    {
+      "id": "app.server.main.rename_session",
+      "type": "Function",
+      "label": "rename_session",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 202,
+      "end_line": 212
+    },
+    {
+      "id": "app.server.main.delete_session",
+      "type": "Function",
+      "label": "delete_session",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 216,
+      "end_line": 227
+    },
+    {
+      "id": "app.server.main.chat_stream",
+      "type": "Function",
+      "label": "chat_stream",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 232,
+      "end_line": 286
+    },
+    {
+      "id": "app.server.main.sse",
+      "type": "Function",
+      "label": "sse",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 242,
+      "end_line": 243
+    },
+    {
+      "id": "app.server.main.gen",
+      "type": "Function",
+      "label": "gen",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 245,
+      "end_line": 281
+    },
+    {
+      "id": "app.server.main.vacancies",
+      "type": "Function",
+      "label": "vacancies",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 291,
+      "end_line": 294
+    },
+    {
+      "id": "app.server.main.vacancy_card",
+      "type": "Function",
+      "label": "vacancy_card",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 298,
+      "end_line": 303
+    },
+    {
+      "id": "app.server.main.match",
+      "type": "Function",
+      "label": "match",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 307,
+      "end_line": 308
+    },
+    {
+      "id": "app.server.main.gap",
+      "type": "Function",
+      "label": "gap",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 312,
+      "end_line": 313
+    },
+    {
+      "id": "app.server.main.stats",
+      "type": "Function",
+      "label": "stats",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 317,
+      "end_line": 319
+    },
+    {
+      "id": "app.server.main.stats_trend",
+      "type": "Function",
+      "label": "stats_trend",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 323,
+      "end_line": 324
+    },
+    {
+      "id": "app.server.main.semantic",
+      "type": "Function",
+      "label": "semantic",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 328,
+      "end_line": 329
+    },
+    {
+      "id": "app.server.main.similar",
+      "type": "Function",
+      "label": "similar",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 333,
+      "end_line": 334
+    },
+    {
+      "id": "app.server.main.fresh",
+      "type": "Function",
+      "label": "fresh",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 338,
+      "end_line": 339
+    },
+    {
+      "id": "app.server.main._profile_path",
+      "type": "Function",
+      "label": "_profile_path",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 343,
+      "end_line": 347
+    },
+    {
+      "id": "app.server.main.profile_get",
+      "type": "Function",
+      "label": "profile_get",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 351,
+      "end_line": 358
+    },
+    {
+      "id": "app.server.main.profile_put",
+      "type": "Function",
+      "label": "profile_put",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 362,
+      "end_line": 375
+    },
+    {
+      "id": "app.server.main._letter_path",
+      "type": "Function",
+      "label": "_letter_path",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 379,
+      "end_line": 384
+    },
+    {
+      "id": "app.server.main._letter_out",
+      "type": "Function",
+      "label": "_letter_out",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 387,
+      "end_line": 399
+    },
+    {
+      "id": "app.server.main.outbox_list",
+      "type": "Function",
+      "label": "outbox_list",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 411,
+      "end_line": 423
+    },
+    {
+      "id": "app.server.main.outbox_get",
+      "type": "Function",
+      "label": "outbox_get",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 427,
+      "end_line": 429
+    },
+    {
+      "id": "app.server.main.outbox_patch",
+      "type": "Function",
+      "label": "outbox_patch",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 433,
+      "end_line": 445
+    },
+    {
+      "id": "app.server.main.outbox_regenerate",
+      "type": "Function",
+      "label": "outbox_regenerate",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 449,
+      "end_line": 475
+    },
+    {
+      "id": "app.server.main.tracker_list",
+      "type": "Function",
+      "label": "tracker_list",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 480,
+      "end_line": 481
+    },
+    {
+      "id": "app.server.main.tracker_update",
+      "type": "Function",
+      "label": "tracker_update",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 485,
+      "end_line": 490
+    },
+    {
+      "id": "app.server.main.index",
+      "type": "Function",
+      "label": "index",
+      "path": "app/server/main.py",
+      "parent": "app.server.main",
+      "start_line": 498,
+      "end_line": 499
+    },
+    {
+      "id": "app.server.static.app",
+      "type": "Module",
+      "label": "app",
+      "path": "app/server/static/app.js",
+      "lines": 1152,
+      "lang": "javascript"
+    },
+    {
+      "id": "app.server.static.app.esc",
+      "type": "Function",
+      "label": "esc",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 16,
+      "end_line": 19
+    },
+    {
+      "id": "app.server.static.app.md",
+      "type": "Function",
+      "label": "md",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 23,
+      "end_line": 107
+    },
+    {
+      "id": "app.server.static.app.fmtMoney",
+      "type": "Function",
+      "label": "fmtMoney",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 109,
+      "end_line": 111
+    },
+    {
+      "id": "app.server.static.app.api",
+      "type": "Function",
+      "label": "api",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 113,
+      "end_line": 121
+    },
+    {
+      "id": "app.server.static.app.modalConfirm",
+      "type": "Function",
+      "label": "modalConfirm",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 124,
+      "end_line": 138
+    },
+    {
+      "id": "app.server.static.app.modalPrompt",
+      "type": "Function",
+      "label": "modalPrompt",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 140,
+      "end_line": 162
+    },
+    {
+      "id": "app.server.static.app.closeAllMenus",
+      "type": "Function",
+      "label": "closeAllMenus",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 165,
+      "end_line": 167
+    },
+    {
+      "id": "app.server.static.app.enhanceSelect",
+      "type": "Function",
+      "label": "enhanceSelect",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 173,
+      "end_line": 211
+    },
+    {
+      "id": "app.server.static.app.enhanceCombo",
+      "type": "Function",
+      "label": "enhanceCombo",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 226,
+      "end_line": 260
+    },
+    {
+      "id": "app.server.static.app.initEnhancements",
+      "type": "Function",
+      "label": "initEnhancements",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 262,
+      "end_line": 279
+    },
+    {
+      "id": "app.server.static.app.authMode",
+      "type": "Function",
+      "label": "authMode",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 283,
+      "end_line": 289
+    },
+    {
+      "id": "app.server.static.app.showAuth",
+      "type": "Function",
+      "label": "showAuth",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 290,
+      "end_line": 293
+    },
+    {
+      "id": "app.server.static.app.doAuth",
+      "type": "Function",
+      "label": "doAuth",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 294,
+      "end_line": 315
+    },
+    {
+      "id": "app.server.static.app.logout",
+      "type": "Function",
+      "label": "logout",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 316,
+      "end_line": 321
+    },
+    {
+      "id": "app.server.static.app.quick",
+      "type": "Function",
+      "label": "quick",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 340,
+      "end_line": 343
+    },
+    {
+      "id": "app.server.static.app.autogrow",
+      "type": "Function",
+      "label": "autogrow",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 344,
+      "end_line": 347
+    },
+    {
+      "id": "app.server.static.app.onKey",
+      "type": "Function",
+      "label": "onKey",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 348,
+      "end_line": 350
+    },
+    {
+      "id": "app.server.static.app.toggleSessions",
+      "type": "Function",
+      "label": "toggleSessions",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 353,
+      "end_line": 363
+    },
+    {
+      "id": "app.server.static.app.loadSessions",
+      "type": "Function",
+      "label": "loadSessions",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 365,
+      "end_line": 392
+    },
+    {
+      "id": "app.server.static.app.renameSessionAsk",
+      "type": "Function",
+      "label": "renameSessionAsk",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 394,
+      "end_line": 400
+    },
+    {
+      "id": "app.server.static.app.deleteSessionAsk",
+      "type": "Function",
+      "label": "deleteSessionAsk",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 402,
+      "end_line": 410
+    },
+    {
+      "id": "app.server.static.app.newSession",
+      "type": "Function",
+      "label": "newSession",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 412,
+      "end_line": 418
+    },
+    {
+      "id": "app.server.static.app.addWelcome",
+      "type": "Function",
+      "label": "addWelcome",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 420,
+      "end_line": 435
+    },
+    {
+      "id": "app.server.static.app.openSession",
+      "type": "Function",
+      "label": "openSession",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 437,
+      "end_line": 449
+    },
+    {
+      "id": "app.server.static.app.addUserMsg",
+      "type": "Function",
+      "label": "addUserMsg",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 451,
+      "end_line": 457
+    },
+    {
+      "id": "app.server.static.app.newTurn",
+      "type": "Function",
+      "label": "newTurn",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 460,
+      "end_line": 543
+    },
+    {
+      "id": "app.server.static.app.addThink",
+      "type": "Function",
+      "label": "addThink",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 475,
+      "end_line": 484
+    },
+    {
+      "id": "app.server.static.app.addToolCall",
+      "type": "Function",
+      "label": "addToolCall",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 485,
+      "end_line": 493
+    },
+    {
+      "id": "app.server.static.app.addToolResult",
+      "type": "Function",
+      "label": "addToolResult",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 494,
+      "end_line": 511
+    },
+    {
+      "id": "app.server.static.app.addStatus",
+      "type": "Function",
+      "label": "addStatus",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 512,
+      "end_line": 518
+    },
+    {
+      "id": "app.server.static.app.addDelta",
+      "type": "Function",
+      "label": "addDelta",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 519,
+      "end_line": 524
+    },
+    {
+      "id": "app.server.static.app.setAnswer",
+      "type": "Function",
+      "label": "setAnswer",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 525,
+      "end_line": 530
+    },
+    {
+      "id": "app.server.static.app.setRefusal",
+      "type": "Function",
+      "label": "setRefusal",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 531,
+      "end_line": 534
+    },
+    {
+      "id": "app.server.static.app.finish",
+      "type": "Function",
+      "label": "finish",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 535,
+      "end_line": 541
+    },
+    {
+      "id": "app.server.static.app.scrollChat",
+      "type": "Function",
+      "label": "scrollChat",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 545,
+      "end_line": 548
+    },
+    {
+      "id": "app.server.static.app.renderCards",
+      "type": "Function",
+      "label": "renderCards",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 551,
+      "end_line": 584
+    },
+    {
+      "id": "app.server.static.app.loadVacancyDetails",
+      "type": "Function",
+      "label": "loadVacancyDetails",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 594,
+      "end_line": 615
+    },
+    {
+      "id": "app.server.static.app.vacancyCard",
+      "type": "Function",
+      "label": "vacancyCard",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 617,
+      "end_line": 652
+    },
+    {
+      "id": "app.server.static.app.send",
+      "type": "Function",
+      "label": "send",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 655,
+      "end_line": 701
+    },
+    {
+      "id": "app.server.static.app.handleFrame",
+      "type": "Function",
+      "label": "handleFrame",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 703,
+      "end_line": 726
+    },
+    {
+      "id": "app.server.static.app.loadVacancies",
+      "type": "Function",
+      "label": "loadVacancies",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 729,
+      "end_line": 756
+    },
+    {
+      "id": "app.server.static.app.loadFresh",
+      "type": "Function",
+      "label": "loadFresh",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 758,
+      "end_line": 766
+    },
+    {
+      "id": "app.server.static.app.similarTo",
+      "type": "Function",
+      "label": "similarTo",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 768,
+      "end_line": 782
+    },
+    {
+      "id": "app.server.static.app.loadMatch",
+      "type": "Function",
+      "label": "loadMatch",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 784,
+      "end_line": 790
+    },
+    {
+      "id": "app.server.static.app.loadSalary",
+      "type": "Function",
+      "label": "loadSalary",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 793,
+      "end_line": 817
+    },
+    {
+      "id": "app.server.static.app.rangeBar",
+      "type": "Function",
+      "label": "rangeBar",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 819,
+      "end_line": 824
+    },
+    {
+      "id": "app.server.static.app.salaryCompare",
+      "type": "Function",
+      "label": "salaryCompare",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 826,
+      "end_line": 841
+    },
+    {
+      "id": "app.server.static.app.loadTrend",
+      "type": "Function",
+      "label": "loadTrend",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 843,
+      "end_line": 866
+    },
+    {
+      "id": "app.server.static.app.loadProfile",
+      "type": "Function",
+      "label": "loadProfile",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 869,
+      "end_line": 881
+    },
+    {
+      "id": "app.server.static.app.saveProfile",
+      "type": "Function",
+      "label": "saveProfile",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 883,
+      "end_line": 899
+    },
+    {
+      "id": "app.server.static.app.loadGap",
+      "type": "Function",
+      "label": "loadGap",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 902,
+      "end_line": 918
+    },
+    {
+      "id": "app.server.static.app.badge",
+      "type": "Function",
+      "label": "badge",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 919,
+      "end_line": 924
+    },
+    {
+      "id": "app.server.static.app.loadLetters",
+      "type": "Function",
+      "label": "loadLetters",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 927,
+      "end_line": 936
+    },
+    {
+      "id": "app.server.static.app.letterItem",
+      "type": "Function",
+      "label": "letterItem",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 938,
+      "end_line": 1023
+    },
+    {
+      "id": "app.server.static.app.trackerLookup",
+      "type": "Function",
+      "label": "trackerLookup",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 1027,
+      "end_line": 1055
+    },
+    {
+      "id": "app.server.static.app.loadTracker",
+      "type": "Function",
+      "label": "loadTracker",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 1057,
+      "end_line": 1091
+    },
+    {
+      "id": "app.server.static.app.exportTrackerCsv",
+      "type": "Function",
+      "label": "exportTrackerCsv",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 1093,
+      "end_line": 1106
+    },
+    {
+      "id": "app.server.static.app.addTracker",
+      "type": "Function",
+      "label": "addTracker",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 1108,
+      "end_line": 1124
+    },
+    {
+      "id": "app.server.static.app.updateStatus",
+      "type": "Function",
+      "label": "updateStatus",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 1125,
+      "end_line": 1131
+    },
+    {
+      "id": "app.server.static.app.startApp",
+      "type": "Function",
+      "label": "startApp",
+      "path": "app/server/static/app.js",
+      "parent": "app.server.static.app",
+      "start_line": 1134,
+      "end_line": 1148
+    },
+    {
+      "id": "app.server.store",
+      "type": "Module",
+      "label": "store",
+      "path": "app/server/store.py",
+      "lines": 160,
+      "lang": "python"
+    },
+    {
+      "id": "app.server.store._con",
+      "type": "Function",
+      "label": "_con",
+      "path": "app/server/store.py",
+      "parent": "app.server.store",
+      "start_line": 47,
+      "end_line": 51
+    },
+    {
+      "id": "app.server.store._hash_pw",
+      "type": "Function",
+      "label": "_hash_pw",
+      "path": "app/server/store.py",
+      "parent": "app.server.store",
+      "start_line": 54,
+      "end_line": 57
+    },
+    {
+      "id": "app.server.store.register",
+      "type": "Function",
+      "label": "register",
+      "path": "app/server/store.py",
+      "parent": "app.server.store",
+      "start_line": 60,
+      "end_line": 78
+    },
+    {
+      "id": "app.server.store.login",
+      "type": "Function",
+      "label": "login",
+      "path": "app/server/store.py",
+      "parent": "app.server.store",
+      "start_line": 81,
+      "end_line": 88
+    },
+    {
+      "id": "app.server.store._issue",
+      "type": "Function",
+      "label": "_issue",
+      "path": "app/server/store.py",
+      "parent": "app.server.store",
+      "start_line": 91,
+      "end_line": 99
+    },
+    {
+      "id": "app.server.store.user_by_token",
+      "type": "Function",
+      "label": "user_by_token",
+      "path": "app/server/store.py",
+      "parent": "app.server.store",
+      "start_line": 102,
+      "end_line": 118
+    },
+    {
+      "id": "app.server.store.logout",
+      "type": "Function",
+      "label": "logout",
+      "path": "app/server/store.py",
+      "parent": "app.server.store",
+      "start_line": 121,
+      "end_line": 128
+    },
+    {
+      "id": "app.server.store.set_session_title",
+      "type": "Function",
+      "label": "set_session_title",
+      "path": "app/server/store.py",
+      "parent": "app.server.store",
+      "start_line": 132,
+      "end_line": 144
+    },
+    {
+      "id": "app.server.store.get_session_titles",
+      "type": "Function",
+      "label": "get_session_titles",
+      "path": "app/server/store.py",
+      "parent": "app.server.store",
+      "start_line": 146,
+      "end_line": 152
+    },
+    {
+      "id": "app.server.store.delete_session_meta",
+      "type": "Function",
+      "label": "delete_session_meta",
+      "path": "app/server/store.py",
+      "parent": "app.server.store",
+      "start_line": 154,
+      "end_line": 159
+    },
+    {
+      "id": "app.system_prompt",
+      "type": "Module",
+      "label": "system_prompt",
+      "path": "app/system_prompt.py",
+      "lines": 109,
+      "lang": "python"
+    },
+    {
+      "id": "app.system_prompt.profile_summary",
+      "type": "Function",
+      "label": "profile_summary",
+      "path": "app/system_prompt.py",
+      "parent": "app.system_prompt",
+      "start_line": 45,
+      "end_line": 61
+    },
+    {
+      "id": "app.system_prompt.build_instruction",
+      "type": "Function",
+      "label": "build_instruction",
+      "path": "app/system_prompt.py",
+      "parent": "app.system_prompt",
+      "start_line": 64,
+      "end_line": 65
+    },
+    {
+      "id": "app.system_prompt.all_instructions",
+      "type": "Function",
+      "label": "all_instructions",
+      "path": "app/system_prompt.py",
+      "parent": "app.system_prompt",
+      "start_line": 105,
+      "end_line": 108
+    },
+    {
+      "id": "app.tools",
+      "type": "Module",
+      "label": "tools",
+      "path": "app/tools/__init__.py",
+      "lines": 24,
+      "lang": "python"
+    },
+    {
+      "id": "app.tools.fresh",
+      "type": "Module",
+      "label": "fresh",
+      "path": "app/tools/fresh.py",
+      "lines": 72,
+      "lang": "python"
+    },
+    {
+      "id": "app.tools.fresh.fresh_vacancies",
+      "type": "Function",
+      "label": "fresh_vacancies",
+      "path": "app/tools/fresh.py",
+      "parent": "app.tools.fresh",
+      "start_line": 17,
+      "end_line": 71
+    },
+    {
+      "id": "app.tools.letters",
+      "type": "Module",
+      "label": "letters",
+      "path": "app/tools/letters.py",
+      "lines": 227,
+      "lang": "python"
+    },
+    {
+      "id": "app.tools.letters._uid",
+      "type": "Function",
+      "label": "_uid",
+      "path": "app/tools/letters.py",
+      "parent": "app.tools.letters",
+      "start_line": 21,
+      "end_line": 27
+    },
+    {
+      "id": "app.tools.letters.make_letter_title",
+      "type": "Function",
+      "label": "make_letter_title",
+      "path": "app/tools/letters.py",
+      "parent": "app.tools.letters",
+      "start_line": 41,
+      "end_line": 45
+    },
+    {
+      "id": "app.tools.letters.parse_letter",
+      "type": "Function",
+      "label": "parse_letter",
+      "path": "app/tools/letters.py",
+      "parent": "app.tools.letters",
+      "start_line": 48,
+      "end_line": 61
+    },
+    {
+      "id": "app.tools.letters.render_letter",
+      "type": "Function",
+      "label": "render_letter",
+      "path": "app/tools/letters.py",
+      "parent": "app.tools.letters",
+      "start_line": 64,
+      "end_line": 71
+    },
+    {
+      "id": "app.tools.letters.draft_letter",
+      "type": "Function",
+      "label": "draft_letter",
+      "path": "app/tools/letters.py",
+      "parent": "app.tools.letters",
+      "start_line": 74,
+      "end_line": 120
+    },
+    {
+      "id": "app.tools.letters.parse_follow_up",
+      "type": "Function",
+      "label": "parse_follow_up",
+      "path": "app/tools/letters.py",
+      "parent": "app.tools.letters",
+      "start_line": 123,
+      "end_line": 145
+    },
+    {
+      "id": "app.tools.letters._tracker_con",
+      "type": "Function",
+      "label": "_tracker_con",
+      "path": "app/tools/letters.py",
+      "parent": "app.tools.letters",
+      "start_line": 158,
+      "end_line": 175
+    },
+    {
+      "id": "app.tools.letters.track_response",
+      "type": "Function",
+      "label": "track_response",
+      "path": "app/tools/letters.py",
+      "parent": "app.tools.letters",
+      "start_line": 178,
+      "end_line": 226
+    },
+    {
+      "id": "app.tools.match",
+      "type": "Module",
+      "label": "match",
+      "path": "app/tools/match.py",
+      "lines": 146,
+      "lang": "python"
+    },
+    {
+      "id": "app.tools.match._con_ro",
+      "type": "Function",
+      "label": "_con_ro",
+      "path": "app/tools/match.py",
+      "parent": "app.tools.match",
+      "start_line": 19,
+      "end_line": 23
+    },
+    {
+      "id": "app.tools.match._load_profile",
+      "type": "Function",
+      "label": "_load_profile",
+      "path": "app/tools/match.py",
+      "parent": "app.tools.match",
+      "start_line": 26,
+      "end_line": 31
+    },
+    {
+      "id": "app.tools.match._candidates",
+      "type": "Function",
+      "label": "_candidates",
+      "path": "app/tools/match.py",
+      "parent": "app.tools.match",
+      "start_line": 34,
+      "end_line": 51
+    },
+    {
+      "id": "app.tools.match.match_profile",
+      "type": "Function",
+      "label": "match_profile",
+      "path": "app/tools/match.py",
+      "parent": "app.tools.match",
+      "start_line": 54,
+      "end_line": 98
+    },
+    {
+      "id": "app.tools.match.skill_gap",
+      "type": "Function",
+      "label": "skill_gap",
+      "path": "app/tools/match.py",
+      "parent": "app.tools.match",
+      "start_line": 101,
+      "end_line": 145
+    },
+    {
+      "id": "app.tools.salary",
+      "type": "Module",
+      "label": "salary",
+      "path": "app/tools/salary.py",
+      "lines": 141,
+      "lang": "python"
+    },
+    {
+      "id": "app.tools.salary._con_ro",
+      "type": "Function",
+      "label": "_con_ro",
+      "path": "app/tools/salary.py",
+      "parent": "app.tools.salary",
+      "start_line": 14,
+      "end_line": 18
+    },
+    {
+      "id": "app.tools.salary._quantiles",
+      "type": "Function",
+      "label": "_quantiles",
+      "path": "app/tools/salary.py",
+      "parent": "app.tools.salary",
+      "start_line": 21,
+      "end_line": 24
+    },
+    {
+      "id": "app.tools.salary.salary_stats",
+      "type": "Function",
+      "label": "salary_stats",
+      "path": "app/tools/salary.py",
+      "parent": "app.tools.salary",
+      "start_line": 27,
+      "end_line": 85
+    },
+    {
+      "id": "app.tools.salary.salary_trend",
+      "type": "Function",
+      "label": "salary_trend",
+      "path": "app/tools/salary.py",
+      "parent": "app.tools.salary",
+      "start_line": 88,
+      "end_line": 140
+    },
+    {
+      "id": "app.tools.search",
+      "type": "Module",
+      "label": "search",
+      "path": "app/tools/search.py",
+      "lines": 193,
+      "lang": "python"
+    },
+    {
+      "id": "app.tools.search._con_ro",
+      "type": "Function",
+      "label": "_con_ro",
+      "path": "app/tools/search.py",
+      "parent": "app.tools.search",
+      "start_line": 30,
+      "end_line": 34
+    },
+    {
+      "id": "app.tools.search._fts_query",
+      "type": "Function",
+      "label": "_fts_query",
+      "path": "app/tools/search.py",
+      "parent": "app.tools.search",
+      "start_line": 37,
+      "end_line": 40
+    },
+    {
+      "id": "app.tools.search._net",
+      "type": "Function",
+      "label": "_net",
+      "path": "app/tools/search.py",
+      "parent": "app.tools.search",
+      "start_line": 43,
+      "end_line": 46
+    },
+    {
+      "id": "app.tools.search._row_to_card",
+      "type": "Function",
+      "label": "_row_to_card",
+      "path": "app/tools/search.py",
+      "parent": "app.tools.search",
+      "start_line": 49,
+      "end_line": 61
+    },
+    {
+      "id": "app.tools.search.search_vacancies",
+      "type": "Function",
+      "label": "search_vacancies",
+      "path": "app/tools/search.py",
+      "parent": "app.tools.search",
+      "start_line": 64,
+      "end_line": 160
+    },
+    {
+      "id": "app.tools.search.run",
+      "type": "Function",
+      "label": "run",
+      "path": "app/tools/search.py",
+      "parent": "app.tools.search",
+      "start_line": 99,
+      "end_line": 112
+    },
+    {
+      "id": "app.tools.search.rerank",
+      "type": "Function",
+      "label": "rerank",
+      "path": "app/tools/search.py",
+      "parent": "app.tools.search",
+      "start_line": 114,
+      "end_line": 123
+    },
+    {
+      "id": "app.tools.search.key",
+      "type": "Function",
+      "label": "key",
+      "path": "app/tools/search.py",
+      "parent": "app.tools.search",
+      "start_line": 117,
+      "end_line": 122
+    },
+    {
+      "id": "app.tools.search.vacancy_details",
+      "type": "Function",
+      "label": "vacancy_details",
+      "path": "app/tools/search.py",
+      "parent": "app.tools.search",
+      "start_line": 163,
+      "end_line": 192
+    },
+    {
+      "id": "app.tools.semantic",
+      "type": "Module",
+      "label": "semantic",
+      "path": "app/tools/semantic.py",
+      "lines": 159,
+      "lang": "python"
+    },
+    {
+      "id": "app.tools.semantic._paths",
+      "type": "Function",
+      "label": "_paths",
+      "path": "app/tools/semantic.py",
+      "parent": "app.tools.semantic",
+      "start_line": 23,
+      "end_line": 26
+    },
+    {
+      "id": "app.tools.semantic._index",
+      "type": "Function",
+      "label": "_index",
+      "path": "app/tools/semantic.py",
+      "parent": "app.tools.semantic",
+      "start_line": 29,
+      "end_line": 46
+    },
+    {
+      "id": "app.tools.semantic._sims",
+      "type": "Function",
+      "label": "_sims",
+      "path": "app/tools/semantic.py",
+      "parent": "app.tools.semantic",
+      "start_line": 49,
+      "end_line": 60
+    },
+    {
+      "id": "app.tools.semantic._cards",
+      "type": "Function",
+      "label": "_cards",
+      "path": "app/tools/semantic.py",
+      "parent": "app.tools.semantic",
+      "start_line": 63,
+      "end_line": 78
+    },
+    {
+      "id": "app.tools.semantic._filter_city",
+      "type": "Function",
+      "label": "_filter_city",
+      "path": "app/tools/semantic.py",
+      "parent": "app.tools.semantic",
+      "start_line": 81,
+      "end_line": 92
+    },
+    {
+      "id": "app.tools.semantic.semantic_search",
+      "type": "Function",
+      "label": "semantic_search",
+      "path": "app/tools/semantic.py",
+      "parent": "app.tools.semantic",
+      "start_line": 95,
+      "end_line": 125
+    },
+    {
+      "id": "app.tools.semantic.similar_vacancies",
+      "type": "Function",
+      "label": "similar_vacancies",
+      "path": "app/tools/semantic.py",
+      "parent": "app.tools.semantic",
+      "start_line": 128,
+      "end_line": 158
+    },
+    {
+      "id": "app.topic_gate",
+      "type": "Module",
+      "label": "topic_gate",
+      "path": "app/topic_gate.py",
+      "lines": 118,
+      "lang": "python"
+    },
+    {
+      "id": "app.topic_gate._centroid",
+      "type": "Function",
+      "label": "_centroid",
+      "path": "app/topic_gate.py",
+      "parent": "app.topic_gate",
+      "start_line": 91,
+      "end_line": 94
+    },
+    {
+      "id": "app.topic_gate.classify",
+      "type": "Function",
+      "label": "classify",
+      "path": "app/topic_gate.py",
+      "parent": "app.topic_gate",
+      "start_line": 101,
+      "end_line": 112
+    },
+    {
+      "id": "app.topic_gate.is_offtopic",
+      "type": "Function",
+      "label": "is_offtopic",
+      "path": "app/topic_gate.py",
+      "parent": "app.topic_gate",
+      "start_line": 115,
+      "end_line": 117
+    },
+    {
+      "id": "tests.conftest",
+      "type": "Module",
+      "label": "conftest",
+      "path": "tests/conftest.py",
+      "lines": 6,
+      "lang": "python"
+    },
+    {
+      "id": "tests.test_guardrails",
+      "type": "Module",
+      "label": "test_guardrails",
+      "path": "tests/test_guardrails.py",
+      "lines": 66,
+      "lang": "python"
+    },
+    {
+      "id": "tests.test_guardrails.TestPreFilter",
+      "type": "Class",
+      "label": "TestPreFilter",
+      "path": "tests/test_guardrails.py",
+      "parent": "tests.test_guardrails",
+      "start_line": 9,
+      "end_line": 40
+    },
+    {
+      "id": "tests.test_guardrails.TestPreFilter.test_valid_domain_question",
+      "type": "Function",
+      "label": "test_valid_domain_question",
+      "path": "tests/test_guardrails.py",
+      "parent": "tests.test_guardrails.TestPreFilter",
+      "start_line": 10,
+      "end_line": 12
+    },
+    {
+      "id": "tests.test_guardrails.TestPreFilter.test_injection_ru",
+      "type": "Function",
+      "label": "test_injection_ru",
+      "path": "tests/test_guardrails.py",
+      "parent": "tests.test_guardrails.TestPreFilter",
+      "start_line": 14,
+      "end_line": 16
+    },
+    {
+      "id": "tests.test_guardrails.TestPreFilter.test_injection_en",
+      "type": "Function",
+      "label": "test_injection_en",
+      "path": "tests/test_guardrails.py",
+      "parent": "tests.test_guardrails.TestPreFilter",
+      "start_line": 18,
+      "end_line": 20
+    },
+    {
+      "id": "tests.test_guardrails.TestPreFilter.test_injection_prompt_dump",
+      "type": "Function",
+      "label": "test_injection_prompt_dump",
+      "path": "tests/test_guardrails.py",
+      "parent": "tests.test_guardrails.TestPreFilter",
+      "start_line": 22,
+      "end_line": 24
+    },
+    {
+      "id": "tests.test_guardrails.TestPreFilter.test_injection_dan",
+      "type": "Function",
+      "label": "test_injection_dan",
+      "path": "tests/test_guardrails.py",
+      "parent": "tests.test_guardrails.TestPreFilter",
+      "start_line": 26,
+      "end_line": 28
+    },
+    {
+      "id": "tests.test_guardrails.TestPreFilter.test_too_long",
+      "type": "Function",
+      "label": "test_too_long",
+      "path": "tests/test_guardrails.py",
+      "parent": "tests.test_guardrails.TestPreFilter",
+      "start_line": 30,
+      "end_line": 32
+    },
+    {
+      "id": "tests.test_guardrails.TestPreFilter.test_empty",
+      "type": "Function",
+      "label": "test_empty",
+      "path": "tests/test_guardrails.py",
+      "parent": "tests.test_guardrails.TestPreFilter",
+      "start_line": 34,
+      "end_line": 36
+    },
+    {
+      "id": "tests.test_guardrails.TestPreFilter.test_refusal_constants",
+      "type": "Function",
+      "label": "test_refusal_constants",
+      "path": "tests/test_guardrails.py",
+      "parent": "tests.test_guardrails.TestPreFilter",
+      "start_line": 38,
+      "end_line": 40
+    },
+    {
+      "id": "tests.test_guardrails.TestPostFilter",
+      "type": "Class",
+      "label": "TestPostFilter",
+      "path": "tests/test_guardrails.py",
+      "parent": "tests.test_guardrails",
+      "start_line": 43,
+      "end_line": 65
+    },
+    {
+      "id": "tests.test_guardrails.TestPostFilter.test_normal_answer_passes",
+      "type": "Function",
+      "label": "test_normal_answer_passes",
+      "path": "tests/test_guardrails.py",
+      "parent": "tests.test_guardrails.TestPostFilter",
+      "start_line": 44,
+      "end_line": 46
+    },
+    {
+      "id": "tests.test_guardrails.TestPostFilter.test_correct_refusal_passes",
+      "type": "Function",
+      "label": "test_correct_refusal_passes",
+      "path": "tests/test_guardrails.py",
+      "parent": "tests.test_guardrails.TestPostFilter",
+      "start_line": 48,
+      "end_line": 51
+    },
+    {
+      "id": "tests.test_guardrails.TestPostFilter.test_prompt_leak_blocked",
+      "type": "Function",
+      "label": "test_prompt_leak_blocked",
+      "path": "tests/test_guardrails.py",
+      "parent": "tests.test_guardrails.TestPostFilter",
+      "start_line": 53,
+      "end_line": 57
+    },
+    {
+      "id": "tests.test_guardrails.TestPostFilter.test_forbidden_send_claim",
+      "type": "Function",
+      "label": "test_forbidden_send_claim",
+      "path": "tests/test_guardrails.py",
+      "parent": "tests.test_guardrails.TestPostFilter",
+      "start_line": 59,
+      "end_line": 61
+    },
+    {
+      "id": "tests.test_guardrails.TestPostFilter.test_forbidden_send_claim_en",
+      "type": "Function",
+      "label": "test_forbidden_send_claim_en",
+      "path": "tests/test_guardrails.py",
+      "parent": "tests.test_guardrails.TestPostFilter",
+      "start_line": 63,
+      "end_line": 65
+    },
+    {
+      "id": "tests.test_memory",
+      "type": "Module",
+      "label": "test_memory",
+      "path": "tests/test_memory.py",
+      "lines": 95,
+      "lang": "python"
+    },
+    {
+      "id": "tests.test_memory._event",
+      "type": "Function",
+      "label": "_event",
+      "path": "tests/test_memory.py",
+      "parent": "tests.test_memory",
+      "start_line": 9,
+      "end_line": 13
+    },
+    {
+      "id": "tests.test_memory.TestExtractAndTitle",
+      "type": "Class",
+      "label": "TestExtractAndTitle",
+      "path": "tests/test_memory.py",
+      "parent": "tests.test_memory",
+      "start_line": 16,
+      "end_line": 35
+    },
+    {
+      "id": "tests.test_memory.TestExtractAndTitle.test_extract_messages",
+      "type": "Function",
+      "label": "test_extract_messages",
+      "path": "tests/test_memory.py",
+      "parent": "tests.test_memory.TestExtractAndTitle",
+      "start_line": 17,
+      "end_line": 26
+    },
+    {
+      "id": "tests.test_memory.TestExtractAndTitle.test_dialog_title_first_sentence",
+      "type": "Function",
+      "label": "test_dialog_title_first_sentence",
+      "path": "tests/test_memory.py",
+      "parent": "tests.test_memory.TestExtractAndTitle",
+      "start_line": 28,
+      "end_line": 31
+    },
+    {
+      "id": "tests.test_memory.TestExtractAndTitle.test_dialog_title_truncates_long",
+      "type": "Function",
+      "label": "test_dialog_title_truncates_long",
+      "path": "tests/test_memory.py",
+      "parent": "tests.test_memory.TestExtractAndTitle",
+      "start_line": 33,
+      "end_line": 35
+    },
+    {
+      "id": "tests.test_memory.TestCompaction",
+      "type": "Class",
+      "label": "TestCompaction",
+      "path": "tests/test_memory.py",
+      "parent": "tests.test_memory",
+      "start_line": 38,
+      "end_line": 94
+    },
+    {
+      "id": "tests.test_memory.TestCompaction.test_fallback_summary",
+      "type": "Function",
+      "label": "test_fallback_summary",
+      "path": "tests/test_memory.py",
+      "parent": "tests.test_memory.TestCompaction",
+      "start_line": 39,
+      "end_line": 42
+    },
+    {
+      "id": "tests.test_memory.TestCompaction.test_compact_replaces_old_events_with_summary",
+      "type": "Function",
+      "label": "test_compact_replaces_old_events_with_summary",
+      "path": "tests/test_memory.py",
+      "parent": "tests.test_memory.TestCompaction",
+      "start_line": 44,
+      "end_line": 78
+    },
+    {
+      "id": "tests.test_memory.TestCompaction.fake_summarize",
+      "type": "Function",
+      "label": "fake_summarize",
+      "path": "tests/test_memory.py",
+      "parent": "tests.test_memory.TestCompaction",
+      "start_line": 50,
+      "end_line": 51
+    },
+    {
+      "id": "tests.test_memory.TestCompaction.run",
+      "type": "Function",
+      "label": "run",
+      "path": "tests/test_memory.py",
+      "parent": "tests.test_memory.TestCompaction",
+      "start_line": 59,
+      "end_line": 76
+    },
+    {
+      "id": "tests.test_memory.TestCompaction.test_compact_skips_short_history",
+      "type": "Function",
+      "label": "test_compact_skips_short_history",
+      "path": "tests/test_memory.py",
+      "parent": "tests.test_memory.TestCompaction",
+      "start_line": 80,
+      "end_line": 94
+    },
+    {
+      "id": "tests.test_memory.TestCompaction.run",
+      "type": "Function",
+      "label": "run",
+      "path": "tests/test_memory.py",
+      "parent": "tests.test_memory.TestCompaction",
+      "start_line": 90,
+      "end_line": 92
+    },
+    {
+      "id": "tests.test_new_features",
+      "type": "Module",
+      "label": "test_new_features",
+      "path": "tests/test_new_features.py",
+      "lines": 178,
+      "lang": "python"
+    },
+    {
+      "id": "tests.test_new_features.TestTopicGate",
+      "type": "Class",
+      "label": "TestTopicGate",
+      "path": "tests/test_new_features.py",
+      "parent": "tests.test_new_features",
+      "start_line": 21,
+      "end_line": 49
+    },
+    {
+      "id": "tests.test_new_features.TestTopicGate.test_career_questions_pass",
+      "type": "Function",
+      "label": "test_career_questions_pass",
+      "path": "tests/test_new_features.py",
+      "parent": "tests.test_new_features.TestTopicGate",
+      "start_line": 22,
+      "end_line": 30
+    },
+    {
+      "id": "tests.test_new_features.TestTopicGate.test_offtopic_blocked",
+      "type": "Function",
+      "label": "test_offtopic_blocked",
+      "path": "tests/test_new_features.py",
+      "parent": "tests.test_new_features.TestTopicGate",
+      "start_line": 32,
+      "end_line": 39
+    },
+    {
+      "id": "tests.test_new_features.TestTopicGate.test_neutral_short_messages_pass_to_model",
+      "type": "Function",
+      "label": "test_neutral_short_messages_pass_to_model",
+      "path": "tests/test_new_features.py",
+      "parent": "tests.test_new_features.TestTopicGate",
+      "start_line": 41,
+      "end_line": 43
+    },
+    {
+      "id": "tests.test_new_features.TestTopicGate.test_pre_filter_offtopic_reason",
+      "type": "Function",
+      "label": "test_pre_filter_offtopic_reason",
+      "path": "tests/test_new_features.py",
+      "parent": "tests.test_new_features.TestTopicGate",
+      "start_line": 45,
+      "end_line": 49
+    },
+    {
+      "id": "tests.test_new_features.TestEvalsChecks",
+      "type": "Class",
+      "label": "TestEvalsChecks",
+      "path": "tests/test_new_features.py",
+      "parent": "tests.test_new_features",
+      "start_line": 52,
+      "end_line": 82
+    },
+    {
+      "id": "tests.test_new_features.TestEvalsChecks.test_numbers_in",
+      "type": "Function",
+      "label": "test_numbers_in",
+      "path": "tests/test_new_features.py",
+      "parent": "tests.test_new_features.TestEvalsChecks",
+      "start_line": 53,
+      "end_line": 56
+    },
+    {
+      "id": "tests.test_new_features.TestEvalsChecks.test_check_numbers_ok_and_violations",
+      "type": "Function",
+      "label": "test_check_numbers_ok_and_violations",
+      "path": "tests/test_new_features.py",
+      "parent": "tests.test_new_features.TestEvalsChecks",
+      "start_line": 58,
+      "end_line": 63
+    },
+    {
+      "id": "tests.test_new_features.TestEvalsChecks.test_small_ints_and_years_allowed",
+      "type": "Function",
+      "label": "test_small_ints_and_years_allowed",
+      "path": "tests/test_new_features.py",
+      "parent": "tests.test_new_features.TestEvalsChecks",
+      "start_line": 65,
+      "end_line": 67
+    },
+    {
+      "id": "tests.test_new_features.TestEvalsChecks.test_check_tools",
+      "type": "Function",
+      "label": "test_check_tools",
+      "path": "tests/test_new_features.py",
+      "parent": "tests.test_new_features.TestEvalsChecks",
+      "start_line": 69,
+      "end_line": 72
+    },
+    {
+      "id": "tests.test_new_features.TestEvalsChecks.test_score_answer_refusal",
+      "type": "Function",
+      "label": "test_score_answer_refusal",
+      "path": "tests/test_new_features.py",
+      "parent": "tests.test_new_features.TestEvalsChecks",
+      "start_line": 74,
+      "end_line": 77
+    },
+    {
+      "id": "tests.test_new_features.TestEvalsChecks.test_benchmark_loads",
+      "type": "Function",
+      "label": "test_benchmark_loads",
+      "path": "tests/test_new_features.py",
+      "parent": "tests.test_new_features.TestEvalsChecks",
+      "start_line": 79,
+      "end_line": 82
+    },
+    {
+      "id": "tests.test_new_features.TestSemantic",
+      "type": "Class",
+      "label": "TestSemantic",
+      "path": "tests/test_new_features.py",
+      "parent": "tests.test_new_features",
+      "start_line": 85,
+      "end_line": 103
+    },
+    {
+      "id": "tests.test_new_features.TestSemantic.test_semantic_search_returns_cards",
+      "type": "Function",
+      "label": "test_semantic_search_returns_cards",
+      "path": "tests/test_new_features.py",
+      "parent": "tests.test_new_features.TestSemantic",
+      "start_line": 86,
+      "end_line": 89
+    },
+    {
+      "id": "tests.test_new_features.TestSemantic.test_vacancy_details_full_card",
+      "type": "Function",
+      "label": "test_vacancy_details_full_card",
+      "path": "tests/test_new_features.py",
+      "parent": "tests.test_new_features.TestSemantic",
+      "start_line": 91,
+      "end_line": 97
+    },
+    {
+      "id": "tests.test_new_features.TestSemantic.test_similar_vacancies",
+      "type": "Function",
+      "label": "test_similar_vacancies",
+      "path": "tests/test_new_features.py",
+      "parent": "tests.test_new_features.TestSemantic",
+      "start_line": 99,
+      "end_line": 103
+    },
+    {
+      "id": "tests.test_new_features.TestFreshAndTrend",
+      "type": "Class",
+      "label": "TestFreshAndTrend",
+      "path": "tests/test_new_features.py",
+      "parent": "tests.test_new_features",
+      "start_line": 106,
+      "end_line": 119
+    },
+    {
+      "id": "tests.test_new_features.TestFreshAndTrend.test_fresh_vacancies",
+      "type": "Function",
+      "label": "test_fresh_vacancies",
+      "path": "tests/test_new_features.py",
+      "parent": "tests.test_new_features.TestFreshAndTrend",
+      "start_line": 107,
+      "end_line": 112
+    },
+    {
+      "id": "tests.test_new_features.TestFreshAndTrend.test_salary_trend_months",
+      "type": "Function",
+      "label": "test_salary_trend_months",
+      "path": "tests/test_new_features.py",
+      "parent": "tests.test_new_features.TestFreshAndTrend",
+      "start_line": 114,
+      "end_line": 119
+    },
+    {
+      "id": "tests.test_new_features.TestFollowUp",
+      "type": "Class",
+      "label": "TestFollowUp",
+      "path": "tests/test_new_features.py",
+      "parent": "tests.test_new_features",
+      "start_line": 122,
+      "end_line": 139
+    },
+    {
+      "id": "tests.test_new_features.TestFollowUp.test_parse_follow_up",
+      "type": "Function",
+      "label": "test_parse_follow_up",
+      "path": "tests/test_new_features.py",
+      "parent": "tests.test_new_features.TestFollowUp",
+      "start_line": 123,
+      "end_line": 129
+    },
+    {
+      "id": "tests.test_new_features.TestFollowUp.test_tracker_follow_up_persists",
+      "type": "Function",
+      "label": "test_tracker_follow_up_persists",
+      "path": "tests/test_new_features.py",
+      "parent": "tests.test_new_features.TestFollowUp",
+      "start_line": 131,
+      "end_line": 139
+    },
+    {
+      "id": "tests.test_new_features.TestProfileAPI",
+      "type": "Class",
+      "label": "TestProfileAPI",
+      "path": "tests/test_new_features.py",
+      "parent": "tests.test_new_features",
+      "start_line": 142,
+      "end_line": 177
+    },
+    {
+      "id": "tests.test_new_features.TestProfileAPI.test_profile_get_and_put",
+      "type": "Function",
+      "label": "test_profile_get_and_put",
+      "path": "tests/test_new_features.py",
+      "parent": "tests.test_new_features.TestProfileAPI",
+      "start_line": 143,
+      "end_line": 177
+    },
+    {
+      "id": "tests.test_server",
+      "type": "Module",
+      "label": "test_server",
+      "path": "tests/test_server.py",
+      "lines": 211,
+      "lang": "python"
+    },
+    {
+      "id": "tests.test_server.client",
+      "type": "Function",
+      "label": "client",
+      "path": "tests/test_server.py",
+      "parent": "tests.test_server",
+      "start_line": 18,
+      "end_line": 25
+    },
+    {
+      "id": "tests.test_server._reg",
+      "type": "Function",
+      "label": "_reg",
+      "path": "tests/test_server.py",
+      "parent": "tests.test_server",
+      "start_line": 28,
+      "end_line": 31
+    },
+    {
+      "id": "tests.test_server.TestAuth",
+      "type": "Class",
+      "label": "TestAuth",
+      "path": "tests/test_server.py",
+      "parent": "tests.test_server",
+      "start_line": 34,
+      "end_line": 57
+    },
+    {
+      "id": "tests.test_server.TestAuth.test_register_login_me",
+      "type": "Function",
+      "label": "test_register_login_me",
+      "path": "tests/test_server.py",
+      "parent": "tests.test_server.TestAuth",
+      "start_line": 35,
+      "end_line": 40
+    },
+    {
+      "id": "tests.test_server.TestAuth.test_duplicate_and_weak_password",
+      "type": "Function",
+      "label": "test_duplicate_and_weak_password",
+      "path": "tests/test_server.py",
+      "parent": "tests.test_server.TestAuth",
+      "start_line": 42,
+      "end_line": 47
+    },
+    {
+      "id": "tests.test_server.TestAuth.test_bad_login",
+      "type": "Function",
+      "label": "test_bad_login",
+      "path": "tests/test_server.py",
+      "parent": "tests.test_server.TestAuth",
+      "start_line": 49,
+      "end_line": 52
+    },
+    {
+      "id": "tests.test_server.TestAuth.test_protected_without_token",
+      "type": "Function",
+      "label": "test_protected_without_token",
+      "path": "tests/test_server.py",
+      "parent": "tests.test_server.TestAuth",
+      "start_line": 54,
+      "end_line": 57
+    },
+    {
+      "id": "tests.test_server.TestIsolation",
+      "type": "Class",
+      "label": "TestIsolation",
+      "path": "tests/test_server.py",
+      "parent": "tests.test_server",
+      "start_line": 60,
+      "end_line": 96
+    },
+    {
+      "id": "tests.test_server.TestIsolation.test_tracker_isolated",
+      "type": "Function",
+      "label": "test_tracker_isolated",
+      "path": "tests/test_server.py",
+      "parent": "tests.test_server.TestIsolation",
+      "start_line": 61,
+      "end_line": 73
+    },
+    {
+      "id": "tests.test_server.TestIsolation.test_outbox_isolated",
+      "type": "Function",
+      "label": "test_outbox_isolated",
+      "path": "tests/test_server.py",
+      "parent": "tests.test_server.TestIsolation",
+      "start_line": 75,
+      "end_line": 90
+    },
+    {
+      "id": "tests.test_server.TestIsolation.test_bad_status_rejected",
+      "type": "Function",
+      "label": "test_bad_status_rejected",
+      "path": "tests/test_server.py",
+      "parent": "tests.test_server.TestIsolation",
+      "start_line": 92,
+      "end_line": 96
+    },
+    {
+      "id": "tests.test_server.TestSSE",
+      "type": "Class",
+      "label": "TestSSE",
+      "path": "tests/test_server.py",
+      "parent": "tests.test_server",
+      "start_line": 99,
+      "end_line": 158
+    },
+    {
+      "id": "tests.test_server.TestSSE.test_injection_refused_without_model",
+      "type": "Function",
+      "label": "test_injection_refused_without_model",
+      "path": "tests/test_server.py",
+      "parent": "tests.test_server.TestSSE",
+      "start_line": 100,
+      "end_line": 111
+    },
+    {
+      "id": "tests.test_server.TestSSE.test_refusal_saves_no_empty_dialog",
+      "type": "Function",
+      "label": "test_refusal_saves_no_empty_dialog",
+      "path": "tests/test_server.py",
+      "parent": "tests.test_server.TestSSE",
+      "start_line": 113,
+      "end_line": 122
+    },
+    {
+      "id": "tests.test_server.TestSSE.test_empty_session_purged",
+      "type": "Function",
+      "label": "test_empty_session_purged",
+      "path": "tests/test_server.py",
+      "parent": "tests.test_server.TestSSE",
+      "start_line": 124,
+      "end_line": 130
+    },
+    {
+      "id": "tests.test_server.TestSSE.test_rename_and_delete_session",
+      "type": "Function",
+      "label": "test_rename_and_delete_session",
+      "path": "tests/test_server.py",
+      "parent": "tests.test_server.TestSSE",
+      "start_line": 132,
+      "end_line": 141
+    },
+    {
+      "id": "tests.test_server.TestSSE.test_session_isolation_delete",
+      "type": "Function",
+      "label": "test_session_isolation_delete",
+      "path": "tests/test_server.py",
+      "parent": "tests.test_server.TestSSE",
+      "start_line": 143,
+      "end_line": 150
+    },
+    {
+      "id": "tests.test_server.TestSSE.test_unknown_session_404",
+      "type": "Function",
+      "label": "test_unknown_session_404",
+      "path": "tests/test_server.py",
+      "parent": "tests.test_server.TestSSE",
+      "start_line": 152,
+      "end_line": 158
+    },
+    {
+      "id": "tests.test_server.TestFrontend",
+      "type": "Class",
+      "label": "TestFrontend",
+      "path": "tests/test_server.py",
+      "parent": "tests.test_server",
+      "start_line": 161,
+      "end_line": 170
+    },
+    {
+      "id": "tests.test_server.TestFrontend.test_index_served",
+      "type": "Function",
+      "label": "test_index_served",
+      "path": "tests/test_server.py",
+      "parent": "tests.test_server.TestFrontend",
+      "start_line": 162,
+      "end_line": 165
+    },
+    {
+      "id": "tests.test_server.TestFrontend.test_static_assets",
+      "type": "Function",
+      "label": "test_static_assets",
+      "path": "tests/test_server.py",
+      "parent": "tests.test_server.TestFrontend",
+      "start_line": 167,
+      "end_line": 170
+    },
+    {
+      "id": "tests.test_server.TestLettersAPI",
+      "type": "Class",
+      "label": "TestLettersAPI",
+      "path": "tests/test_server.py",
+      "parent": "tests.test_server",
+      "start_line": 173,
+      "end_line": 210
+    },
+    {
+      "id": "tests.test_server.TestLettersAPI._draft",
+      "type": "Function",
+      "label": "_draft",
+      "path": "tests/test_server.py",
+      "parent": "tests.test_server.TestLettersAPI",
+      "start_line": 174,
+      "end_line": 179
+    },
+    {
+      "id": "tests.test_server.TestLettersAPI.test_outbox_parses_title_and_body",
+      "type": "Function",
+      "label": "test_outbox_parses_title_and_body",
+      "path": "tests/test_server.py",
+      "parent": "tests.test_server.TestLettersAPI",
+      "start_line": 181,
+      "end_line": 190
+    },
+    {
+      "id": "tests.test_server.TestLettersAPI.test_letter_rename_and_edit",
+      "type": "Function",
+      "label": "test_letter_rename_and_edit",
+      "path": "tests/test_server.py",
+      "parent": "tests.test_server.TestLettersAPI",
+      "start_line": 192,
+      "end_line": 204
+    },
+    {
+      "id": "tests.test_server.TestLettersAPI.test_letter_path_is_user_scoped",
+      "type": "Function",
+      "label": "test_letter_path_is_user_scoped",
+      "path": "tests/test_server.py",
+      "parent": "tests.test_server.TestLettersAPI",
+      "start_line": 206,
+      "end_line": 210
+    },
+    {
+      "id": "tests.test_tools",
+      "type": "Module",
+      "label": "test_tools",
+      "path": "tests/test_tools.py",
+      "lines": 100,
+      "lang": "python"
+    },
+    {
+      "id": "tests.test_tools.TestSearch",
+      "type": "Class",
+      "label": "TestSearch",
+      "path": "tests/test_tools.py",
+      "parent": "tests.test_tools",
+      "start_line": 15,
+      "end_line": 39
+    },
+    {
+      "id": "tests.test_tools.TestSearch.test_bounded_and_shaped",
+      "type": "Function",
+      "label": "test_bounded_and_shaped",
+      "path": "tests/test_tools.py",
+      "parent": "tests.test_tools.TestSearch",
+      "start_line": 16,
+      "end_line": 22
+    },
+    {
+      "id": "tests.test_tools.TestSearch.test_city_filter_respected",
+      "type": "Function",
+      "label": "test_city_filter_respected",
+      "path": "tests/test_tools.py",
+      "parent": "tests.test_tools.TestSearch",
+      "start_line": 24,
+      "end_line": 26
+    },
+    {
+      "id": "tests.test_tools.TestSearch.test_limit_clamped",
+      "type": "Function",
+      "label": "test_limit_clamped",
+      "path": "tests/test_tools.py",
+      "parent": "tests.test_tools.TestSearch",
+      "start_line": 28,
+      "end_line": 30
+    },
+    {
+      "id": "tests.test_tools.TestSearch.test_details_unknown_id",
+      "type": "Function",
+      "label": "test_details_unknown_id",
+      "path": "tests/test_tools.py",
+      "parent": "tests.test_tools.TestSearch",
+      "start_line": 32,
+      "end_line": 33
+    },
+    {
+      "id": "tests.test_tools.TestSearch.test_details_real",
+      "type": "Function",
+      "label": "test_details_real",
+      "path": "tests/test_tools.py",
+      "parent": "tests.test_tools.TestSearch",
+      "start_line": 35,
+      "end_line": 39
+    },
+    {
+      "id": "tests.test_tools.TestMatchGap",
+      "type": "Class",
+      "label": "TestMatchGap",
+      "path": "tests/test_tools.py",
+      "parent": "tests.test_tools",
+      "start_line": 42,
+      "end_line": 60
+    },
+    {
+      "id": "tests.test_tools.TestMatchGap.test_match_shape",
+      "type": "Function",
+      "label": "test_match_shape",
+      "path": "tests/test_tools.py",
+      "parent": "tests.test_tools.TestMatchGap",
+      "start_line": 43,
+      "end_line": 49
+    },
+    {
+      "id": "tests.test_tools.TestMatchGap.test_unknown_profile",
+      "type": "Function",
+      "label": "test_unknown_profile",
+      "path": "tests/test_tools.py",
+      "parent": "tests.test_tools.TestMatchGap",
+      "start_line": 51,
+      "end_line": 52
+    },
+    {
+      "id": "tests.test_tools.TestMatchGap.test_gap_shape",
+      "type": "Function",
+      "label": "test_gap_shape",
+      "path": "tests/test_tools.py",
+      "parent": "tests.test_tools.TestMatchGap",
+      "start_line": 54,
+      "end_line": 60
+    },
+    {
+      "id": "tests.test_tools.TestSalary",
+      "type": "Class",
+      "label": "TestSalary",
+      "path": "tests/test_tools.py",
+      "parent": "tests.test_tools",
+      "start_line": 63,
+      "end_line": 72
+    },
+    {
+      "id": "tests.test_tools.TestSalary.test_quantiles_ordered",
+      "type": "Function",
+      "label": "test_quantiles_ordered",
+      "path": "tests/test_tools.py",
+      "parent": "tests.test_tools.TestSalary",
+      "start_line": 64,
+      "end_line": 68
+    },
+    {
+      "id": "tests.test_tools.TestSalary.test_empty_selection",
+      "type": "Function",
+      "label": "test_empty_selection",
+      "path": "tests/test_tools.py",
+      "parent": "tests.test_tools.TestSalary",
+      "start_line": 70,
+      "end_line": 72
+    },
+    {
+      "id": "tests.test_tools.TestLocalWrites",
+      "type": "Class",
+      "label": "TestLocalWrites",
+      "path": "tests/test_tools.py",
+      "parent": "tests.test_tools",
+      "start_line": 75,
+      "end_line": 99
+    },
+    {
+      "id": "tests.test_tools.TestLocalWrites.test_letter_saved_not_sent",
+      "type": "Function",
+      "label": "test_letter_saved_not_sent",
+      "path": "tests/test_tools.py",
+      "parent": "tests.test_tools.TestLocalWrites",
+      "start_line": 76,
+      "end_line": 85
+    },
+    {
+      "id": "tests.test_tools.TestLocalWrites.test_letter_too_short",
+      "type": "Function",
+      "label": "test_letter_too_short",
+      "path": "tests/test_tools.py",
+      "parent": "tests.test_tools.TestLocalWrites",
+      "start_line": 87,
+      "end_line": 89
+    },
+    {
+      "id": "tests.test_tools.TestLocalWrites.test_tracker_validation_and_list",
+      "type": "Function",
+      "label": "test_tracker_validation_and_list",
+      "path": "tests/test_tools.py",
+      "parent": "tests.test_tools.TestLocalWrites",
+      "start_line": 91,
+      "end_line": 99
+    },
+    {
+      "id": "tools.build_db",
+      "type": "Module",
+      "label": "build_db",
+      "path": "tools/build_db.py",
+      "lines": 512,
+      "lang": "python"
+    },
+    {
+      "id": "tools.build_db.clean_html",
+      "type": "Function",
+      "label": "clean_html",
+      "path": "tools/build_db.py",
+      "parent": "tools.build_db",
+      "start_line": 52,
+      "end_line": 53
+    },
+    {
+      "id": "tools.build_db.fnum",
+      "type": "Function",
+      "label": "fnum",
+      "path": "tools/build_db.py",
+      "parent": "tools.build_db",
+      "start_line": 125,
+      "end_line": 133
+    },
+    {
+      "id": "tools.build_db.fstr",
+      "type": "Function",
+      "label": "fstr",
+      "path": "tools/build_db.py",
+      "parent": "tools.build_db",
+      "start_line": 136,
+      "end_line": 143
+    },
+    {
+      "id": "tools.build_db.fgross",
+      "type": "Function",
+      "label": "fgross",
+      "path": "tools/build_db.py",
+      "parent": "tools.build_db",
+      "start_line": 146,
+      "end_line": 151
+    },
+    {
+      "id": "tools.build_db.load_rates",
+      "type": "Function",
+      "label": "load_rates",
+      "path": "tools/build_db.py",
+      "parent": "tools.build_db",
+      "start_line": 154,
+      "end_line": 167
+    },
+    {
+      "id": "tools.build_db.conv",
+      "type": "Function",
+      "label": "conv",
+      "path": "tools/build_db.py",
+      "parent": "tools.build_db",
+      "start_line": 170,
+      "end_line": 177
+    },
+    {
+      "id": "tools.build_db.skills_for_text",
+      "type": "Function",
+      "label": "skills_for_text",
+      "path": "tools/build_db.py",
+      "parent": "tools.build_db",
+      "start_line": 180,
+      "end_line": 191
+    },
+    {
+      "id": "tools.build_db.import_api",
+      "type": "Function",
+      "label": "import_api",
+      "path": "tools/build_db.py",
+      "parent": "tools.build_db",
+      "start_line": 195,
+      "end_line": 241
+    },
+    {
+      "id": "tools.build_db.import_kaggle_it",
+      "type": "Function",
+      "label": "import_kaggle_it",
+      "path": "tools/build_db.py",
+      "parent": "tools.build_db",
+      "start_line": 244,
+      "end_line": 264
+    },
+    {
+      "id": "tools.build_db.import_kaggle_raw",
+      "type": "Function",
+      "label": "import_kaggle_raw",
+      "path": "tools/build_db.py",
+      "parent": "tools.build_db",
+      "start_line": 267,
+      "end_line": 305
+    },
+    {
+      "id": "tools.build_db.rebuild_fts",
+      "type": "Function",
+      "label": "rebuild_fts",
+      "path": "tools/build_db.py",
+      "parent": "tools.build_db",
+      "start_line": 309,
+      "end_line": 322
+    },
+    {
+      "id": "tools.build_db.rebuild_salary_agg",
+      "type": "Function",
+      "label": "rebuild_salary_agg",
+      "path": "tools/build_db.py",
+      "parent": "tools.build_db",
+      "start_line": 325,
+      "end_line": 358
+    },
+    {
+      "id": "tools.build_db.cmd_full",
+      "type": "Function",
+      "label": "cmd_full",
+      "path": "tools/build_db.py",
+      "parent": "tools.build_db",
+      "start_line": 362,
+      "end_line": 391
+    },
+    {
+      "id": "tools.build_db.cmd_incremental",
+      "type": "Function",
+      "label": "cmd_incremental",
+      "path": "tools/build_db.py",
+      "parent": "tools.build_db",
+      "start_line": 394,
+      "end_line": 474
+    },
+    {
+      "id": "tools.build_db.cmd_stats",
+      "type": "Function",
+      "label": "cmd_stats",
+      "path": "tools/build_db.py",
+      "parent": "tools.build_db",
+      "start_line": 477,
+      "end_line": 491
+    },
+    {
+      "id": "tools.build_db.main",
+      "type": "Function",
+      "label": "main",
+      "path": "tools/build_db.py",
+      "parent": "tools.build_db",
+      "start_line": 494,
+      "end_line": 507
+    },
+    {
+      "id": "tools.build_semantic",
+      "type": "Module",
+      "label": "build_semantic",
+      "path": "tools/build_semantic.py",
+      "lines": 96,
+      "lang": "python"
+    },
+    {
+      "id": "tools.build_semantic.load_docs",
+      "type": "Function",
+      "label": "load_docs",
+      "path": "tools/build_semantic.py",
+      "parent": "tools.build_semantic",
+      "start_line": 39,
+      "end_line": 56
+    },
+    {
+      "id": "tools.build_semantic.build",
+      "type": "Function",
+      "label": "build",
+      "path": "tools/build_semantic.py",
+      "parent": "tools.build_semantic",
+      "start_line": 59,
+      "end_line": 91
+    },
+    {
+      "id": "tools.check_token",
+      "type": "Module",
+      "label": "check_token",
+      "path": "tools/check_token.py",
+      "lines": 85,
+      "lang": "python"
+    },
+    {
+      "id": "tools.check_token.parse_env",
+      "type": "Function",
+      "label": "parse_env",
+      "path": "tools/check_token.py",
+      "parent": "tools.check_token",
+      "start_line": 9,
+      "end_line": 20
+    },
+    {
+      "id": "tools.clean_merge",
+      "type": "Module",
+      "label": "clean_merge",
+      "path": "tools/clean_merge.py",
+      "lines": 243,
+      "lang": "python"
+    },
+    {
+      "id": "tools.clean_merge.fetch_cb_rates",
+      "type": "Function",
+      "label": "fetch_cb_rates",
+      "path": "tools/clean_merge.py",
+      "parent": "tools.clean_merge",
+      "start_line": 33,
+      "end_line": 55
+    },
+    {
+      "id": "tools.clean_merge.norm_exp",
+      "type": "Function",
+      "label": "norm_exp",
+      "path": "tools/clean_merge.py",
+      "parent": "tools.clean_merge",
+      "start_line": 73,
+      "end_line": 81
+    },
+    {
+      "id": "tools.clean_merge.parse_salary_str",
+      "type": "Function",
+      "label": "parse_salary_str",
+      "path": "tools/clean_merge.py",
+      "parent": "tools.clean_merge",
+      "start_line": 91,
+      "end_line": 105
+    },
+    {
+      "id": "tools.clean_merge.conv",
+      "type": "Function",
+      "label": "conv",
+      "path": "tools/clean_merge.py",
+      "parent": "tools.clean_merge",
+      "start_line": 108,
+      "end_line": 115
+    },
+    {
+      "id": "tools.clean_merge.main",
+      "type": "Function",
+      "label": "main",
+      "path": "tools/clean_merge.py",
+      "parent": "tools.clean_merge",
+      "start_line": 118,
+      "end_line": 238
+    },
+    {
+      "id": "tools.clean_merge.emit",
+      "type": "Function",
+      "label": "emit",
+      "path": "tools/clean_merge.py",
+      "parent": "tools.clean_merge",
+      "start_line": 134,
+      "end_line": 146
+    },
+    {
+      "id": "tools.collect_hh",
+      "type": "Module",
+      "label": "collect_hh",
+      "path": "tools/collect_hh.py",
+      "lines": 251,
+      "lang": "python"
+    },
+    {
+      "id": "tools.collect_hh.parse_env",
+      "type": "Function",
+      "label": "parse_env",
+      "path": "tools/collect_hh.py",
+      "parent": "tools.collect_hh",
+      "start_line": 28,
+      "end_line": 40
+    },
+    {
+      "id": "tools.collect_hh.api_get",
+      "type": "Function",
+      "label": "api_get",
+      "path": "tools/collect_hh.py",
+      "parent": "tools.collect_hh",
+      "start_line": 48,
+      "end_line": 70
+    },
+    {
+      "id": "tools.collect_hh.norm_item",
+      "type": "Function",
+      "label": "norm_item",
+      "path": "tools/collect_hh.py",
+      "parent": "tools.collect_hh",
+      "start_line": 73,
+      "end_line": 94
+    },
+    {
+      "id": "tools.collect_hh.load_seen",
+      "type": "Function",
+      "label": "load_seen",
+      "path": "tools/collect_hh.py",
+      "parent": "tools.collect_hh",
+      "start_line": 97,
+      "end_line": 106
+    },
+    {
+      "id": "tools.collect_hh.collect_lists",
+      "type": "Function",
+      "label": "collect_lists",
+      "path": "tools/collect_hh.py",
+      "parent": "tools.collect_hh",
+      "start_line": 109,
+      "end_line": 154
+    },
+    {
+      "id": "tools.collect_hh.build_csv",
+      "type": "Function",
+      "label": "build_csv",
+      "path": "tools/collect_hh.py",
+      "parent": "tools.collect_hh",
+      "start_line": 157,
+      "end_line": 177
+    },
+    {
+      "id": "tools.collect_hh.clean_html",
+      "type": "Function",
+      "label": "clean_html",
+      "path": "tools/collect_hh.py",
+      "parent": "tools.collect_hh",
+      "start_line": 183,
+      "end_line": 184
+    },
+    {
+      "id": "tools.collect_hh.collect_details",
+      "type": "Function",
+      "label": "collect_details",
+      "path": "tools/collect_hh.py",
+      "parent": "tools.collect_hh",
+      "start_line": 187,
+      "end_line": 232
+    },
+    {
+      "id": "tools.collect_hh.main",
+      "type": "Function",
+      "label": "main",
+      "path": "tools/collect_hh.py",
+      "parent": "tools.collect_hh",
+      "start_line": 235,
+      "end_line": 246
+    },
+    {
+      "id": "tools.daily_increment",
+      "type": "Module",
+      "label": "daily_increment",
+      "path": "tools/daily_increment.py",
+      "lines": 97,
+      "lang": "python"
+    },
+    {
+      "id": "tools.daily_increment.log",
+      "type": "Function",
+      "label": "log",
+      "path": "tools/daily_increment.py",
+      "parent": "tools.daily_increment",
+      "start_line": 35,
+      "end_line": 39
+    },
+    {
+      "id": "tools.daily_increment.run",
+      "type": "Function",
+      "label": "run",
+      "path": "tools/daily_increment.py",
+      "parent": "tools.daily_increment",
+      "start_line": 42,
+      "end_line": 48
+    },
+    {
+      "id": "tools.daily_increment.db_counts",
+      "type": "Function",
+      "label": "db_counts",
+      "path": "tools/daily_increment.py",
+      "parent": "tools.daily_increment",
+      "start_line": 51,
+      "end_line": 62
+    },
+    {
+      "id": "tools.daily_increment.main",
+      "type": "Function",
+      "label": "main",
+      "path": "tools/daily_increment.py",
+      "parent": "tools.daily_increment",
+      "start_line": 65,
+      "end_line": 92
+    },
+    {
+      "id": "tools.hh_client",
+      "type": "Module",
+      "label": "hh_client",
+      "path": "tools/hh_client.py",
+      "lines": 135,
+      "lang": "python"
+    },
+    {
+      "id": "tools.hh_client.load_env",
+      "type": "Function",
+      "label": "load_env",
+      "path": "tools/hh_client.py",
+      "parent": "tools.hh_client",
+      "start_line": 28,
+      "end_line": 40
+    },
+    {
+      "id": "tools.hh_client.HHError",
+      "type": "Class",
+      "label": "HHError",
+      "path": "tools/hh_client.py",
+      "parent": "tools.hh_client",
+      "start_line": 43,
+      "end_line": 44
+    },
+    {
+      "id": "tools.hh_client.HHClient",
+      "type": "Class",
+      "label": "HHClient",
+      "path": "tools/hh_client.py",
+      "parent": "tools.hh_client",
+      "start_line": 47,
+      "end_line": 123
+    },
+    {
+      "id": "tools.hh_client.HHClient.__init__",
+      "type": "Function",
+      "label": "__init__",
+      "path": "tools/hh_client.py",
+      "parent": "tools.hh_client.HHClient",
+      "start_line": 50,
+      "end_line": 59
+    },
+    {
+      "id": "tools.hh_client.HHClient._throttle",
+      "type": "Function",
+      "label": "_throttle",
+      "path": "tools/hh_client.py",
+      "parent": "tools.hh_client.HHClient",
+      "start_line": 61,
+      "end_line": 64
+    },
+    {
+      "id": "tools.hh_client.HHClient.get",
+      "type": "Function",
+      "label": "get",
+      "path": "tools/hh_client.py",
+      "parent": "tools.hh_client.HHClient",
+      "start_line": 66,
+      "end_line": 98
+    },
+    {
+      "id": "tools.hh_client.HHClient.search_vacancies",
+      "type": "Function",
+      "label": "search_vacancies",
+      "path": "tools/hh_client.py",
+      "parent": "tools.hh_client.HHClient",
+      "start_line": 101,
+      "end_line": 102
+    },
+    {
+      "id": "tools.hh_client.HHClient.vacancy",
+      "type": "Function",
+      "label": "vacancy",
+      "path": "tools/hh_client.py",
+      "parent": "tools.hh_client.HHClient",
+      "start_line": 104,
+      "end_line": 105
+    },
+    {
+      "id": "tools.hh_client.HHClient.related",
+      "type": "Function",
+      "label": "related",
+      "path": "tools/hh_client.py",
+      "parent": "tools.hh_client.HHClient",
+      "start_line": 107,
+      "end_line": 108
+    },
+    {
+      "id": "tools.hh_client.HHClient.similar",
+      "type": "Function",
+      "label": "similar",
+      "path": "tools/hh_client.py",
+      "parent": "tools.hh_client.HHClient",
+      "start_line": 110,
+      "end_line": 111
+    },
+    {
+      "id": "tools.hh_client.HHClient.dictionaries",
+      "type": "Function",
+      "label": "dictionaries",
+      "path": "tools/hh_client.py",
+      "parent": "tools.hh_client.HHClient",
+      "start_line": 113,
+      "end_line": 114
+    },
+    {
+      "id": "tools.hh_client.HHClient.employer",
+      "type": "Function",
+      "label": "employer",
+      "path": "tools/hh_client.py",
+      "parent": "tools.hh_client.HHClient",
+      "start_line": 116,
+      "end_line": 117
+    },
+    {
+      "id": "tools.hh_client.HHClient.skill_ids",
+      "type": "Function",
+      "label": "skill_ids",
+      "path": "tools/hh_client.py",
+      "parent": "tools.hh_client.HHClient",
+      "start_line": 119,
+      "end_line": 120
+    },
+    {
+      "id": "tools.hh_client.HHClient.skills",
+      "type": "Function",
+      "label": "skills",
+      "path": "tools/hh_client.py",
+      "parent": "tools.hh_client.HHClient",
+      "start_line": 122,
+      "end_line": 123
+    },
+    {
+      "id": "tools.match_gap",
+      "type": "Module",
+      "label": "match_gap",
+      "path": "tools/match_gap.py",
+      "lines": 260,
+      "lang": "python"
+    },
+    {
+      "id": "tools.match_gap.canon",
+      "type": "Function",
+      "label": "canon",
+      "path": "tools/match_gap.py",
+      "parent": "tools.match_gap",
+      "start_line": 64,
+      "end_line": 74
+    },
+    {
+      "id": "tools.match_gap.detect",
+      "type": "Function",
+      "label": "detect",
+      "path": "tools/match_gap.py",
+      "parent": "tools.match_gap",
+      "start_line": 77,
+      "end_line": 87
+    },
+    {
+      "id": "tools.match_gap.load_profiles",
+      "type": "Function",
+      "label": "load_profiles",
+      "path": "tools/match_gap.py",
+      "parent": "tools.match_gap",
+      "start_line": 91,
+      "end_line": 112
+    },
+    {
+      "id": "tools.match_gap.load_vacancies",
+      "type": "Function",
+      "label": "load_vacancies",
+      "path": "tools/match_gap.py",
+      "parent": "tools.match_gap",
+      "start_line": 116,
+      "end_line": 141
+    },
+    {
+      "id": "tools.match_gap.score_vacancy",
+      "type": "Function",
+      "label": "score_vacancy",
+      "path": "tools/match_gap.py",
+      "parent": "tools.match_gap",
+      "start_line": 144,
+      "end_line": 186
+    },
+    {
+      "id": "tools.match_gap.main",
+      "type": "Function",
+      "label": "main",
+      "path": "tools/match_gap.py",
+      "parent": "tools.match_gap",
+      "start_line": 189,
+      "end_line": 255
+    },
+    {
+      "id": "tools.parse_resume",
+      "type": "Module",
+      "label": "parse_resume",
+      "path": "tools/parse_resume.py",
+      "lines": 150,
+      "lang": "python"
+    },
+    {
+      "id": "tools.parse_resume.extract_text",
+      "type": "Function",
+      "label": "extract_text",
+      "path": "tools/parse_resume.py",
+      "parent": "tools.parse_resume",
+      "start_line": 43,
+      "end_line": 46
+    },
+    {
+      "id": "tools.parse_resume.detect_skills",
+      "type": "Function",
+      "label": "detect_skills",
+      "path": "tools/parse_resume.py",
+      "parent": "tools.parse_resume",
+      "start_line": 49,
+      "end_line": 56
+    },
+    {
+      "id": "tools.parse_resume.detect_title",
+      "type": "Function",
+      "label": "detect_title",
+      "path": "tools/parse_resume.py",
+      "parent": "tools.parse_resume",
+      "start_line": 59,
+      "end_line": 64
+    },
+    {
+      "id": "tools.parse_resume.detect_city",
+      "type": "Function",
+      "label": "detect_city",
+      "path": "tools/parse_resume.py",
+      "parent": "tools.parse_resume",
+      "start_line": 67,
+      "end_line": 71
+    },
+    {
+      "id": "tools.parse_resume.detect_experience_years",
+      "type": "Function",
+      "label": "detect_experience_years",
+      "path": "tools/parse_resume.py",
+      "parent": "tools.parse_resume",
+      "start_line": 74,
+      "end_line": 82
+    },
+    {
+      "id": "tools.parse_resume.detect_education",
+      "type": "Function",
+      "label": "detect_education",
+      "path": "tools/parse_resume.py",
+      "parent": "tools.parse_resume",
+      "start_line": 85,
+      "end_line": 87
+    },
+    {
+      "id": "tools.parse_resume.detect_languages",
+      "type": "Function",
+      "label": "detect_languages",
+      "path": "tools/parse_resume.py",
+      "parent": "tools.parse_resume",
+      "start_line": 90,
+      "end_line": 94
+    },
+    {
+      "id": "tools.parse_resume.parse_resume",
+      "type": "Function",
+      "label": "parse_resume",
+      "path": "tools/parse_resume.py",
+      "parent": "tools.parse_resume",
+      "start_line": 97,
+      "end_line": 128
+    },
+    {
+      "id": "tools.parse_resume.main",
+      "type": "Function",
+      "label": "main",
+      "path": "tools/parse_resume.py",
+      "parent": "tools.parse_resume",
+      "start_line": 131,
+      "end_line": 145
+    },
+    {
+      "id": "tools.run_evals",
+      "type": "Module",
+      "label": "run_evals",
+      "path": "tools/run_evals.py",
+      "lines": 141,
+      "lang": "python"
+    },
+    {
+      "id": "tools.run_evals.run_question",
+      "type": "Function",
+      "label": "run_question",
+      "path": "tools/run_evals.py",
+      "parent": "tools.run_evals",
+      "start_line": 43,
+      "end_line": 59
+    },
+    {
+      "id": "tools.run_evals.judge",
+      "type": "Function",
+      "label": "judge",
+      "path": "tools/run_evals.py",
+      "parent": "tools.run_evals",
+      "start_line": 62,
+      "end_line": 75
+    },
+    {
+      "id": "tools.run_evals.main",
+      "type": "Function",
+      "label": "main",
+      "path": "tools/run_evals.py",
+      "parent": "tools.run_evals",
+      "start_line": 78,
+      "end_line": 131
+    },
+    {
+      "id": "tools.stats_preview",
+      "type": "Module",
+      "label": "stats_preview",
+      "path": "tools/stats_preview.py",
+      "lines": 53,
+      "lang": "python"
+    }
+  ],
+  "edges": [
+    {
+      "source": "app.agent",
+      "target": "app.agent.build_agent",
+      "type": "contains"
+    },
+    {
+      "source": "app.agent",
+      "target": "google.adk.agents",
+      "type": "imports"
+    },
+    {
+      "source": "app.agent",
+      "target": "google.adk.models",
+      "type": "imports"
+    },
+    {
+      "source": "app.config",
+      "target": "app.config.load_env",
+      "type": "contains"
+    },
+    {
+      "source": "app.config",
+      "target": "app.config.apply_env",
+      "type": "contains"
+    },
+    {
+      "source": "app.config",
+      "target": "app.config.model_name",
+      "type": "contains"
+    },
+    {
+      "source": "app.config",
+      "target": "os",
+      "type": "imports"
+    },
+    {
+      "source": "app.evals",
+      "target": "app.evals.numbers_in",
+      "type": "contains"
+    },
+    {
+      "source": "app.evals",
+      "target": "app.evals.is_refusal",
+      "type": "contains"
+    },
+    {
+      "source": "app.evals",
+      "target": "app.evals.check_numbers",
+      "type": "contains"
+    },
+    {
+      "source": "app.evals",
+      "target": "app.evals.check_tools",
+      "type": "contains"
+    },
+    {
+      "source": "app.evals",
+      "target": "app.evals.score_answer",
+      "type": "contains"
+    },
+    {
+      "source": "app.evals",
+      "target": "app.evals.load_benchmark",
+      "type": "contains"
+    },
+    {
+      "source": "app.evals",
+      "target": "json",
+      "type": "imports"
+    },
+    {
+      "source": "app.evals",
+      "target": "os",
+      "type": "imports"
+    },
+    {
+      "source": "app.evals",
+      "target": "re",
+      "type": "imports"
+    },
+    {
+      "source": "app.event_protocol",
+      "target": "app.event_protocol._part_text",
+      "type": "contains"
+    },
+    {
+      "source": "app.event_protocol",
+      "target": "app.event_protocol.stream_turn",
+      "type": "contains"
+    },
+    {
+      "source": "app.event_protocol",
+      "target": "time",
+      "type": "imports"
+    },
+    {
+      "source": "app.event_protocol",
+      "target": "google.genai",
+      "type": "imports"
+    },
+    {
+      "source": "app.guardrails",
+      "target": "app.guardrails.pre_filter",
+      "type": "contains"
+    },
+    {
+      "source": "app.guardrails",
+      "target": "app.guardrails.refusal_for",
+      "type": "contains"
+    },
+    {
+      "source": "app.guardrails",
+      "target": "app.guardrails._norm",
+      "type": "contains"
+    },
+    {
+      "source": "app.guardrails",
+      "target": "app.guardrails._shingles",
+      "type": "contains"
+    },
+    {
+      "source": "app.guardrails",
+      "target": "app.guardrails.post_filter",
+      "type": "contains"
+    },
+    {
+      "source": "app.guardrails",
+      "target": "re",
+      "type": "imports"
+    },
+    {
+      "source": "app.memory",
+      "target": "app.memory.extract_messages",
+      "type": "contains"
+    },
+    {
+      "source": "app.memory",
+      "target": "app.memory.dialog_title",
+      "type": "contains"
+    },
+    {
+      "source": "app.memory",
+      "target": "app.memory._fallback_summary",
+      "type": "contains"
+    },
+    {
+      "source": "app.memory",
+      "target": "app.memory._llm_summarize",
+      "type": "contains"
+    },
+    {
+      "source": "app.memory",
+      "target": "app.memory._delete_events",
+      "type": "contains"
+    },
+    {
+      "source": "app.memory",
+      "target": "app.memory.compact_if_needed",
+      "type": "contains"
+    },
+    {
+      "source": "app.memory",
+      "target": "os",
+      "type": "imports"
+    },
+    {
+      "source": "app.memory",
+      "target": "sqlite3",
+      "type": "imports"
+    },
+    {
+      "source": "app.memory",
+      "target": "re",
+      "type": "imports"
+    },
+    {
+      "source": "app.memory",
+      "target": "litellm",
+      "type": "imports"
+    },
+    {
+      "source": "app.memory",
+      "target": "google.adk.events.event",
+      "type": "imports"
+    },
+    {
+      "source": "app.memory",
+      "target": "google.genai",
+      "type": "imports"
+    },
+    {
+      "source": "app.runner_cli",
+      "target": "app.runner_cli.run",
+      "type": "contains"
+    },
+    {
+      "source": "app.runner_cli",
+      "target": "app.runner_cli.one_turn",
+      "type": "contains"
+    },
+    {
+      "source": "app.runner_cli",
+      "target": "app.runner_cli.main",
+      "type": "contains"
+    },
+    {
+      "source": "app.runner_cli",
+      "target": "argparse",
+      "type": "imports"
+    },
+    {
+      "source": "app.runner_cli",
+      "target": "asyncio",
+      "type": "imports"
+    },
+    {
+      "source": "app.runner_cli",
+      "target": "google.adk.runners",
+      "type": "imports"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main._runner",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.AuthIn",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.ChatIn",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.TrackerIn",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.ProfileIn",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.SessionPatch",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.LetterPatch",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.current_user",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main._uid",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main._ctx",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.health",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.register",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.login",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.logout",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.me",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.create_session",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.list_sessions",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.history",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.rename_session",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.delete_session",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.chat_stream",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.sse",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.gen",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.vacancies",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.vacancy_card",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.match",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.gap",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.stats",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.stats_trend",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.semantic",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.similar",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.fresh",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main._profile_path",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.profile_get",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.profile_put",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main._letter_path",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main._letter_out",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.outbox_list",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.outbox_get",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.outbox_patch",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.outbox_regenerate",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.tracker_list",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.tracker_update",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "app.server.main.index",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.main",
+      "target": "json",
+      "type": "imports"
+    },
+    {
+      "source": "app.server.main",
+      "target": "os",
+      "type": "imports"
+    },
+    {
+      "source": "app.server.main",
+      "target": "types",
+      "type": "imports"
+    },
+    {
+      "source": "app.server.main",
+      "target": "fastapi",
+      "type": "imports"
+    },
+    {
+      "source": "app.server.main",
+      "target": "fastapi.middleware.cors",
+      "type": "imports"
+    },
+    {
+      "source": "app.server.main",
+      "target": "fastapi.responses",
+      "type": "imports"
+    },
+    {
+      "source": "app.server.main",
+      "target": "fastapi.staticfiles",
+      "type": "imports"
+    },
+    {
+      "source": "app.server.main",
+      "target": "pydantic",
+      "type": "imports"
+    },
+    {
+      "source": "app.server.main",
+      "target": "google.adk.runners",
+      "type": "imports"
+    },
+    {
+      "source": "app.server.main",
+      "target": "google.adk.sessions",
+      "type": "imports"
+    },
+    {
+      "source": "app.server.main",
+      "target": "litellm",
+      "type": "imports"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.esc",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.md",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.fmtMoney",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.api",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.modalConfirm",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.modalPrompt",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.closeAllMenus",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.enhanceSelect",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.enhanceCombo",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.initEnhancements",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.authMode",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.showAuth",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.doAuth",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.logout",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.quick",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.autogrow",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.onKey",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.toggleSessions",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.loadSessions",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.renameSessionAsk",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.deleteSessionAsk",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.newSession",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.addWelcome",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.openSession",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.addUserMsg",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.newTurn",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.addThink",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.addToolCall",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.addToolResult",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.addStatus",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.addDelta",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.setAnswer",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.setRefusal",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.finish",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.scrollChat",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.renderCards",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.loadVacancyDetails",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.vacancyCard",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.send",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.handleFrame",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.loadVacancies",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.loadFresh",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.similarTo",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.loadMatch",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.loadSalary",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.rangeBar",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.salaryCompare",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.loadTrend",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.loadProfile",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.saveProfile",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.loadGap",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.badge",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.loadLetters",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.letterItem",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.trackerLookup",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.loadTracker",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.exportTrackerCsv",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.addTracker",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.updateStatus",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.static.app",
+      "target": "app.server.static.app.startApp",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.store",
+      "target": "app.server.store._con",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.store",
+      "target": "app.server.store._hash_pw",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.store",
+      "target": "app.server.store.register",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.store",
+      "target": "app.server.store.login",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.store",
+      "target": "app.server.store._issue",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.store",
+      "target": "app.server.store.user_by_token",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.store",
+      "target": "app.server.store.logout",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.store",
+      "target": "app.server.store.set_session_title",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.store",
+      "target": "app.server.store.get_session_titles",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.store",
+      "target": "app.server.store.delete_session_meta",
+      "type": "contains"
+    },
+    {
+      "source": "app.server.store",
+      "target": "hashlib",
+      "type": "imports"
+    },
+    {
+      "source": "app.server.store",
+      "target": "hmac",
+      "type": "imports"
+    },
+    {
+      "source": "app.server.store",
+      "target": "os",
+      "type": "imports"
+    },
+    {
+      "source": "app.server.store",
+      "target": "secrets",
+      "type": "imports"
+    },
+    {
+      "source": "app.server.store",
+      "target": "sqlite3",
+      "type": "imports"
+    },
+    {
+      "source": "app.server.store",
+      "target": "time",
+      "type": "imports"
+    },
+    {
+      "source": "app.system_prompt",
+      "target": "app.system_prompt.profile_summary",
+      "type": "contains"
+    },
+    {
+      "source": "app.system_prompt",
+      "target": "app.system_prompt.build_instruction",
+      "type": "contains"
+    },
+    {
+      "source": "app.system_prompt",
+      "target": "app.system_prompt.all_instructions",
+      "type": "contains"
+    },
+    {
+      "source": "app.system_prompt",
+      "target": "json",
+      "type": "imports"
+    },
+    {
+      "source": "app.system_prompt",
+      "target": "os",
+      "type": "imports"
+    },
+    {
+      "source": "app.tools.fresh",
+      "target": "app.tools.fresh.fresh_vacancies",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.fresh",
+      "target": "sqlite3",
+      "type": "imports"
+    },
+    {
+      "source": "app.tools.letters",
+      "target": "app.tools.letters._uid",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.letters",
+      "target": "app.tools.letters.make_letter_title",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.letters",
+      "target": "app.tools.letters.parse_letter",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.letters",
+      "target": "app.tools.letters.render_letter",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.letters",
+      "target": "app.tools.letters.draft_letter",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.letters",
+      "target": "app.tools.letters.parse_follow_up",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.letters",
+      "target": "app.tools.letters._tracker_con",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.letters",
+      "target": "app.tools.letters.track_response",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.letters",
+      "target": "os",
+      "type": "imports"
+    },
+    {
+      "source": "app.tools.letters",
+      "target": "re",
+      "type": "imports"
+    },
+    {
+      "source": "app.tools.letters",
+      "target": "sqlite3",
+      "type": "imports"
+    },
+    {
+      "source": "app.tools.letters",
+      "target": "time",
+      "type": "imports"
+    },
+    {
+      "source": "app.tools.letters",
+      "target": "google.adk.tools",
+      "type": "imports"
+    },
+    {
+      "source": "app.tools.match",
+      "target": "app.tools.match._con_ro",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.match",
+      "target": "app.tools.match._load_profile",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.match",
+      "target": "app.tools.match._candidates",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.match",
+      "target": "app.tools.match.match_profile",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.match",
+      "target": "app.tools.match.skill_gap",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.match",
+      "target": "os",
+      "type": "imports"
+    },
+    {
+      "source": "app.tools.match",
+      "target": "sqlite3",
+      "type": "imports"
+    },
+    {
+      "source": "app.tools.match",
+      "target": "sys",
+      "type": "imports"
+    },
+    {
+      "source": "app.tools.match",
+      "target": "match_gap",
+      "type": "imports"
+    },
+    {
+      "source": "app.tools.salary",
+      "target": "app.tools.salary._con_ro",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.salary",
+      "target": "app.tools.salary._quantiles",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.salary",
+      "target": "app.tools.salary.salary_stats",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.salary",
+      "target": "app.tools.salary.salary_trend",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.salary",
+      "target": "sqlite3",
+      "type": "imports"
+    },
+    {
+      "source": "app.tools.search",
+      "target": "app.tools.search._con_ro",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.search",
+      "target": "app.tools.search._fts_query",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.search",
+      "target": "app.tools.search._net",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.search",
+      "target": "app.tools.search._row_to_card",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.search",
+      "target": "app.tools.search.search_vacancies",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.search",
+      "target": "app.tools.search.run",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.search",
+      "target": "app.tools.search.rerank",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.search",
+      "target": "app.tools.search.key",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.search",
+      "target": "app.tools.search.vacancy_details",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.search",
+      "target": "re",
+      "type": "imports"
+    },
+    {
+      "source": "app.tools.search",
+      "target": "sqlite3",
+      "type": "imports"
+    },
+    {
+      "source": "app.tools.semantic",
+      "target": "app.tools.semantic._paths",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.semantic",
+      "target": "app.tools.semantic._index",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.semantic",
+      "target": "app.tools.semantic._sims",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.semantic",
+      "target": "app.tools.semantic._cards",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.semantic",
+      "target": "app.tools.semantic._filter_city",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.semantic",
+      "target": "app.tools.semantic.semantic_search",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.semantic",
+      "target": "app.tools.semantic.similar_vacancies",
+      "type": "contains"
+    },
+    {
+      "source": "app.tools.semantic",
+      "target": "json",
+      "type": "imports"
+    },
+    {
+      "source": "app.tools.semantic",
+      "target": "os",
+      "type": "imports"
+    },
+    {
+      "source": "app.tools.semantic",
+      "target": "sqlite3",
+      "type": "imports"
+    },
+    {
+      "source": "app.tools.semantic",
+      "target": "threading",
+      "type": "imports"
+    },
+    {
+      "source": "app.tools.semantic",
+      "target": "joblib",
+      "type": "imports"
+    },
+    {
+      "source": "app.tools.semantic",
+      "target": "scipy",
+      "type": "imports"
+    },
+    {
+      "source": "app.tools.semantic",
+      "target": "sklearn.preprocessing",
+      "type": "imports"
+    },
+    {
+      "source": "app.topic_gate",
+      "target": "app.topic_gate._centroid",
+      "type": "contains"
+    },
+    {
+      "source": "app.topic_gate",
+      "target": "app.topic_gate.classify",
+      "type": "contains"
+    },
+    {
+      "source": "app.topic_gate",
+      "target": "app.topic_gate.is_offtopic",
+      "type": "contains"
+    },
+    {
+      "source": "app.topic_gate",
+      "target": "re",
+      "type": "imports"
+    },
+    {
+      "source": "app.topic_gate",
+      "target": "sklearn.feature_extraction.text",
+      "type": "imports"
+    },
+    {
+      "source": "app.topic_gate",
+      "target": "sklearn.metrics.pairwise",
+      "type": "imports"
+    },
+    {
+      "source": "tests.conftest",
+      "target": "os",
+      "type": "imports"
+    },
+    {
+      "source": "tests.conftest",
+      "target": "sys",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_guardrails",
+      "target": "tests.test_guardrails.TestPreFilter",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_guardrails.TestPreFilter",
+      "target": "tests.test_guardrails.TestPreFilter.test_valid_domain_question",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_guardrails.TestPreFilter",
+      "target": "tests.test_guardrails.TestPreFilter.test_injection_ru",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_guardrails.TestPreFilter",
+      "target": "tests.test_guardrails.TestPreFilter.test_injection_en",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_guardrails.TestPreFilter",
+      "target": "tests.test_guardrails.TestPreFilter.test_injection_prompt_dump",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_guardrails.TestPreFilter",
+      "target": "tests.test_guardrails.TestPreFilter.test_injection_dan",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_guardrails.TestPreFilter",
+      "target": "tests.test_guardrails.TestPreFilter.test_too_long",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_guardrails.TestPreFilter",
+      "target": "tests.test_guardrails.TestPreFilter.test_empty",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_guardrails.TestPreFilter",
+      "target": "tests.test_guardrails.TestPreFilter.test_refusal_constants",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_guardrails",
+      "target": "tests.test_guardrails.TestPostFilter",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_guardrails.TestPostFilter",
+      "target": "tests.test_guardrails.TestPostFilter.test_normal_answer_passes",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_guardrails.TestPostFilter",
+      "target": "tests.test_guardrails.TestPostFilter.test_correct_refusal_passes",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_guardrails.TestPostFilter",
+      "target": "tests.test_guardrails.TestPostFilter.test_prompt_leak_blocked",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_guardrails.TestPostFilter",
+      "target": "tests.test_guardrails.TestPostFilter.test_forbidden_send_claim",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_guardrails.TestPostFilter",
+      "target": "tests.test_guardrails.TestPostFilter.test_forbidden_send_claim_en",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_guardrails",
+      "target": "pytest",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_guardrails",
+      "target": "app",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_guardrails",
+      "target": "app.system_prompt",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_memory",
+      "target": "tests.test_memory._event",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_memory",
+      "target": "tests.test_memory.TestExtractAndTitle",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_memory.TestExtractAndTitle",
+      "target": "tests.test_memory.TestExtractAndTitle.test_extract_messages",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_memory.TestExtractAndTitle",
+      "target": "tests.test_memory.TestExtractAndTitle.test_dialog_title_first_sentence",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_memory.TestExtractAndTitle",
+      "target": "tests.test_memory.TestExtractAndTitle.test_dialog_title_truncates_long",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_memory",
+      "target": "tests.test_memory.TestCompaction",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_memory.TestCompaction",
+      "target": "tests.test_memory.TestCompaction.test_fallback_summary",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_memory.TestCompaction",
+      "target": "tests.test_memory.TestCompaction.test_compact_replaces_old_events_with_summary",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_memory.TestCompaction",
+      "target": "tests.test_memory.TestCompaction.fake_summarize",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_memory.TestCompaction",
+      "target": "tests.test_memory.TestCompaction.run",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_memory.TestCompaction",
+      "target": "tests.test_memory.TestCompaction.test_compact_skips_short_history",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_memory.TestCompaction",
+      "target": "tests.test_memory.TestCompaction.run",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_memory",
+      "target": "asyncio",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_memory",
+      "target": "types",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_memory",
+      "target": "app",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_memory",
+      "target": "google.adk.sessions",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_memory",
+      "target": "google.adk.events.event",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_memory",
+      "target": "google.genai",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_memory",
+      "target": "google.adk.sessions",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_new_features",
+      "target": "tests.test_new_features.TestTopicGate",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_new_features.TestTopicGate",
+      "target": "tests.test_new_features.TestTopicGate.test_career_questions_pass",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_new_features.TestTopicGate",
+      "target": "tests.test_new_features.TestTopicGate.test_offtopic_blocked",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_new_features.TestTopicGate",
+      "target": "tests.test_new_features.TestTopicGate.test_neutral_short_messages_pass_to_model",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_new_features.TestTopicGate",
+      "target": "tests.test_new_features.TestTopicGate.test_pre_filter_offtopic_reason",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_new_features",
+      "target": "tests.test_new_features.TestEvalsChecks",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_new_features.TestEvalsChecks",
+      "target": "tests.test_new_features.TestEvalsChecks.test_numbers_in",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_new_features.TestEvalsChecks",
+      "target": "tests.test_new_features.TestEvalsChecks.test_check_numbers_ok_and_violations",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_new_features.TestEvalsChecks",
+      "target": "tests.test_new_features.TestEvalsChecks.test_small_ints_and_years_allowed",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_new_features.TestEvalsChecks",
+      "target": "tests.test_new_features.TestEvalsChecks.test_check_tools",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_new_features.TestEvalsChecks",
+      "target": "tests.test_new_features.TestEvalsChecks.test_score_answer_refusal",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_new_features.TestEvalsChecks",
+      "target": "tests.test_new_features.TestEvalsChecks.test_benchmark_loads",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_new_features",
+      "target": "tests.test_new_features.TestSemantic",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_new_features.TestSemantic",
+      "target": "tests.test_new_features.TestSemantic.test_semantic_search_returns_cards",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_new_features.TestSemantic",
+      "target": "tests.test_new_features.TestSemantic.test_vacancy_details_full_card",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_new_features.TestSemantic",
+      "target": "tests.test_new_features.TestSemantic.test_similar_vacancies",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_new_features",
+      "target": "tests.test_new_features.TestFreshAndTrend",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_new_features.TestFreshAndTrend",
+      "target": "tests.test_new_features.TestFreshAndTrend.test_fresh_vacancies",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_new_features.TestFreshAndTrend",
+      "target": "tests.test_new_features.TestFreshAndTrend.test_salary_trend_months",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_new_features",
+      "target": "tests.test_new_features.TestFollowUp",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_new_features.TestFollowUp",
+      "target": "tests.test_new_features.TestFollowUp.test_parse_follow_up",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_new_features.TestFollowUp",
+      "target": "tests.test_new_features.TestFollowUp.test_tracker_follow_up_persists",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_new_features",
+      "target": "tests.test_new_features.TestProfileAPI",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_new_features.TestProfileAPI",
+      "target": "tests.test_new_features.TestProfileAPI.test_profile_get_and_put",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_new_features",
+      "target": "datetime",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_new_features",
+      "target": "json",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_new_features",
+      "target": "os",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_new_features",
+      "target": "shutil",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_new_features",
+      "target": "pytest",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_new_features",
+      "target": "app",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_new_features",
+      "target": "app.tools.fresh",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_new_features",
+      "target": "app.tools.letters",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_new_features",
+      "target": "app.tools.salary",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_new_features",
+      "target": "app.tools.semantic",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_new_features",
+      "target": "app.tools",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_new_features",
+      "target": "fastapi.testclient",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_new_features",
+      "target": "app.server",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_server",
+      "target": "tests.test_server.client",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_server",
+      "target": "tests.test_server._reg",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_server",
+      "target": "tests.test_server.TestAuth",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_server.TestAuth",
+      "target": "tests.test_server.TestAuth.test_register_login_me",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_server.TestAuth",
+      "target": "tests.test_server.TestAuth.test_duplicate_and_weak_password",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_server.TestAuth",
+      "target": "tests.test_server.TestAuth.test_bad_login",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_server.TestAuth",
+      "target": "tests.test_server.TestAuth.test_protected_without_token",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_server",
+      "target": "tests.test_server.TestIsolation",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_server.TestIsolation",
+      "target": "tests.test_server.TestIsolation.test_tracker_isolated",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_server.TestIsolation",
+      "target": "tests.test_server.TestIsolation.test_outbox_isolated",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_server.TestIsolation",
+      "target": "tests.test_server.TestIsolation.test_bad_status_rejected",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_server",
+      "target": "tests.test_server.TestSSE",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_server.TestSSE",
+      "target": "tests.test_server.TestSSE.test_injection_refused_without_model",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_server.TestSSE",
+      "target": "tests.test_server.TestSSE.test_refusal_saves_no_empty_dialog",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_server.TestSSE",
+      "target": "tests.test_server.TestSSE.test_empty_session_purged",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_server.TestSSE",
+      "target": "tests.test_server.TestSSE.test_rename_and_delete_session",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_server.TestSSE",
+      "target": "tests.test_server.TestSSE.test_session_isolation_delete",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_server.TestSSE",
+      "target": "tests.test_server.TestSSE.test_unknown_session_404",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_server",
+      "target": "tests.test_server.TestFrontend",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_server.TestFrontend",
+      "target": "tests.test_server.TestFrontend.test_index_served",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_server.TestFrontend",
+      "target": "tests.test_server.TestFrontend.test_static_assets",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_server",
+      "target": "tests.test_server.TestLettersAPI",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_server.TestLettersAPI",
+      "target": "tests.test_server.TestLettersAPI._draft",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_server.TestLettersAPI",
+      "target": "tests.test_server.TestLettersAPI.test_outbox_parses_title_and_body",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_server.TestLettersAPI",
+      "target": "tests.test_server.TestLettersAPI.test_letter_rename_and_edit",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_server.TestLettersAPI",
+      "target": "tests.test_server.TestLettersAPI.test_letter_path_is_user_scoped",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_server",
+      "target": "os",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_server",
+      "target": "pytest",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_server",
+      "target": "fastapi.testclient",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_server",
+      "target": "app",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_server",
+      "target": "app.tools.letters",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_server",
+      "target": "app.server",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_server",
+      "target": "app.server.main",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_server",
+      "target": "app.tools",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_server",
+      "target": "types",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_server",
+      "target": "app.tools",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_server",
+      "target": "types",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_tools",
+      "target": "tests.test_tools.TestSearch",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_tools.TestSearch",
+      "target": "tests.test_tools.TestSearch.test_bounded_and_shaped",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_tools.TestSearch",
+      "target": "tests.test_tools.TestSearch.test_city_filter_respected",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_tools.TestSearch",
+      "target": "tests.test_tools.TestSearch.test_limit_clamped",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_tools.TestSearch",
+      "target": "tests.test_tools.TestSearch.test_details_unknown_id",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_tools.TestSearch",
+      "target": "tests.test_tools.TestSearch.test_details_real",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_tools",
+      "target": "tests.test_tools.TestMatchGap",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_tools.TestMatchGap",
+      "target": "tests.test_tools.TestMatchGap.test_match_shape",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_tools.TestMatchGap",
+      "target": "tests.test_tools.TestMatchGap.test_unknown_profile",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_tools.TestMatchGap",
+      "target": "tests.test_tools.TestMatchGap.test_gap_shape",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_tools",
+      "target": "tests.test_tools.TestSalary",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_tools.TestSalary",
+      "target": "tests.test_tools.TestSalary.test_quantiles_ordered",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_tools.TestSalary",
+      "target": "tests.test_tools.TestSalary.test_empty_selection",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_tools",
+      "target": "tests.test_tools.TestLocalWrites",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_tools.TestLocalWrites",
+      "target": "tests.test_tools.TestLocalWrites.test_letter_saved_not_sent",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_tools.TestLocalWrites",
+      "target": "tests.test_tools.TestLocalWrites.test_letter_too_short",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_tools.TestLocalWrites",
+      "target": "tests.test_tools.TestLocalWrites.test_tracker_validation_and_list",
+      "type": "contains"
+    },
+    {
+      "source": "tests.test_tools",
+      "target": "os",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_tools",
+      "target": "pytest",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_tools",
+      "target": "app",
+      "type": "imports"
+    },
+    {
+      "source": "tests.test_tools",
+      "target": "app.tools",
+      "type": "imports"
+    },
+    {
+      "source": "tools.build_db",
+      "target": "tools.build_db.clean_html",
+      "type": "contains"
+    },
+    {
+      "source": "tools.build_db",
+      "target": "tools.build_db.fnum",
+      "type": "contains"
+    },
+    {
+      "source": "tools.build_db",
+      "target": "tools.build_db.fstr",
+      "type": "contains"
+    },
+    {
+      "source": "tools.build_db",
+      "target": "tools.build_db.fgross",
+      "type": "contains"
+    },
+    {
+      "source": "tools.build_db",
+      "target": "tools.build_db.load_rates",
+      "type": "contains"
+    },
+    {
+      "source": "tools.build_db",
+      "target": "tools.build_db.conv",
+      "type": "contains"
+    },
+    {
+      "source": "tools.build_db",
+      "target": "tools.build_db.skills_for_text",
+      "type": "contains"
+    },
+    {
+      "source": "tools.build_db",
+      "target": "tools.build_db.import_api",
+      "type": "contains"
+    },
+    {
+      "source": "tools.build_db",
+      "target": "tools.build_db.import_kaggle_it",
+      "type": "contains"
+    },
+    {
+      "source": "tools.build_db",
+      "target": "tools.build_db.import_kaggle_raw",
+      "type": "contains"
+    },
+    {
+      "source": "tools.build_db",
+      "target": "tools.build_db.rebuild_fts",
+      "type": "contains"
+    },
+    {
+      "source": "tools.build_db",
+      "target": "tools.build_db.rebuild_salary_agg",
+      "type": "contains"
+    },
+    {
+      "source": "tools.build_db",
+      "target": "tools.build_db.cmd_full",
+      "type": "contains"
+    },
+    {
+      "source": "tools.build_db",
+      "target": "tools.build_db.cmd_incremental",
+      "type": "contains"
+    },
+    {
+      "source": "tools.build_db",
+      "target": "tools.build_db.cmd_stats",
+      "type": "contains"
+    },
+    {
+      "source": "tools.build_db",
+      "target": "tools.build_db.main",
+      "type": "contains"
+    },
+    {
+      "source": "tools.build_db",
+      "target": "argparse",
+      "type": "imports"
+    },
+    {
+      "source": "tools.build_db",
+      "target": "csv",
+      "type": "imports"
+    },
+    {
+      "source": "tools.build_db",
+      "target": "html",
+      "type": "imports"
+    },
+    {
+      "source": "tools.build_db",
+      "target": "json",
+      "type": "imports"
+    },
+    {
+      "source": "tools.build_db",
+      "target": "os",
+      "type": "imports"
+    },
+    {
+      "source": "tools.build_db",
+      "target": "re",
+      "type": "imports"
+    },
+    {
+      "source": "tools.build_db",
+      "target": "sqlite3",
+      "type": "imports"
+    },
+    {
+      "source": "tools.build_db",
+      "target": "sys",
+      "type": "imports"
+    },
+    {
+      "source": "tools.build_db",
+      "target": "time",
+      "type": "imports"
+    },
+    {
+      "source": "tools.build_db",
+      "target": "match_gap",
+      "type": "imports"
+    },
+    {
+      "source": "tools.build_db",
+      "target": "clean_merge",
+      "type": "imports"
+    },
+    {
+      "source": "tools.build_db",
+      "target": "match_gap",
+      "type": "imports"
+    },
+    {
+      "source": "tools.build_semantic",
+      "target": "tools.build_semantic.load_docs",
+      "type": "contains"
+    },
+    {
+      "source": "tools.build_semantic",
+      "target": "tools.build_semantic.build",
+      "type": "contains"
+    },
+    {
+      "source": "tools.build_semantic",
+      "target": "json",
+      "type": "imports"
+    },
+    {
+      "source": "tools.build_semantic",
+      "target": "os",
+      "type": "imports"
+    },
+    {
+      "source": "tools.build_semantic",
+      "target": "sqlite3",
+      "type": "imports"
+    },
+    {
+      "source": "tools.build_semantic",
+      "target": "sys",
+      "type": "imports"
+    },
+    {
+      "source": "tools.build_semantic",
+      "target": "time",
+      "type": "imports"
+    },
+    {
+      "source": "tools.build_semantic",
+      "target": "joblib",
+      "type": "imports"
+    },
+    {
+      "source": "tools.build_semantic",
+      "target": "sklearn.decomposition",
+      "type": "imports"
+    },
+    {
+      "source": "tools.build_semantic",
+      "target": "sklearn.feature_extraction.text",
+      "type": "imports"
+    },
+    {
+      "source": "tools.build_semantic",
+      "target": "sklearn.preprocessing",
+      "type": "imports"
+    },
+    {
+      "source": "tools.build_semantic",
+      "target": "scipy",
+      "type": "imports"
+    },
+    {
+      "source": "tools.check_token",
+      "target": "tools.check_token.parse_env",
+      "type": "contains"
+    },
+    {
+      "source": "tools.check_token",
+      "target": "json",
+      "type": "imports"
+    },
+    {
+      "source": "tools.check_token",
+      "target": "os",
+      "type": "imports"
+    },
+    {
+      "source": "tools.check_token",
+      "target": "re",
+      "type": "imports"
+    },
+    {
+      "source": "tools.check_token",
+      "target": "sys",
+      "type": "imports"
+    },
+    {
+      "source": "tools.check_token",
+      "target": "urllib.request",
+      "type": "imports"
+    },
+    {
+      "source": "tools.check_token",
+      "target": "urllib.parse",
+      "type": "imports"
+    },
+    {
+      "source": "tools.clean_merge",
+      "target": "tools.clean_merge.fetch_cb_rates",
+      "type": "contains"
+    },
+    {
+      "source": "tools.clean_merge",
+      "target": "tools.clean_merge.norm_exp",
+      "type": "contains"
+    },
+    {
+      "source": "tools.clean_merge",
+      "target": "tools.clean_merge.parse_salary_str",
+      "type": "contains"
+    },
+    {
+      "source": "tools.clean_merge",
+      "target": "tools.clean_merge.conv",
+      "type": "contains"
+    },
+    {
+      "source": "tools.clean_merge",
+      "target": "tools.clean_merge.main",
+      "type": "contains"
+    },
+    {
+      "source": "tools.clean_merge",
+      "target": "tools.clean_merge.emit",
+      "type": "contains"
+    },
+    {
+      "source": "tools.clean_merge",
+      "target": "csv",
+      "type": "imports"
+    },
+    {
+      "source": "tools.clean_merge",
+      "target": "json",
+      "type": "imports"
+    },
+    {
+      "source": "tools.clean_merge",
+      "target": "os",
+      "type": "imports"
+    },
+    {
+      "source": "tools.clean_merge",
+      "target": "re",
+      "type": "imports"
+    },
+    {
+      "source": "tools.clean_merge",
+      "target": "sys",
+      "type": "imports"
+    },
+    {
+      "source": "tools.clean_merge",
+      "target": "urllib.request",
+      "type": "imports"
+    },
+    {
+      "source": "tools.clean_merge",
+      "target": "subprocess",
+      "type": "imports"
+    },
+    {
+      "source": "tools.collect_hh",
+      "target": "tools.collect_hh.parse_env",
+      "type": "contains"
+    },
+    {
+      "source": "tools.collect_hh",
+      "target": "tools.collect_hh.api_get",
+      "type": "contains"
+    },
+    {
+      "source": "tools.collect_hh",
+      "target": "tools.collect_hh.norm_item",
+      "type": "contains"
+    },
+    {
+      "source": "tools.collect_hh",
+      "target": "tools.collect_hh.load_seen",
+      "type": "contains"
+    },
+    {
+      "source": "tools.collect_hh",
+      "target": "tools.collect_hh.collect_lists",
+      "type": "contains"
+    },
+    {
+      "source": "tools.collect_hh",
+      "target": "tools.collect_hh.build_csv",
+      "type": "contains"
+    },
+    {
+      "source": "tools.collect_hh",
+      "target": "tools.collect_hh.clean_html",
+      "type": "contains"
+    },
+    {
+      "source": "tools.collect_hh",
+      "target": "tools.collect_hh.collect_details",
+      "type": "contains"
+    },
+    {
+      "source": "tools.collect_hh",
+      "target": "tools.collect_hh.main",
+      "type": "contains"
+    },
+    {
+      "source": "tools.collect_hh",
+      "target": "argparse",
+      "type": "imports"
+    },
+    {
+      "source": "tools.collect_hh",
+      "target": "csv",
+      "type": "imports"
+    },
+    {
+      "source": "tools.collect_hh",
+      "target": "html",
+      "type": "imports"
+    },
+    {
+      "source": "tools.collect_hh",
+      "target": "json",
+      "type": "imports"
+    },
+    {
+      "source": "tools.collect_hh",
+      "target": "os",
+      "type": "imports"
+    },
+    {
+      "source": "tools.collect_hh",
+      "target": "re",
+      "type": "imports"
+    },
+    {
+      "source": "tools.collect_hh",
+      "target": "sys",
+      "type": "imports"
+    },
+    {
+      "source": "tools.collect_hh",
+      "target": "time",
+      "type": "imports"
+    },
+    {
+      "source": "tools.collect_hh",
+      "target": "urllib.parse",
+      "type": "imports"
+    },
+    {
+      "source": "tools.collect_hh",
+      "target": "urllib.request",
+      "type": "imports"
+    },
+    {
+      "source": "tools.collect_hh",
+      "target": "urllib.error",
+      "type": "imports"
+    },
+    {
+      "source": "tools.daily_increment",
+      "target": "tools.daily_increment.log",
+      "type": "contains"
+    },
+    {
+      "source": "tools.daily_increment",
+      "target": "tools.daily_increment.run",
+      "type": "contains"
+    },
+    {
+      "source": "tools.daily_increment",
+      "target": "tools.daily_increment.db_counts",
+      "type": "contains"
+    },
+    {
+      "source": "tools.daily_increment",
+      "target": "tools.daily_increment.main",
+      "type": "contains"
+    },
+    {
+      "source": "tools.daily_increment",
+      "target": "argparse",
+      "type": "imports"
+    },
+    {
+      "source": "tools.daily_increment",
+      "target": "os",
+      "type": "imports"
+    },
+    {
+      "source": "tools.daily_increment",
+      "target": "sqlite3",
+      "type": "imports"
+    },
+    {
+      "source": "tools.daily_increment",
+      "target": "subprocess",
+      "type": "imports"
+    },
+    {
+      "source": "tools.daily_increment",
+      "target": "sys",
+      "type": "imports"
+    },
+    {
+      "source": "tools.daily_increment",
+      "target": "time",
+      "type": "imports"
+    },
+    {
+      "source": "tools.hh_client",
+      "target": "tools.hh_client.load_env",
+      "type": "contains"
+    },
+    {
+      "source": "tools.hh_client",
+      "target": "tools.hh_client.HHError",
+      "type": "contains"
+    },
+    {
+      "source": "tools.hh_client",
+      "target": "tools.hh_client.HHClient",
+      "type": "contains"
+    },
+    {
+      "source": "tools.hh_client.HHClient",
+      "target": "tools.hh_client.HHClient.__init__",
+      "type": "contains"
+    },
+    {
+      "source": "tools.hh_client.HHClient",
+      "target": "tools.hh_client.HHClient._throttle",
+      "type": "contains"
+    },
+    {
+      "source": "tools.hh_client.HHClient",
+      "target": "tools.hh_client.HHClient.get",
+      "type": "contains"
+    },
+    {
+      "source": "tools.hh_client.HHClient",
+      "target": "tools.hh_client.HHClient.search_vacancies",
+      "type": "contains"
+    },
+    {
+      "source": "tools.hh_client.HHClient",
+      "target": "tools.hh_client.HHClient.vacancy",
+      "type": "contains"
+    },
+    {
+      "source": "tools.hh_client.HHClient",
+      "target": "tools.hh_client.HHClient.related",
+      "type": "contains"
+    },
+    {
+      "source": "tools.hh_client.HHClient",
+      "target": "tools.hh_client.HHClient.similar",
+      "type": "contains"
+    },
+    {
+      "source": "tools.hh_client.HHClient",
+      "target": "tools.hh_client.HHClient.dictionaries",
+      "type": "contains"
+    },
+    {
+      "source": "tools.hh_client.HHClient",
+      "target": "tools.hh_client.HHClient.employer",
+      "type": "contains"
+    },
+    {
+      "source": "tools.hh_client.HHClient",
+      "target": "tools.hh_client.HHClient.skill_ids",
+      "type": "contains"
+    },
+    {
+      "source": "tools.hh_client.HHClient",
+      "target": "tools.hh_client.HHClient.skills",
+      "type": "contains"
+    },
+    {
+      "source": "tools.hh_client",
+      "target": "json",
+      "type": "imports"
+    },
+    {
+      "source": "tools.hh_client",
+      "target": "os",
+      "type": "imports"
+    },
+    {
+      "source": "tools.hh_client",
+      "target": "time",
+      "type": "imports"
+    },
+    {
+      "source": "tools.hh_client",
+      "target": "urllib.error",
+      "type": "imports"
+    },
+    {
+      "source": "tools.hh_client",
+      "target": "urllib.parse",
+      "type": "imports"
+    },
+    {
+      "source": "tools.hh_client",
+      "target": "urllib.request",
+      "type": "imports"
+    },
+    {
+      "source": "tools.match_gap",
+      "target": "tools.match_gap.canon",
+      "type": "contains"
+    },
+    {
+      "source": "tools.match_gap",
+      "target": "tools.match_gap.detect",
+      "type": "contains"
+    },
+    {
+      "source": "tools.match_gap",
+      "target": "tools.match_gap.load_profiles",
+      "type": "contains"
+    },
+    {
+      "source": "tools.match_gap",
+      "target": "tools.match_gap.load_vacancies",
+      "type": "contains"
+    },
+    {
+      "source": "tools.match_gap",
+      "target": "tools.match_gap.score_vacancy",
+      "type": "contains"
+    },
+    {
+      "source": "tools.match_gap",
+      "target": "tools.match_gap.main",
+      "type": "contains"
+    },
+    {
+      "source": "tools.match_gap",
+      "target": "csv",
+      "type": "imports"
+    },
+    {
+      "source": "tools.match_gap",
+      "target": "html",
+      "type": "imports"
+    },
+    {
+      "source": "tools.match_gap",
+      "target": "json",
+      "type": "imports"
+    },
+    {
+      "source": "tools.match_gap",
+      "target": "os",
+      "type": "imports"
+    },
+    {
+      "source": "tools.match_gap",
+      "target": "re",
+      "type": "imports"
+    },
+    {
+      "source": "tools.match_gap",
+      "target": "sys",
+      "type": "imports"
+    },
+    {
+      "source": "tools.parse_resume",
+      "target": "tools.parse_resume.extract_text",
+      "type": "contains"
+    },
+    {
+      "source": "tools.parse_resume",
+      "target": "tools.parse_resume.detect_skills",
+      "type": "contains"
+    },
+    {
+      "source": "tools.parse_resume",
+      "target": "tools.parse_resume.detect_title",
+      "type": "contains"
+    },
+    {
+      "source": "tools.parse_resume",
+      "target": "tools.parse_resume.detect_city",
+      "type": "contains"
+    },
+    {
+      "source": "tools.parse_resume",
+      "target": "tools.parse_resume.detect_experience_years",
+      "type": "contains"
+    },
+    {
+      "source": "tools.parse_resume",
+      "target": "tools.parse_resume.detect_education",
+      "type": "contains"
+    },
+    {
+      "source": "tools.parse_resume",
+      "target": "tools.parse_resume.detect_languages",
+      "type": "contains"
+    },
+    {
+      "source": "tools.parse_resume",
+      "target": "tools.parse_resume.parse_resume",
+      "type": "contains"
+    },
+    {
+      "source": "tools.parse_resume",
+      "target": "tools.parse_resume.main",
+      "type": "contains"
+    },
+    {
+      "source": "tools.parse_resume",
+      "target": "argparse",
+      "type": "imports"
+    },
+    {
+      "source": "tools.parse_resume",
+      "target": "json",
+      "type": "imports"
+    },
+    {
+      "source": "tools.parse_resume",
+      "target": "os",
+      "type": "imports"
+    },
+    {
+      "source": "tools.parse_resume",
+      "target": "re",
+      "type": "imports"
+    },
+    {
+      "source": "tools.parse_resume",
+      "target": "sys",
+      "type": "imports"
+    },
+    {
+      "source": "tools.parse_resume",
+      "target": "match_gap",
+      "type": "imports"
+    },
+    {
+      "source": "tools.parse_resume",
+      "target": "pypdf",
+      "type": "imports"
+    },
+    {
+      "source": "tools.run_evals",
+      "target": "tools.run_evals.run_question",
+      "type": "contains"
+    },
+    {
+      "source": "tools.run_evals",
+      "target": "tools.run_evals.judge",
+      "type": "contains"
+    },
+    {
+      "source": "tools.run_evals",
+      "target": "tools.run_evals.main",
+      "type": "contains"
+    },
+    {
+      "source": "tools.run_evals",
+      "target": "argparse",
+      "type": "imports"
+    },
+    {
+      "source": "tools.run_evals",
+      "target": "asyncio",
+      "type": "imports"
+    },
+    {
+      "source": "tools.run_evals",
+      "target": "json",
+      "type": "imports"
+    },
+    {
+      "source": "tools.run_evals",
+      "target": "os",
+      "type": "imports"
+    },
+    {
+      "source": "tools.run_evals",
+      "target": "sys",
+      "type": "imports"
+    },
+    {
+      "source": "tools.run_evals",
+      "target": "time",
+      "type": "imports"
+    },
+    {
+      "source": "tools.run_evals",
+      "target": "app",
+      "type": "imports"
+    },
+    {
+      "source": "tools.run_evals",
+      "target": "app",
+      "type": "imports"
+    },
+    {
+      "source": "tools.run_evals",
+      "target": "app.agent",
+      "type": "imports"
+    },
+    {
+      "source": "tools.run_evals",
+      "target": "app.event_protocol",
+      "type": "imports"
+    },
+    {
+      "source": "tools.run_evals",
+      "target": "app.system_prompt",
+      "type": "imports"
+    },
+    {
+      "source": "tools.run_evals",
+      "target": "litellm",
+      "type": "imports"
+    },
+    {
+      "source": "tools.run_evals",
+      "target": "google.adk.runners",
+      "type": "imports"
+    },
+    {
+      "source": "tools.run_evals",
+      "target": "google.adk.sessions",
+      "type": "imports"
+    },
+    {
+      "source": "tools.stats_preview",
+      "target": "os",
+      "type": "imports"
+    },
+    {
+      "source": "tools.stats_preview",
+      "target": "json",
+      "type": "imports"
+    },
+    {
+      "source": "tools.stats_preview",
+      "target": "collections",
+      "type": "imports"
+    }
+  ],
+  "warnings": [
+    "gitignore rules applied from: .gitignore"
+  ]
+}

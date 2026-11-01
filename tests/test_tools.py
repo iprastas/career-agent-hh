@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 """Инструменты агента: ограничение выдачи, следование фильтрам, локальные записи."""
+import json
 import os
+import types
 
 import pytest
 
 from app import config
 from app.tools import (search_vacancies, vacancy_details, match_profile, skill_gap,
                        salary_stats, draft_letter, track_response)
+from app.tools.match import resolve_profile_id
 
 pytestmark = pytest.mark.skipif(not os.path.exists(config.APP_DB),
                                 reason="data/app.db не собран (запустите tools/build_db.py --full)")
@@ -31,6 +34,31 @@ class TestSearch:
 
     def test_details_unknown_id(self):
         assert "error" in vacancy_details("999999999999")
+
+    def test_employer_autodetect_filters_company(self):
+        """Компания из запроса распознаётся автоматически: в выдаче только её вакансии."""
+        r = search_vacancies("вакансии Яндекс", limit=6)
+        assert r["employer_filter"] == "яндекс"
+        assert len(r["vacancies"]) > 0
+        for v in r["vacancies"]:
+            assert "яндекс" in v["employer"].lower()
+
+    def test_employer_param(self):
+        r = search_vacancies("разработчик", employer="Яндекс", limit=4)
+        assert r["employer_filter"].lower() == "яндекс"
+        for v in r["vacancies"]:
+            assert "яндекс" in v["employer"].lower()
+
+    def test_actual_only_excludes_archive_2023(self):
+        """«Актуальные» запросы не возвращают архивный слой 2023 года."""
+        r = search_vacancies("актуальные вакансии", limit=8)
+        assert r["actual_only"] is True
+        assert len(r["vacancies"]) > 0
+        for v in r["vacancies"]:
+            assert not (v["published_at"] or "").startswith("2023")
+        r2 = search_vacancies("вакансии", actual_only=True, limit=8)
+        for v in r2["vacancies"]:
+            assert not (v["published_at"] or "").startswith("2023")
 
     def test_details_real(self):
         r = search_vacancies("C# разработчик", limit=1)
@@ -58,6 +86,34 @@ class TestMatchGap:
         for s in g["skills"]:
             assert s["priority"] in ("-", "высокий", "средний", "низкий")
             assert s["share_pct"] >= 0
+            assert not s["in_profile"]  # skills — только разрыв (чего нет в резюме)
+        # навыки резюме не тонут в обрезке top_n: видны в covered с флагом in_profile
+        assert len(g["covered"]) <= 5
+        assert all(s["in_profile"] for s in g["covered"])
+        assert any(s["skill"] == "c#" for s in g["covered"])
+
+
+class TestProfileIsolation:
+    def test_user_profile_from_context(self, tmp_path, monkeypatch):
+        """Инструменты берут СОБСТВЕННОЕ резюме пользователя из контекста; у нового
+        пользователя без резюме — ошибка с подсказкой, а не чужой профиль."""
+        monkeypatch.setattr(config, "PROFILES_DIR", str(tmp_path))
+        with open(tmp_path / "u7.json", "w", encoding="utf-8") as f:
+            json.dump({"profile_id": "u7", "title": "тест", "location": "Казань",
+                       "skills": [{"name": "C#", "weight": "core"}],
+                       "preferences": {"salary_net": 100000}}, f)
+        ctx = types.SimpleNamespace(user_id="u7")
+        assert resolve_profile_id("", ctx) == "u7"
+        m = match_profile("", top_n=2, tool_context=ctx)
+        assert m.get("profile") == "u7" and "error" not in m
+        # у пользователя без резюме — честная ошибка, а не данные anastasia
+        ctx2 = types.SimpleNamespace(user_id="u99")
+        assert resolve_profile_id("", ctx2) == "u99"
+        r = match_profile("", top_n=2, tool_context=ctx2)
+        assert "error" in r and "u99" in r["error"]
+        assert "error" in skill_gap("", tool_context=ctx2)
+        # явный id профиля работает (примеры anastasia/junior/...)
+        assert resolve_profile_id("anastasia", ctx2) == "anastasia"
 
 
 class TestSalary:

@@ -31,15 +31,57 @@ _SUMMARIZE_PROMPT = """Ты сжимаешь протокол диалога к�
 
 
 def extract_messages(session):
-    """Текстовые сообщения сессии: [{'role': 'user'|'agent', 'text': ...}]."""
+    """Сообщения сессии для истории/UI: [{'role': 'user'|'agent', 'text': ...,
+    'think': ..., 'tools': [{'name': ..., 'payload': ...}]}].
+
+    Части reasonig-модели (thought) НЕ смешиваются с ответом — они идут отдельным
+    полем 'think' (в UI — сворачиваемый блок «агент думает», а не кусок ответа).
+    Результаты инструментов (function_response) собираются в 'tools' — по ним
+    интерфейс восстанавливает кликабельные карточки вакансий при открытии диалога.
+    Идущие подряд сообщения агента объединяются в один «ход» (think + tools + ответ).
+    Внимание: ADK складывает function_response в события с role='user' — такие события
+    относятся к ходу АГЕНТА (результаты инструментов), а не к реплике пользователя."""
     msgs = []
     for ev in getattr(session, "events", []) or []:
         if not (ev.content and ev.content.parts):
             continue
         role = "user" if getattr(ev.content, "role", "") == "user" else "agent"
-        text = " ".join(p.text for p in ev.content.parts if getattr(p, "text", None))
-        if text.strip():
-            msgs.append({"role": role, "text": text.strip()})
+        texts, thinks, tools = [], [], []
+        for p in ev.content.parts:
+            if getattr(p, "function_call", None) is not None:
+                continue
+            fr = getattr(p, "function_response", None)
+            if fr is not None:
+                raw = getattr(fr, "response", None)
+                tools.append({"name": getattr(fr, "name", "?"),
+                              "payload": raw if isinstance(raw, (dict, list)) else None})
+                continue
+            t = getattr(p, "text", None)
+            if not t:
+                continue
+            if getattr(p, "thought", False):
+                thinks.append(t)
+            else:
+                texts.append(t)
+        if not (texts or thinks or tools):
+            continue
+        if tools:
+            role = "agent"  # ответы инструментов — часть хода агента, не реплика пользователя
+        m = {"role": role, "text": " ".join(texts).strip()}
+        if thinks:
+            m["think"] = " ".join(thinks).strip()
+        if tools:
+            m["tools"] = tools
+        if msgs and role == "agent" and msgs[-1]["role"] == "agent":
+            prev = msgs[-1]
+            if m["text"]:
+                prev["text"] = (prev["text"] + "\n" + m["text"]).strip() if prev["text"] else m["text"]
+            if m.get("think"):
+                prev["think"] = (prev.get("think", "") + "\n" + m["think"]).strip()
+            if m.get("tools"):
+                prev.setdefault("tools", []).extend(m["tools"])
+        else:
+            msgs.append(m)
     return msgs
 
 
@@ -116,7 +158,9 @@ async def compact_if_needed(runner, user_id, session_id):
             if not (ev.content and ev.content.parts):
                 continue
             role = "user" if getattr(ev.content, "role", "") == "user" else "agent"
-            text = " ".join(p.text for p in ev.content.parts if getattr(p, "text", None))
+            text = " ".join(p.text for p in ev.content.parts
+                            if getattr(p, "text", None) and not getattr(p, "thought", False)
+                            and getattr(p, "function_response", None) is None)
             if text.strip():
                 old_msgs.append({"role": role, "text": text.strip()})
         if not old_msgs:

@@ -26,14 +26,17 @@ from google.adk.models import LLMRegistry  # noqa: E402
 from .tools import (draft_letter, fresh_vacancies, match_profile,  # noqa: E402
                     salary_stats, salary_trend, search_vacancies, semantic_search,
                     similar_vacancies, skill_gap, track_response, vacancy_details)
-from .system_prompt import SUB_INSTRUCTIONS, build_instruction  # noqa: E402
+from .system_prompt import SUB_INSTRUCTIONS, dynamic_instruction  # noqa: E402
 
 AGENT_NAME = "career_agent"
 APP_NAME = "career_agent_app"
 
 
-def build_agent(profile_id="anastasia"):
-    """Координатор + search_agent / analytics_agent / writer_agent."""
+def build_agent(profile_id=""):
+    """Координатор + search_agent / analytics_agent / writer_agent.
+
+    Инструкция координатора — callable: резюме подставляется из профиля текущего
+    пользователя (system_prompt.dynamic_instruction), а не общего «anastasia»."""
     model = config.model_name()
     LLMRegistry.resolve(model)  # fail fast: неверный префикс/модель
 
@@ -58,7 +61,7 @@ def build_agent(profile_id="anastasia"):
     return LlmAgent(
         name=AGENT_NAME,
         model=model,
-        instruction=build_instruction(profile_id),
+        instruction=dynamic_instruction,
         description="Карьерный агент: координатор — вакансии hh.ru, навыки и разрыв, "
                     "зарплаты, письма, отклики",
         sub_agents=[search_agent, analytics_agent, writer_agent],

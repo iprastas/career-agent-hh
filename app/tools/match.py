@@ -10,6 +10,8 @@ import os
 import sqlite3
 import sys
 
+from google.adk.tools import ToolContext
+
 from .. import config
 
 sys.path.insert(0, os.path.join(config.PROJECT, "tools"))
@@ -24,11 +26,27 @@ def _con_ro():
 
 
 def _load_profile(profile_id):
-    profs = load_profiles()
+    profs = load_profiles(config.PROFILES_DIR)
     for p in profs:
         if p["id"] == profile_id:
             return p
     return None
+
+
+def resolve_profile_id(profile_id: str = "", tool_context: ToolContext = None):
+    """Чей профиль использовать. Приоритет: явный аргумент > собственный профиль
+    пользователя из контекста (data/profiles/u<id>.json) > legacy 'anastasia' только
+    для прямых вызовов без контекста (консоль, старые тесты). Изоляция: один
+    пользователь никогда не видит резюме другого — своя запись или ошибка."""
+    pid = (profile_id or "").strip()
+    if pid:
+        return pid
+    uid = (getattr(tool_context, "user_id", "") or "") if tool_context is not None else ""
+    if uid and os.path.exists(os.path.join(config.PROFILES_DIR, uid + ".json")):
+        return uid
+    if tool_context is None:
+        return "anastasia"
+    return uid  # у этого пользователя профиля ещё нет -> вызывающий получит ошибку+подсказку
 
 
 def _candidates(con):
@@ -51,20 +69,24 @@ def _candidates(con):
     return out
 
 
-def match_profile(profile_id: str = "anastasia", top_n: int = 5):
+def match_profile(profile_id: str = "", top_n: int = 5, tool_context: ToolContext = None):
     """Подбор вакансий под профиль соискателя с прозрачным счётом и объяснением.
 
     Args:
-        profile_id: id профиля ("anastasia" — реальный, "junior"/"mid"/"senior" — синтетические).
+        profile_id: id профиля ("anastasia", "junior"/"mid"/"senior" — примеры);
+            пусто — собственный профиль пользователя из контекста (его резюме).
         top_n: сколько вакансий вернуть (1-10).
 
     Returns:
         dict: топ-N вакансий с score, покрытием навыков, matched/missing навыками и вилкой net.
     """
-    prof = _load_profile(profile_id or "anastasia")
+    pid = resolve_profile_id(profile_id, tool_context)
+    prof = _load_profile(pid)
     if not prof:
-        return {"error": "профиль не найден: " + str(profile_id),
-                "available": [p["id"] for p in load_profiles()]}
+        return {"error": "профиль не найден: " + str(pid or profile_id),
+                "hint": "заполните своё резюме во вкладке «Навыки» — прикрепите файл "
+                        "или заполните форму",
+                "available": [p["id"] for p in load_profiles(config.PROFILES_DIR)]}
     top_n = max(1, min(int(top_n or 5), 10))
     con = _con_ro()
     vacs = _candidates(con)
@@ -91,28 +113,34 @@ def match_profile(profile_id: str = "anastasia", top_n: int = 5):
             "salary_net_from": sf, "salary_net_to": st, "url": v["url"],
         })
     return {
-        "profile": profile_id, "candidates": len(cand), "shown": len(top), "vacancies": top,
+        "profile": pid, "candidates": len(cand), "shown": len(top), "vacancies": top,
         "method": "скор = 0.45·покрытие навыков + 0.20·название + 0.20·город/график + 0.15·зарплата, "
                   "штраф за опыт (3-6 лет ×0.95, 6+ ×0.5); навыки — единая каноническая карта; "
                   f"кандидатов в стеке профиля: {len(cand)} из {len(vacs)} вакансий api-среза",
     }
 
 
-def skill_gap(profile_id: str = "anastasia", top_n: int = 10):
+def skill_gap(profile_id: str = "", top_n: int = 10, tool_context: ToolContext = None):
     """Разрыв в навыках: какие навыки рынка есть в вакансиях стека, но отсутствуют в профиле.
 
     Args:
-        profile_id: id профиля ("anastasia", "junior", "mid", "senior").
+        profile_id: id профиля ("anastasia", "junior"/"mid"/"senior" — примеры);
+            пусто — собственный профиль пользователя из контекста (его резюме).
         top_n: сколько строк вернуть (1-25).
 
     Returns:
-        dict: навыки с долей на рынке, флагом in_profile и приоритетом (высокий >=20%,
-        средний >=8%, низкий <8% вакансий стека).
+        dict: skills — навыки рынка БЕЗ покрытия (разрыв) с долей и приоритетом
+        (высокий >=20%, средний >=8%, низкий <8% вакансий стека); covered — навыки,
+        которые уже есть в резюме (для сверки: добавленный навык виден здесь и
+        не считается отсутствующим).
     """
-    prof = _load_profile(profile_id or "anastasia")
+    pid = resolve_profile_id(profile_id, tool_context)
+    prof = _load_profile(pid)
     if not prof:
-        return {"error": "профиль не найден: " + str(profile_id),
-                "available": [p["id"] for p in load_profiles()]}
+        return {"error": "профиль не найден: " + str(pid or profile_id),
+                "hint": "заполните своё резюме во вкладке «Навыки» — прикрепите файл "
+                        "или заполните форму",
+                "available": [p["id"] for p in load_profiles(config.PROFILES_DIR)]}
     top_n = max(1, min(int(top_n or 10), 25))
     con = _con_ro()
     rows = con.execute("""
@@ -129,17 +157,21 @@ def skill_gap(profile_id: str = "anastasia", top_n: int = 10):
         for s in u:
             counts[s] = counts.get(s, 0) + 1
     prof_all = set(prof["skills"])
-    gaps = []
+    gaps, covered = [], []
     for s, n in sorted(counts.items(), key=lambda kv: -kv[1]):
         share = n / max(1, len(universe))
         in_prof = s in prof_all
         prio = "высокий" if share >= 0.20 else ("средний" if share >= 0.08 else "низкий")
-        gaps.append({"skill": s, "in_profile": in_prof, "vacancies": n,
-                     "share_pct": round(share * 100, 1),
-                     "priority": "-" if in_prof else prio})
-    gaps.sort(key=lambda g: (g["in_profile"], -g["vacancies"]))
+        row = {"skill": s, "in_profile": in_prof, "vacancies": n,
+               "share_pct": round(share * 100, 1),
+               "priority": "-" if in_prof else prio}
+        # разрыв и покрытие — разные списки: добавленный в резюме навык не тонет
+        # в обрезке top_n и всегда виден в covered
+        (covered if in_prof else gaps).append(row)
     return {
-        "profile": profile_id, "universe": len(universe), "skills": gaps[:top_n],
+        "profile": pid, "universe": len(universe),
+        "skills": gaps[:top_n], "covered": covered[:top_n],
         "method": f"доля = N вакансий стека с навыком / {len(universe)} вакансий стека "
-                  "(api-срез, окт 2026); каноническая карта навыков едина с матчингом",
+                  "(api-срез, окт 2026); skills — чего не хватает, covered — уже в резюме; "
+                  "каноническая карта навыков едина с матчингом",
     }

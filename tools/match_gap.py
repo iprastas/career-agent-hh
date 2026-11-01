@@ -88,27 +88,41 @@ def detect(text_low, skill_list=()):
 
 
 # ---------- профили ----------
-def load_profiles():
+def load_profiles(pdir=None):
+    """Все профили из <pdir>/*.json (по умолчанию data/profiles): одиночные
+    (anastasia, u<id> — резюме пользователей) и наборы (synthetic.json — junior/mid/senior)."""
     out = []
-    d = json.load(open(os.path.join(DATA, "profiles", "anastasia.json"), encoding="utf-8"))
-    skills = {}
-    for s in d["skills"]:
-        c = canon(s["name"])
-        if c in CANON:
-            skills[c] = s.get("weight", "extra")
-    out.append({"id": d["profile_id"], "title": d.get("title", ""),
-                "skills": skills, "expected_net": d["preferences"]["salary_net"],
-                "location": d.get("location", "Ростов-на-Дону")})
-    syn = json.load(open(os.path.join(DATA, "profiles", "synthetic.json"), encoding="utf-8"))
-    for p in syn["profiles"]:
+    pdir = pdir or os.path.join(DATA, "profiles")
+    if not os.path.isdir(pdir):
+        return out
+    for fname in sorted(os.listdir(pdir)):
+        if not fname.endswith(".json"):
+            continue
+        try:
+            d = json.load(open(os.path.join(pdir, fname), encoding="utf-8"))
+        except Exception:
+            continue
+        if isinstance(d.get("profiles"), list):  # synthetic.json — набор профилей
+            for p in d["profiles"]:
+                skills = {}
+                for s in p["skills"]:
+                    c = canon(s)
+                    if c in CANON:
+                        skills[c] = "core"
+                out.append({"id": p["profile_id"], "title": p.get("title", ""),
+                            "skills": skills, "expected_net": p["preferences"]["salary_net"],
+                            "location": "Ростов-на-Дону"})
+            continue
         skills = {}
-        for s in p["skills"]:
-            c = canon(s)
+        for s in d.get("skills", []):
+            name = s["name"] if isinstance(s, dict) else s
+            c = canon(name)
             if c in CANON:
-                skills[c] = "core"
-        out.append({"id": p["profile_id"], "title": p.get("title", ""),
-                    "skills": skills, "expected_net": p["preferences"]["salary_net"],
-                    "location": "Ростов-на-Дону"})
+                skills[c] = s.get("weight", "extra") if isinstance(s, dict) else "extra"
+        out.append({"id": d.get("profile_id") or fname[:-5], "title": d.get("title", ""),
+                    "skills": skills,
+                    "expected_net": (d.get("preferences") or {}).get("salary_net", 0),
+                    "location": d.get("location", "") or "Ростов-на-Дону"})
     return out
 
 
