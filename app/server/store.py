@@ -35,6 +35,12 @@ CREATE TABLE IF NOT EXISTS sessions (
     created_at TEXT NOT NULL,
     expires_at REAL NOT NULL
 );
+CREATE TABLE IF NOT EXISTS session_meta (
+    session_id TEXT PRIMARY KEY,
+    user_id    TEXT NOT NULL,
+    title      TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
 """
 
 
@@ -118,5 +124,36 @@ def logout(token):
     con = _con()
     con.execute("DELETE FROM sessions WHERE token_hash=?",
                 (hashlib.sha256(token.encode()).hexdigest(),))
+    con.commit()
+    con.close()
+
+
+# --------------------------------------------------- названия диалогов (чатов)
+def set_session_title(user_id, session_id, title):
+    """Сохранить/обновить пользовательское или сгенерированное название диалога."""
+    title = (title or "").strip()[:120] or "Диалог"
+    con = _con()
+    con.execute("""INSERT INTO session_meta (session_id, user_id, title, updated_at)
+                   VALUES (?,?,?,?)
+                   ON CONFLICT(session_id) DO UPDATE SET title=excluded.title,
+                       updated_at=excluded.updated_at""",
+                (str(session_id), str(user_id), title,
+                 time.strftime("%Y-%m-%dT%H:%M:%S")))
+    con.commit()
+    con.close()
+    return title
+
+def get_session_titles(user_id):
+    """{session_id: title} для пользователя."""
+    con = _con()
+    rows = con.execute("SELECT session_id, title FROM session_meta WHERE user_id=?",
+                       (str(user_id),)).fetchall()
+    con.close()
+    return {r["session_id"]: r["title"] for r in rows}
+
+def delete_session_meta(user_id, session_id):
+    con = _con()
+    con.execute("DELETE FROM session_meta WHERE session_id=? AND user_id=?",
+                (str(session_id), str(user_id)))
     con.commit()
     con.close()

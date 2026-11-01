@@ -77,7 +77,7 @@
                     oninput="autogrow(this)" onkeydown="return onKey(event)"></textarea>
           <button type="submit" class="btn-primary" id="send-btn">Отправить</button>
         </form>
-        <div class="tiny muted">Темы: вакансии, навыки, зарплаты, письма, отклики. На остальное агент вежливо откажет.</div>
+        <div class="tiny muted">Темы: вакансии, навыки, зарплаты, письма, отклики.</div>
       </div>
     </section>
   </main>
@@ -161,17 +161,10 @@
   <main id="view-letters" class="view hidden">
     <div class="panel">
       <h2>Черновики писем</h2>
-      <p class="muted">Письма хранятся только локально и <b>никогда не отправляются</b> автоматически —
-        скопируйте текст и отправьте работодателю сами.</p>
-      <div id="letters-list" class="cards"></div>
-      <div id="letter-view" class="letter-view hidden">
-        <div class="row-actions">
-          <button class="btn-primary" onclick="copyLetter()">Копировать текст</button>
-          <button class="btn-ghost" onclick="closeLetter()">Закрыть</button>
-          <span id="copy-status" class="tiny muted"></span>
-        </div>
-        <pre id="letter-text" class="letter-text"></pre>
-      </div>
+      <p class="muted">Черновики создаёт агент в чате (попросите: «Напиши сопроводительное письмо на
+        вакансию …») и сохраняет <b>только локально</b>. Здесь их можно открыть, поправить текст руками,
+        перегенерировать и скопировать — <b>отправляете работодателю сами</b>, автоматической отправки нет.</p>
+      <div id="letters-list" class="letters"></div>
     </div>
   </main>
 
@@ -179,9 +172,16 @@
   <main id="view-tracker" class="view hidden">
     <div class="panel">
       <h2>Учёт откликов</h2>
-      <p class="muted">Статусы меняете только вы вручную: агент не отправляет отклики и не читает
-        переписку (API откликов hh недоступен для приложения).</p>
+      <p class="muted">Это ваш личный трекер: таблица «куда откликнулся и на какой стадии».
+        Записи создаются вручную (поиск вакансии ниже) или через чат («запиши отклик по вакансии …»).
+        Статусы меняете только вы: агент не отправляет отклики и не читает переписку
+        (API откликов hh для приложения недоступен). Ничего никуда не уходит — данные только локальные.</p>
       <form class="filters" onsubmit="return addTracker(event)">
+        <div class="combo">
+          <input id="t-search" placeholder="найти вакансию по названию…" autocomplete="off"
+                 oninput="trackerLookup(this.value)">
+          <div id="t-search-menu" class="nsel-menu hidden"></div>
+        </div>
         <input id="t-vid" placeholder="id вакансии" required>
         <select id="t-status">
           <option>черновик</option><option>отправлено</option><option>просмотрено</option>
@@ -190,9 +190,22 @@
         <input id="t-note" placeholder="заметка">
         <button class="btn-primary" type="submit">Добавить / обновить</button>
       </form>
+      <div id="t-picked" class="tiny muted"></div>
       <div id="tracker-table"></div>
     </div>
   </main>
+</div>
+
+<!-- ===================== ДИАЛОГОВОЕ ОКНО (подтверждения/переименование) ===================== -->
+<div id="modal" class="modal-overlay hidden">
+  <div class="modal-card" role="dialog" aria-modal="true">
+    <h3 id="modal-title"></h3>
+    <div id="modal-body"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" id="modal-cancel">Отмена</button>
+      <button class="btn-primary" id="modal-ok">ОК</button>
+    </div>
+  </div>
 </div>
 
 <script src="/static/app.js"></script>

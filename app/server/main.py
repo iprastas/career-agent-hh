@@ -28,10 +28,13 @@ from .. import config
 
 config.apply_env()  # ключи провайдера — до импорта litellm/ADK (см. app/agent.py)
 
+from .. import guardrails  # noqa: E402
 from ..agent import build_agent, APP_NAME  # noqa: E402
 from ..event_protocol import stream_turn  # noqa: E402
+from ..memory import compact_if_needed, dialog_title, extract_messages  # noqa: E402
 from ..tools import (draft_letter, match_profile, search_vacancies,  # noqa: E402
                      skill_gap, salary_stats, track_response)
+from ..tools.letters import make_letter_title, parse_letter, render_letter  # noqa: E402
 from . import store  # noqa: E402
 
 app = FastAPI(title="Карьерный агент hh.ru", version="0.1")
@@ -68,6 +71,15 @@ class TrackerIn(BaseModel):
     vacancy_id: str
     status: str
     note: str = ""
+
+
+class SessionPatch(BaseModel):
+    title: str
+
+
+class LetterPatch(BaseModel):
+    title: str | None = None
+    body: str | None = None
 
 
 def current_user(authorization: str = Header(None)):
@@ -129,12 +141,36 @@ async def create_session(user=Depends(current_user)):
 
 @app.get("/api/sessions")
 async def list_sessions(user=Depends(current_user)):
-    resp = await _runner().session_service.list_sessions(app_name=APP_NAME, user_id=_uid(user))
+    """Список диалогов с названиями. Пустые диалоги (без сообщений) не сохраняются:
+    они удаляются и при выдаче (гигиена старых), и в chat_stream после хода."""
+    runner = _runner()
+    uid = _uid(user)
+    resp = await runner.session_service.list_sessions(app_name=APP_NAME, user_id=uid)
     sessions = getattr(resp, "sessions", resp) or []
+    titles = store.get_session_titles(uid)
+    import time as _time
     out = []
-    for s in sessions:
-        out.append({"session_id": s.id,
+    for s in sorted(sessions, key=lambda x: getattr(x, "last_update_time", 0) or 0, reverse=True):
+        full = await runner.session_service.get_session(app_name=APP_NAME, user_id=uid,
+                                                        session_id=s.id)
+        msgs = extract_messages(full) if full else []
+        if not msgs:
+            # пустой диалог не сохраняем; но сессия «в процессе хода» ещё пустая —
+            # чистим только то, что пустует дольше 5 минут (не мешаем идущему ходу)
+            created = getattr(s, "create_time", None)
+            age = (_time.time() - created.timestamp()) if created else 0
+            if age > 300:
+                await runner.session_service.delete_session(app_name=APP_NAME, user_id=uid,
+                                                            session_id=s.id)
+                store.delete_session_meta(uid, s.id)
+            continue
+        if s.id not in titles:  # легаси-диалоги без названия — из первого сообщения
+            titles[s.id] = store.set_session_title(uid, s.id, dialog_title(msgs[0]["text"]))
+        out.append({"session_id": s.id, "title": titles[s.id],
+                    "messages": len(msgs),
                     "updated_at": getattr(s, "last_update_time", None)})
+        if len(out) >= 30:
+            break
     return {"sessions": out}
 
 
@@ -144,15 +180,41 @@ async def history(session_id: str, user=Depends(current_user)):
                                                     session_id=session_id)
     if s is None:
         raise HTTPException(404, "сессия не найдена")
-    msgs = []
-    for ev in s.events:
-        if not (ev.content and ev.content.parts):
-            continue
-        role = "user" if getattr(ev.content, "role", "") == "user" else "agent"
-        text = " ".join(p.text for p in ev.content.parts if getattr(p, "text", None))
-        if text.strip():
-            msgs.append({"role": role, "text": text.strip()})
-    return {"session_id": session_id, "messages": msgs}
+    msgs = extract_messages(s)
+    if not msgs:  # пустой диалог — не существует как диалог
+        raise HTTPException(404, "диалог пуст")
+    titles = store.get_session_titles(_uid(user))
+    return {"session_id": session_id, "title": titles.get(session_id, ""),
+            "messages": msgs}
+
+
+@app.patch("/api/sessions/{session_id}")
+async def rename_session(session_id: str, body: SessionPatch, user=Depends(current_user)):
+    """Переименование диалога пользователем (название в списке слева)."""
+    s = await _runner().session_service.get_session(app_name=APP_NAME, user_id=_uid(user),
+                                                    session_id=session_id)
+    if s is None:
+        raise HTTPException(404, "сессия не найдена")
+    title = (body.title or "").strip()
+    if not title:
+        raise HTTPException(400, "название не может быть пустым")
+    title = store.set_session_title(_uid(user), session_id, title)
+    return {"session_id": session_id, "title": title}
+
+
+@app.delete("/api/sessions/{session_id}")
+async def delete_session(session_id: str, user=Depends(current_user)):
+    """Удаление диалога вместе с историей (только свои диалоги — по user_id из токена)."""
+    runner = _runner()
+    uid = _uid(user)
+    s = await runner.session_service.get_session(app_name=APP_NAME, user_id=uid,
+                                                 session_id=session_id)
+    if s is None:
+        raise HTTPException(404, "сессия не найдена")
+    await runner.session_service.delete_session(app_name=APP_NAME, user_id=uid,
+                                                session_id=session_id)
+    store.delete_session_meta(uid, session_id)
+    return {"ok": True}
 
 
 # ---------------------------------------------------------------- SSE-чат
@@ -160,27 +222,53 @@ async def history(session_id: str, user=Depends(current_user)):
 async def chat_stream(body: ChatIn, user=Depends(current_user)):
     runner = _runner()
     uid = _uid(user)
-    if body.session_id:
+    sid = body.session_id or ""
+    if sid:
         s = await runner.session_service.get_session(app_name=APP_NAME, user_id=uid,
-                                                     session_id=body.session_id)
+                                                     session_id=sid)
         if s is None:
             raise HTTPException(404, "сессия не найдена")
-        sid = body.session_id
-    else:
-        s = await runner.session_service.create_session(app_name=APP_NAME, user_id=uid)
-        sid = s.id
 
     def sse(env):
         return "event: " + env["type"] + "\ndata: " + json.dumps(env, ensure_ascii=False) + "\n\n"
 
     async def gen():
+        nonlocal sid
+        # Пустые диалоги не сохраняются: сессия создаётся, только если сообщение прошло
+        # пред-фильтр guardrails (отказ/инъекция — без записи в историю диалогов).
+        ok, reason = guardrails.pre_filter(body.message)
+        if not ok:
+            yield sse({"type": "session", "session_id": sid})
+            yield sse({"type": "refusal", "reason": reason,
+                       "text": guardrails.refusal_for(reason)})
+            yield sse({"type": "done", "tools": [], "elapsed": 0.0, "refused": True})
+            return
+        if not sid:
+            s = await runner.session_service.create_session(app_name=APP_NAME, user_id=uid)
+            sid = s.id
+            store.set_session_title(uid, sid, dialog_title(body.message))
         yield sse({"type": "session", "session_id": sid})
         try:
+            # память: длинная история сжимается в сводку перед ходом (см. app/memory.py)
+            summary = await compact_if_needed(runner, uid, sid)
+            if summary:
+                yield sse({"type": "status",
+                           "text": "память: длинная история диалога сжата в короткую сводку"})
             async for env in stream_turn(runner, uid, sid, body.message):
                 yield sse(env)
         except Exception as e:  # модель/сеть — не роняем поток молча
             yield sse({"type": "error", "text": "ошибка агента: " + str(e)[:200]})
             yield sse({"type": "done", "tools": [], "elapsed": 0.0, "refused": False})
+            # ход не состоялся и сообщений не появилось — диалог не сохраняем
+            s2 = await runner.session_service.get_session(app_name=APP_NAME, user_id=uid,
+                                                          session_id=sid)
+            if s2 is None or not extract_messages(s2):
+                if s2 is not None:
+                    await runner.session_service.delete_session(app_name=APP_NAME, user_id=uid,
+                                                                session_id=sid)
+                    store.delete_session_meta(uid, sid)
+                sid = ""
+                yield sse({"type": "session", "session_id": ""})
 
     return StreamingResponse(gen(), media_type="text/event-stream",
                              headers={"Cache-Control": "no-cache",
@@ -212,7 +300,38 @@ def stats(skill: str = "", city: str = "", experience: str = "", period_days: in
     return salary_stats(skill=skill, city=city, experience=experience, period_days=period_days)
 
 
-# ---------------------------------------------------------------- outbox (только чтение)
+# ------------------------------------------------- outbox (локальные черновики)
+def _letter_path(user, fname):
+    fname = os.path.basename(fname)  # защита от выхода из каталога пользователя
+    path = os.path.join(config.OUTBOX_DIR, _uid(user), fname)
+    if not os.path.isfile(path):
+        raise HTTPException(404, "письмо не найдено")
+    return fname, path
+
+
+def _letter_out(fname, path):
+    data = parse_letter(open(path, encoding="utf-8").read())
+    meta = data["meta"]
+    title = data["title"]
+    if not title or title == "Письмо работодателю":  # старый формат — название из вакансии
+        title = make_letter_title(meta.get("вакансия", ""), meta.get("работодатель", ""))
+    return {"file": fname,
+            "title": title,
+            "vacancy": meta.get("вакансия", ""), "employer": meta.get("работодатель", ""),
+            "url": meta.get("ссылка", ""), "tone": meta.get("тон", ""),
+            "created": meta.get("создано", ""), "status": meta.get("статус", ""),
+            "body": data["body"], "size": len(data["body"]),
+            "modified": os.path.getmtime(path)}
+
+
+_REGEN_PROMPT = """Ты редактируешь сопроводительные письма работодателям от имени соискателя.
+Перепиши письмо так, чтобы оно звучало естественно и по-человечески, а не как нейросеть:
+короткие простые предложения, конкретика из резюме и вакансии, никакого канцелярита и
+штампов («хотел(а) бы выразить интерес», «в заключение», «команда мечты»), без эмодзи и
+восклицательных знаков. Сохрани смысл, тон и структуру (обращение, 2–4 абзаца, подпись).
+Верни ТОЛЬКО новый текст письма — без пояснений, заголовков и кавычек."""
+
+
 @app.get("/api/outbox")
 def outbox_list(user=Depends(current_user)):
     user_dir = os.path.join(config.OUTBOX_DIR, _uid(user))
@@ -223,20 +342,62 @@ def outbox_list(user=Depends(current_user)):
         path = os.path.join(user_dir, fname)
         if not os.path.isfile(path):
             continue
-        body = open(path, encoding="utf-8").read()
-        letters.append({"file": fname, "size": len(body),
-                        "modified": os.path.getmtime(path),
-                        "preview": body[:160]})
+        item = _letter_out(fname, path)
+        item["preview"] = item["body"][:160]
+        letters.append(item)
     return {"letters": letters}
 
 
 @app.get("/api/outbox/{fname}")
 def outbox_get(fname: str, user=Depends(current_user)):
-    fname = os.path.basename(fname)  # защита от выхода из каталога пользователя
-    path = os.path.join(config.OUTBOX_DIR, _uid(user), fname)
-    if not os.path.isfile(path):
-        raise HTTPException(404, "письмо не найдено")
-    return {"file": fname, "text": open(path, encoding="utf-8").read()}
+    fname, path = _letter_path(user, fname)
+    return _letter_out(fname, path)
+
+
+@app.patch("/api/outbox/{fname}")
+def outbox_patch(fname: str, body: LetterPatch, user=Depends(current_user)):
+    """Переименовать черновик и/или сохранить правки текста (правит сам пользователь)."""
+    fname, path = _letter_path(user, fname)
+    data = parse_letter(open(path, encoding="utf-8").read())
+    title = (body.title or "").strip()
+    text = data["body"] if body.body is None else body.body.strip()
+    if len(text) < 50:
+        raise HTTPException(400, "текст письма слишком короткий (минимум 50 символов)")
+    if len(text) > 5000:
+        raise HTTPException(400, "текст письма слишком длинный (максимум 5000 символов)")
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(render_letter(title or data["title"], data["meta"], text))
+    return _letter_out(fname, path)
+
+
+@app.post("/api/outbox/{fname}/regenerate")
+async def outbox_regenerate(fname: str, user=Depends(current_user)):
+    """Перегенерировать текст письма (LLM, человеческий тон). Ничего не отправляется."""
+    import litellm
+    fname, path = _letter_path(user, fname)
+    data = parse_letter(open(path, encoding="utf-8").read())
+    meta = data["meta"]
+    from ..system_prompt import profile_summary
+    user_parts = [f"Вакансия: {meta.get('вакансия', '')}",
+                  f"Работодатель: {meta.get('работодатель', '')}",
+                  f"Ссылка: {meta.get('ссылка', '')}",
+                  f"Тон: {meta.get('тон', 'деловой')}",
+                  profile_summary("anastasia"),
+                  "Текущий вариант письма:\n" + data["body"]]
+    try:
+        resp = await litellm.acompletion(
+            model=config.model_name(),
+            messages=[{"role": "system", "content": _REGEN_PROMPT},
+                      {"role": "user", "content": "\n\n".join(p for p in user_parts if p)}],
+            temperature=0.7, max_tokens=800, timeout=90)
+        text = (resp.choices[0].message.content or "").strip()
+    except Exception as e:
+        raise HTTPException(502, "не удалось перегенерировать текст: " + str(e)[:200])
+    if len(text) < 50:
+        raise HTTPException(502, "модель вернула слишком короткий текст — попробуйте ещё раз")
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(render_letter(data["title"], meta, text))
+    return _letter_out(fname, path)
 
 
 # ---------------------------------------------------------------- tracker

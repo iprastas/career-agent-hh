@@ -31,6 +31,45 @@ TRACKER_NOTE = ("Статус отклика меняете только вы в
                 "и не читает переписку (API откликов недоступен).")
 
 
+# ------------------------------------------------------------ файлы писем
+# Формат файла: строка «# <название>», маркеры «- ключ: значение», «---», ТЕКСТ письма
+# (копируется пользователем — только он, без шапки).
+META_KEYS = ["вакансия", "работодатель", "ссылка", "тон", "создано", "статус"]
+
+
+def make_letter_title(vacancy_name, employer):
+    """Название черновика по вакансии и работодателю (пользователь может переименовать)."""
+    parts = [p for p in (str(employer or "").strip(), str(vacancy_name or "").strip()) if p]
+    title = ("Сопроводительное — " + ": ".join(parts[:2])) if parts else "Сопроводительное письмо"
+    return title[:97] + "…" if len(title) > 100 else title
+
+
+def parse_letter(text):
+    """Разбор файла письма -> {title, meta, body}. Понимает и старый формат."""
+    lines = (text or "").splitlines()
+    title, meta, body = "", {}, (text or "").strip()
+    sep = next((i for i, l in enumerate(lines) if l.strip() == "---"), None)
+    first = next((i for i, l in enumerate(lines) if l.strip()), None)
+    if first is not None and lines[first].lstrip().startswith("# ") and sep is not None:
+        title = lines[first].lstrip()[2:].strip()
+        for l in lines[first + 1:sep]:
+            if l.startswith("- ") and ":" in l:
+                k, v = l[2:].split(":", 1)
+                meta[k.strip()] = v.strip()
+        body = "\n".join(lines[sep + 1:]).strip("\n")
+    return {"title": title, "meta": meta, "body": body}
+
+
+def render_letter(title, meta, body):
+    """Собрать файл письма обратно (мета — по известным ключам в фиксированном порядке)."""
+    head = ["# " + (title or "Письмо работодателю"), ""]
+    keys = META_KEYS + [k for k in meta if k not in META_KEYS]
+    for k in keys:
+        if k in meta and meta[k] not in (None, ""):
+            head.append(f"- {k}: {meta[k]}")
+    return "\n".join(head) + "\n\n---\n\n" + (body or "").strip() + "\n"
+
+
 def draft_letter(vacancy_id: str, letter_text: str, tone: str = "деловой",
                  tool_context: ToolContext = None):
     """Сохранить черновик письма работодателю ЛОКАЛЬНО (data/outbox/). Ничего не отправляется.
@@ -38,6 +77,9 @@ def draft_letter(vacancy_id: str, letter_text: str, tone: str = "деловой"
     Args:
         vacancy_id: id вакансии (из search_vacancies / match_profile).
         letter_text: полный текст письма/сопроводительного (пишет агент, копирует пользователь).
+            Пиши естественно, как живой человек: короткие простые предложения, конкретика
+            из резюме и вакансии, без канцелярита и ИИ-штампов («хотелось бы выразить интерес»,
+            «в заключение», эмодзи, восклицательные знаки).
         tone: тон письма для пометки в файле ("деловой", "дружелюбный", "краткий").
 
     Returns:
@@ -61,16 +103,16 @@ def draft_letter(vacancy_id: str, letter_text: str, tone: str = "деловой"
     user_dir = os.path.join(config.OUTBOX_DIR, _uid(tool_context))
     os.makedirs(user_dir, exist_ok=True)
     ts = time.strftime("%Y%m%d_%H%M%S")
+    title = make_letter_title(r["name"], r["employer"])
     fname = f"{vacancy_id}_{ts}.md"
     path = os.path.join(user_dir, fname)
-    header = (f"# Письмо работодателю\n\n"
-              f"- вакансия: {r['name']}\n- работодатель: {r['employer']}\n"
-              f"- ссылка: {r['url']}\n- тон: {tone}\n- создано: {ts}\n"
-              f"- статус: **черновик, не отправлено**\n\n---\n\n")
+    text_out = render_letter(title, {
+        "вакансия": r["name"], "работодатель": r["employer"], "ссылка": r["url"],
+        "тон": tone, "создано": ts, "статус": "черновик, не отправлено"}, text)
     with open(path, "w", encoding="utf-8") as f:
-        f.write(header + text + "\n")
+        f.write(text_out)
     return {
-        "saved_to": path, "file": fname,
+        "saved_to": path, "file": fname, "title": title,
         "vacancy": {"vacancy_id": str(vacancy_id), "name": r["name"],
                     "employer": r["employer"], "url": r["url"]},
         "note": OUTBOX_NOTE,

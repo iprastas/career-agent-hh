@@ -1,4 +1,7 @@
-/* Карьерный агент — фронтенд без сборки: auth, SSE-чат, вкладки. */
+/* Карьерный агент — фронтенд без сборки: auth, SSE-чат, вкладки.
+   Модальные окна подтверждений — внутри приложения (не window.confirm/prompt),
+   выпадающие списки — собственный компонент (в тёмной теме),
+   города — комбобокс с фильтрацией по вводу и свободным текстом. */
 "use strict";
 
 const $ = (s) => document.querySelector(s);
@@ -51,6 +54,164 @@ async function api(path, opts = {}) {
   const data = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(data.detail || ("ошибка " + r.status));
   return data;
+}
+
+/* ================= модальные окна (внутри приложения) ================= */
+function modalConfirm(title, text, okText) {
+  return new Promise((resolve) => {
+    $("#modal-title").textContent = title;
+    $("#modal-body").innerHTML = `<p class="muted">${esc(text)}</p>`;
+    $("#modal-ok").textContent = okText || "ОК";
+    $("#modal").classList.remove("hidden");
+    const done = (val) => {
+      $("#modal").classList.add("hidden");
+      $("#modal-ok").onclick = $("#modal-cancel").onclick = null;
+      resolve(val);
+    };
+    $("#modal-ok").onclick = () => done(true);
+    $("#modal-cancel").onclick = () => done(false);
+  });
+}
+
+function modalPrompt(title, label, value, okText) {
+  return new Promise((resolve) => {
+    $("#modal-title").textContent = title;
+    $("#modal-body").innerHTML =
+      `<label class="modal-label">${esc(label)}</label><input id="modal-input" class="modal-input">`;
+    const input = $("#modal-input");
+    input.value = value || "";
+    $("#modal-ok").textContent = okText || "Сохранить";
+    $("#modal").classList.remove("hidden");
+    setTimeout(() => { input.focus(); input.select(); }, 30);
+    const done = (val) => {
+      $("#modal").classList.add("hidden");
+      $("#modal-ok").onclick = $("#modal-cancel").onclick = input.onkeydown = null;
+      resolve(val);
+    };
+    $("#modal-ok").onclick = () => done(input.value.trim());
+    $("#modal-cancel").onclick = () => done(null);
+    input.onkeydown = (e) => {
+      if (e.key === "Enter") { e.preventDefault(); done(input.value.trim()); }
+      if (e.key === "Escape") done(null);
+    };
+  });
+}
+
+/* ================= выпадающие списки (собственный компонент) ================= */
+function closeAllMenus() {
+  document.querySelectorAll(".nsel-menu").forEach((m) => m.classList.add("hidden"));
+}
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".nsel") && !e.target.closest(".combo")) closeAllMenus();
+});
+
+// красивый дропдаун поверх нативного <select> (значение синхронизировано с ним)
+function enhanceSelect(sel) {
+  if (sel.dataset.nsel) return;
+  sel.dataset.nsel = "1";
+  const wrap = document.createElement("div");
+  wrap.className = "nsel";
+  sel.parentNode.insertBefore(wrap, sel);
+  wrap.appendChild(sel);
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "nsel-btn";
+  const menu = document.createElement("div");
+  menu.className = "nsel-menu hidden";
+  wrap.appendChild(btn);
+  wrap.appendChild(menu);
+  const build = () => {
+    const cur = sel.options[sel.selectedIndex];
+    btn.textContent = cur ? cur.text : "—";
+    menu.innerHTML = "";
+    for (const o of sel.options) {
+      const it = document.createElement("div");
+      it.className = "nsel-opt" + (o.selected ? " sel" : "");
+      it.textContent = o.text;
+      it.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        sel.value = o.value;
+        sel.dispatchEvent(new Event("change", { bubbles: true }));
+        build();
+        menu.classList.add("hidden");
+      });
+      menu.appendChild(it);
+    }
+  };
+  btn.addEventListener("click", () => {
+    const wasHidden = menu.classList.contains("hidden");
+    closeAllMenus();
+    if (wasHidden) { build(); menu.classList.remove("hidden"); }
+  });
+  build();
+}
+
+// комбобокс: ввод + фильтрация списка + свободный текст (для городов)
+const CITIES = [
+  "Москва", "Санкт-Петербург", "Новосибирск", "Екатеринбург", "Казань", "Нижний Новгород",
+  "Красноярск", "Челябинск", "Самара", "Уфа", "Ростов-на-Дону", "Краснодар", "Пермь",
+  "Воронеж", "Волгоград", "Калининград", "Тюмень", "Иркутск", "Томск", "Барнаул", "Омск",
+  "Владивосток", "Хабаровск", "Саратов", "Тольятти", "Липецк", "Ижевск", "Тула", "Пенза",
+  "Оренбург", "Ставрополь", "Мурманск", "Архангельск", "Смоленск", "Рязань", "Ярославль",
+  "Владимир", "Курск", "Тверь", "Белгород", "Сочи", "Магнитогорск", "Сургут",
+  "Нижневартовск", "Южно-Сахалинск", "Улан-Удэ", "Петрозаводск", "Сыктывкар", "Чебоксары",
+  "Киров", "Брянск", "Астрахань", "Набережные Челны", "Стерлитамак", "Грозный", "Махачкала",
+  "Владикавказ", "Череповец", "Калуга", "Вологда", "Саранск", "Тамбов", "Орёл", "Кострома",
+];
+
+function enhanceCombo(input, items, opts = {}) {
+  const wrap = document.createElement("div");
+  wrap.className = "combo";
+  input.parentNode.insertBefore(wrap, input);
+  wrap.appendChild(input);
+  const menu = document.createElement("div");
+  menu.className = "nsel-menu hidden";
+  wrap.appendChild(menu);
+  const render = () => {
+    const q = input.value.trim().toLowerCase();
+    const matches = items.filter((c) => !q || c.toLowerCase().includes(q)).slice(0, 8);
+    menu.innerHTML = "";
+    const addRow = (label, value, cls) => {
+      const it = document.createElement("div");
+      it.className = "nsel-opt" + (cls ? " " + cls : "");
+      it.textContent = label;
+      it.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        input.value = value;
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+        menu.classList.add("hidden");
+      });
+      menu.appendChild(it);
+    };
+    if (opts.allowEmpty) addRow("— " + (opts.emptyLabel || "все") + " —", "", "dim");
+    matches.forEach((c) => addRow(c, c));
+    const exact = items.some((c) => c.toLowerCase() === q);
+    if (q && !exact) addRow(`Использовать «${input.value.trim()}»`, input.value.trim(), "free");
+    menu.classList.toggle("hidden", !menu.children.length);
+  };
+  input.addEventListener("focus", render);
+  input.addEventListener("input", render);
+  input.addEventListener("keydown", (e) => { if (e.key === "Escape") menu.classList.add("hidden"); });
+  input.addEventListener("blur", () => setTimeout(() => menu.classList.add("hidden"), 120));
+}
+
+function initEnhancements() {
+  document.querySelectorAll("#app select").forEach(enhanceSelect);
+  const vCity = $("#v-city"), sCity = $("#s-city");
+  if (vCity && !vCity.dataset.combo) {
+    vCity.dataset.combo = "1";
+    enhanceCombo(vCity, CITIES);
+  }
+  if (sCity && !sCity.dataset.combo) {
+    sCity.dataset.combo = "1";
+    enhanceCombo(sCity, CITIES, { allowEmpty: true, emptyLabel: "вся Россия" });
+  }
+  const tSearch = $("#t-search");
+  if (tSearch && !tSearch.dataset.combo) {
+    tSearch.dataset.combo = "1";
+    tSearch.addEventListener("blur",
+      () => setTimeout(() => $("#t-search-menu").classList.add("hidden"), 150));
+  }
 }
 
 /* ================= авторизация ================= */
@@ -122,20 +283,46 @@ function onKey(e) {
   if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(e); return false; }
 }
 
+/* ---- список диалогов: название + переименование/удаление ---- */
 async function loadSessions() {
   try {
     const data = await api("/api/sessions");
     const list = $("#session-list");
     list.innerHTML = "";
-    for (const s of data.sessions.slice(-15).reverse()) {
+    for (const s of data.sessions) {
       const div = document.createElement("div");
       div.className = "session-item" + (s.session_id === state.sessionId ? " active" : "");
-      const d = s.updated_at ? new Date(s.updated_at).toLocaleString("ru-RU") : "диалог";
-      div.textContent = d;
-      div.onclick = () => openSession(s.session_id);
+      div.innerHTML = `
+        <span class="s-title">${esc(s.title || "Диалог")}</span>
+        <span class="s-acts">
+          <button class="s-btn" title="Переименовать">✎</button>
+          <button class="s-btn" title="Удалить диалог">✕</button>
+        </span>`;
+      div.querySelector(".s-title").onclick = () => openSession(s.session_id);
+      const [ren, del] = div.querySelectorAll(".s-btn");
+      ren.onclick = (e) => { e.stopPropagation(); renameSessionAsk(s); };
+      del.onclick = (e) => { e.stopPropagation(); deleteSessionAsk(s); };
       list.appendChild(div);
     }
   } catch (e) { /* список не критичен */ }
+}
+
+async function renameSessionAsk(s) {
+  const title = await modalPrompt("Переименовать диалог", "Название", s.title || "");
+  if (title === null || !title) return;
+  await api(`/api/sessions/${s.session_id}`,
+    { method: "PATCH", body: JSON.stringify({ title }) });
+  loadSessions();
+}
+
+async function deleteSessionAsk(s) {
+  const ok = await modalConfirm("Удалить диалог?",
+    `«${s.title || "Диалог"}» будет удалён вместе с историей сообщений. Действие нельзя отменить.`,
+    "Удалить");
+  if (!ok) return;
+  await api(`/api/sessions/${s.session_id}`, { method: "DELETE" });
+  if (state.sessionId === s.sessionId) newSession();
+  loadSessions();
 }
 
 async function newSession() {
@@ -169,7 +356,7 @@ async function openSession(id) {
   box.innerHTML = "";
   for (const m of data.messages) {
     if (m.role === "user") addUserMsg(m.text);
-    else { const t = newTurn(); t.setAnswer(m.text); t.finish([] , 0); }
+    else { const t = newTurn(); t.setAnswer(m.text); t.finish([], 0); }
   }
   loadSessions();
   scrollChat();
@@ -393,10 +580,8 @@ function handleFrame(frame, turn) {
   }
   switch (ev) {
     case "session":
-      if (data.session_id && data.session_id !== state.sessionId) {
-        state.sessionId = data.session_id;
-        loadSessions();
-      }
+      state.sessionId = data.session_id || "";
+      if (state.sessionId) loadSessions();
       break;
     case "think": turn.addThink(data.text || ""); break;
     case "status": turn.addStatus(data.text || ""); break;
@@ -509,8 +694,7 @@ function badge(p) {
   return '<span class="badge low">—</span>';
 }
 
-/* ================= вкладка «Письма» ================= */
-let currentLetter = "";
+/* ================= вкладка «Письма» (аккордеон) ================= */
 async function loadLetters() {
   const data = await api("/api/outbox");
   const box = $("#letters-list");
@@ -519,41 +703,125 @@ async function loadLetters() {
     return;
   }
   box.innerHTML = "";
-  for (const l of data.letters) {
-    const div = document.createElement("div");
-    div.className = "vcard clickable";
-    div.innerHTML = `
-      <div class="title">${esc(l.file)}</div>
-      <div class="meta">${new Date(l.modified * 1000).toLocaleString("ru-RU")} · ${l.size} симв.</div>
-      <div class="tiny muted">${esc(l.preview.slice(0, 110))}…</div>
-      <div class="foot"><span class="badge">черновик · не отправлено</span></div>`;
-    div.onclick = () => openLetter(l.file);
-    box.appendChild(div);
-  }
+  for (const l of data.letters) box.appendChild(letterItem(l));
 }
-async function openLetter(fname) {
-  const data = await api("/api/outbox/" + encodeURIComponent(fname));
-  currentLetter = data.text;
-  $("#letter-text").textContent = data.text;
-  $("#letter-view").classList.remove("hidden");
-  $("#copy-status").textContent = "";
-}
-function closeLetter() { $("#letter-view").classList.add("hidden"); }
-async function copyLetter() {
-  try {
-    await navigator.clipboard.writeText(currentLetter);
-    $("#copy-status").textContent = "скопировано ✓ — вставьте в переписку с работодателем";
-  } catch (e) {
-    $("#copy-status").textContent = "выделите текст вручную и скопируйте";
-  }
+
+function letterItem(l) {
+  const div = document.createElement("div");
+  div.className = "letter-item";
+  const date = l.created || (l.modified ? new Date(l.modified * 1000).toLocaleDateString("ru-RU") : "");
+  div.innerHTML = `
+    <div class="letter-head">
+      <div class="lh-main">
+        <div class="lh-title">${esc(l.title)}</div>
+        <div class="lh-meta">${esc(l.employer || "работодатель не указан")}${l.vacancy ? " · " + esc(l.vacancy) : ""}${date ? " · " + esc(date) : ""}</div>
+      </div>
+      <span class="badge">черновик · не отправлено</span>
+      <button class="s-btn lh-rename" title="Переименовать">✎</button>
+      <span class="chev">▸</span>
+    </div>
+    <div class="letter-body hidden">
+      <div class="lh-info">
+        ${l.url ? `<a href="${esc(l.url)}" target="_blank" rel="noopener">открыть вакансию на hh.ru ↗</a>` : ""}
+        <span class="tiny muted">тон: ${esc(l.tone || "—")} · создано: ${esc(l.created || "—")} · файл: ${esc(l.file)}</span>
+      </div>
+      <textarea class="letter-edit" spellcheck="false"></textarea>
+      <div class="row-actions">
+        <button class="btn-primary b-copy">Копировать текст</button>
+        <button class="btn-ghost b-save">Сохранить правки</button>
+        <button class="btn-ghost b-regen">Перегенерировать</button>
+        <span class="tiny muted b-status"></span>
+      </div>
+    </div>`;
+  const body = div.querySelector(".letter-body");
+  const ta = div.querySelector(".letter-edit");
+  const status = div.querySelector(".b-status");
+  ta.value = l.body || "";
+  div.querySelector(".letter-head").addEventListener("click", () => {
+    const open = body.classList.toggle("hidden") === false;
+    div.querySelector(".chev").textContent = open ? "▾" : "▸";
+    div.classList.toggle("open", open);
+  });
+  div.querySelector(".lh-rename").addEventListener("click", async (e) => {
+    e.stopPropagation();
+    const title = await modalPrompt("Название черновика", "Название", l.title);
+    if (title === null || !title) return;
+    const r = await api("/api/outbox/" + encodeURIComponent(l.file),
+      { method: "PATCH", body: JSON.stringify({ title }) });
+    l.title = r.title;
+    div.querySelector(".lh-title").textContent = r.title;
+  });
+  div.querySelector(".b-copy").addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(ta.value);
+      status.textContent = "скопировано ✓ — вставьте в переписку с работодателем";
+    } catch (e) {
+      status.textContent = "выделите текст и скопируйте вручную";
+    }
+  });
+  div.querySelector(".b-save").addEventListener("click", async () => {
+    try {
+      const r = await api("/api/outbox/" + encodeURIComponent(l.file),
+        { method: "PATCH", body: JSON.stringify({ body: ta.value }) });
+      l.body = r.body;
+      ta.value = r.body;
+      status.textContent = "правки сохранены ✓";
+    } catch (e) {
+      status.textContent = "ошибка: " + e.message;
+    }
+  });
+  div.querySelector(".b-regen").addEventListener("click", async () => {
+    status.textContent = "перегенерирую текст…";
+    try {
+      const r = await api("/api/outbox/" + encodeURIComponent(l.file) + "/regenerate",
+        { method: "POST" });
+      l.body = r.body;
+      ta.value = r.body;
+      status.textContent = "новый текст готов — можно копировать или поправить";
+    } catch (e) {
+      status.textContent = "ошибка: " + e.message;
+    }
+  });
+  return div;
 }
 
 /* ================= вкладка «Отклики» ================= */
+let trackerLookupTimer = null;
+function trackerLookup(q) {
+  clearTimeout(trackerLookupTimer);
+  const menu = $("#t-search-menu");
+  q = (q || "").trim();
+  if (q.length < 2) { menu.classList.add("hidden"); return; }
+  trackerLookupTimer = setTimeout(async () => {
+    try {
+      const data = await api("/api/vacancies?" + new URLSearchParams({ q, limit: 8 }));
+      menu.innerHTML = "";
+      for (const v of data.vacancies) {
+        const it = document.createElement("div");
+        it.className = "nsel-opt";
+        it.innerHTML = `<b>${esc(v.name)}</b> <span class="dim">${esc(v.employer || "")} · id ${esc(v.vacancy_id)}</span>`;
+        it.addEventListener("mousedown", (e) => {
+          e.preventDefault();
+          $("#t-vid").value = v.vacancy_id;
+          $("#t-search").value = v.name;
+          $("#t-picked").textContent =
+            `выбрана вакансия: ${v.name}${v.employer ? " (" + v.employer + ")" : ""} · id ${v.vacancy_id}`;
+          menu.classList.add("hidden");
+        });
+        menu.appendChild(it);
+      }
+      if (!data.vacancies.length)
+        menu.innerHTML = '<div class="nsel-opt dim">ничего не найдено — попробуйте другие слова</div>';
+      menu.classList.remove("hidden");
+    } catch (e) { /* поиск не критичен */ }
+  }, 350);
+}
+
 async function loadTracker() {
   const data = await api("/api/tracker");
   const box = $("#tracker-table");
   if (!data.responses.length) {
-    box.innerHTML = '<p class="muted">Откликов пока нет — добавьте первый выше.</p>';
+    box.innerHTML = '<p class="muted">Откликов пока нет — найдите вакансию выше и добавьте первый.</p>';
     return;
   }
   box.innerHTML = `
@@ -574,7 +842,9 @@ async function loadTracker() {
         </tr>`).join("")}
     </table>
     <p class="tiny muted" style="margin-top:10px">${esc(data.note || "")}</p>`;
+  box.querySelectorAll("select").forEach(enhanceSelect);
 }
+
 async function addTracker(e) {
   e.preventDefault();
   await api("/api/tracker", {
@@ -585,7 +855,8 @@ async function addTracker(e) {
       note: $("#t-note").value.trim(),
     }),
   });
-  $("#t-vid").value = ""; $("#t-note").value = "";
+  $("#t-vid").value = ""; $("#t-note").value = ""; $("#t-search").value = "";
+  $("#t-picked").textContent = "";
   loadTracker();
   return false;
 }
@@ -607,6 +878,7 @@ async function startApp() {
   $("#auth").classList.add("hidden");
   $("#app").classList.remove("hidden");
   if (!$("#messages").children.length) addWelcome();
+  initEnhancements();
   loadSessions();
 }
 
