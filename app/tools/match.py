@@ -15,7 +15,8 @@ from google.adk.tools import ToolContext
 from .. import config
 
 sys.path.insert(0, os.path.join(config.PROJECT, "tools"))
-from match_gap import score_vacancy, load_profiles, STACK, _PATTERNS  # noqa: E402  единая методика
+from match_gap import (score_vacancy, load_profiles, STACK, _PATTERNS,  # noqa: E402
+                       EXP_METHOD)
 
 
 def _con_ro():
@@ -50,10 +51,16 @@ def resolve_profile_id(profile_id: str = "", tool_context: ToolContext = None):
 
 
 def _candidates(con):
-    """Вакансии api-слоя с распознанными навыками -> формат score_vacancy()."""
+    """Вакансии api-слоя с распознанными навыками -> формат score_vacancy().
+    Описания берутся из vacancy_details — по ним считается покрытие требований
+    опытом работы соискателя (experience_matching)."""
     rows = con.execute("""
-        SELECT v.*, group_concat(s.skill_canon) AS sk
-        FROM vacancies v JOIN vacancy_skills s ON s.vacancy_id = v.vacancy_id
+        SELECT v.*, group_concat(s.skill_canon) AS sk,
+               d.description AS desc_full, d.requirement AS req_full,
+               d.responsibility AS resp_full
+        FROM vacancies v
+        JOIN vacancy_skills s ON s.vacancy_id = v.vacancy_id
+        LEFT JOIN vacancy_details d ON d.vacancy_id = v.vacancy_id
         WHERE v.source_layer = 'api_live_2026_10'
         GROUP BY v.vacancy_id""").fetchall()
     out = []
@@ -64,6 +71,10 @@ def _candidates(con):
             "salary_from": r["salary_from"], "salary_to": r["salary_to"],
             "salary_currency": r["currency"], "salary_gross": r["gross"],
             "url": r["url"], "published_at": r["published_at"],
+            "description": r["desc_full"] or "",
+            "requirement": r["req_full"] or "",
+            "requirement_snippet": r["requirement_snippet"],
+            "responsibility_snippet": r["responsibility_snippet"],
             "_skills": set((r["sk"] or "").split(",")),
         })
     return out
@@ -114,8 +125,7 @@ def match_profile(profile_id: str = "", top_n: int = 5, tool_context: ToolContex
         })
     return {
         "profile": pid, "candidates": len(cand), "shown": len(top), "vacancies": top,
-        "method": "скор = 0.45·покрытие навыков + 0.20·название + 0.20·город/график + 0.15·зарплата, "
-                  "штраф за опыт (3-6 лет ×0.95, 6+ ×0.5); навыки — единая каноническая карта; "
+        "method": EXP_METHOD + " Навыки — единая каноническая карта; "
                   f"кандидатов в стеке профиля: {len(cand)} из {len(vacs)} вакансий api-среза",
     }
 

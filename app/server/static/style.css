@@ -186,6 +186,28 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
   border-radius: var(--radius-s); padding: 9px 12px; font: inherit;
 }
 .skill-add input:focus { outline: none; border-color: var(--accent); }
+.skill-combo { position: relative; }
+.skill-hints {
+  position: absolute; top: calc(100% + 4px); left: 0; width: min(420px, 100%);
+  z-index: 40; background: var(--panel); border: 1px solid var(--border);
+  border-radius: var(--radius-s); max-height: 230px; overflow-y: auto;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.45);
+}
+.skill-hint { padding: 8px 12px; cursor: pointer; font-size: 13.5px; color: var(--text-2); }
+.skill-hint:hover, .skill-hint.active { background: rgba(113,112,255,0.16); color: var(--text); }
+.work-places { display: flex; flex-direction: column; gap: 12px; margin: 6px 0 10px; }
+.work-place {
+  border: 1px solid var(--border); border-radius: var(--radius-s);
+  padding: 12px; background: rgba(255,255,255,0.015); display: flex;
+  flex-direction: column; gap: 8px;
+}
+.wp-head { display: flex; gap: 8px; align-items: center; }
+.wp-head input { flex: 1; max-width: 420px; }
+.wp-remove {
+  background: none; border: none; color: var(--text-3); cursor: pointer;
+  font-size: 14px; line-height: 1; padding: 4px 7px; border-radius: 50%;
+}
+.wp-remove:hover { color: var(--red); background: rgba(229,72,77,0.15); }
 .field.w100 { width: 100%; }
 .field textarea {
   width: 100%; resize: vertical;

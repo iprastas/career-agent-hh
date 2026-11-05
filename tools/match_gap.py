@@ -13,6 +13,9 @@ import csv, html, json, os, re, sys
 PROJECT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(PROJECT, "data")
 REPORTS = os.path.join(DATA, "reports")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from experience_matching import METHOD as EXP_METHOD, adjust_score  # noqa: E402  счёт по опыту
 
 # ---------- канонические навыки и алиасы ----------
 ALIASES = {
@@ -111,7 +114,12 @@ def load_profiles(pdir=None):
                         skills[c] = "core"
                 out.append({"id": p["profile_id"], "title": p.get("title", ""),
                             "skills": skills, "expected_net": p["preferences"]["salary_net"],
-                            "location": "Ростов-на-Дону"})
+                            "location": "Ростов-на-Дону",
+                            "summary": p.get("summary", ""),
+                            "work_experience": p.get("work_experience", ""),
+                            "companies": p.get("companies", []),
+                            "work_places": p.get("work_places", []),
+                            "experience_years": p.get("experience_years", 0)})
             continue
         skills = {}
         for s in d.get("skills", []):
@@ -122,7 +130,12 @@ def load_profiles(pdir=None):
         out.append({"id": d.get("profile_id") or fname[:-5], "title": d.get("title", ""),
                     "skills": skills,
                     "expected_net": (d.get("preferences") or {}).get("salary_net", 0),
-                    "location": d.get("location", "") or "Ростов-на-Дону"})
+                    "location": d.get("location", "") or "Ростов-на-Дону",
+                    "summary": d.get("summary", "") or d.get("work_experience", ""),
+                    "work_experience": d.get("work_experience", ""),
+                    "companies": d.get("companies", []),
+                    "work_places": d.get("work_places", []),
+                    "experience_years": d.get("experience_years", 0)})
     return out
 
 
@@ -156,7 +169,10 @@ def load_vacancies():
 
 
 def score_vacancy(v, prof):
-    """Прозрачный счёт: покрытие навыков + название + город/формат + зарплата, штраф за опыт."""
+    """Прозрачный счёт: покрытие навыков + название + город/формат + зарплата, штраф
+    за опыт, затем поправка по опыту работы (experience_matching.adjust_score):
+    подтверждённые требования описания вакансии (например «опыт в крупном банке» при
+    работе в Т-Банке) повышают оценку, обязательные неподтверждённые — снижают."""
     core = {s for s, w in prof["skills"].items() if w == "core"}
     allsk = set(prof["skills"])
     rec = v["_skills"]
@@ -197,6 +213,7 @@ def score_vacancy(v, prof):
             sal_score = 0.4
 
     score = (0.45 * cov + 0.20 * name_bonus + 0.20 * city_score + 0.15 * sal_score) * penalty
+    score = adjust_score(score, v, prof)  # требования описания ↔ опыт работы соискателя
     return score, cov, matched, missing, sf_net, st_net
 
 

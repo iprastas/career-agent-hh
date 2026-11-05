@@ -79,9 +79,9 @@ Python 3.11 · Google ADK · FastAPI + uvicorn · SQLite (FTS5, WAL) · litellm 
 ## Запуск
 
 ```bash
-# 1. окружение (один раз)
+# 1. окружение (один раз); все зависимости зафиксированы в requirements.txt
 py -3.11 -m venv .venv
-.venv\Scripts\python -m pip install google-adk litellm fastapi uvicorn pandas sqlalchemy aiosqlite greenlet mcp pytest
+.venv\Scripts\python -m pip install -r requirements.txt
 
 # 2. .env рядом с проектом (НЕ коммитится):
 #    OPENAI_API_KEY=...  OPENAI_BASE_URL=...  MODEL=...
@@ -106,11 +106,13 @@ run_server.bat          # или: .venv\Scripts\python -m uvicorn app.server.mai
 .venv\Scripts\python -m pytest tests/ -q
 ```
 
-67 тестов: guardrails (инъекции RU/EN, утечка промпта, запрещённые заявления), инструменты
+89 тестов: guardrails (инъекции RU/EN, утечка промпта, запрещённые заявления), инструменты
 (лимиты выдачи, квантили, локальные записи), авторизация, изоляция пользователей, SSE-конверт,
 диалоги (пустые не сохраняются, удаление/переименование), письма (разбор файла, правки),
 память (сжатие истории), классификатор тем, семантический поиск, динамика зарплат,
-напоминания откликов, профиль, evals-проверки.
+напоминания откликов, профиль, evals-проверки, разбор резюме (город по «Проживает»,
+места работы «компания + опыт», секция «Опыт работы»), словарь навыков (только из БД),
+счёт по опыту работы.
 
 ## Evals (оценка качества)
 

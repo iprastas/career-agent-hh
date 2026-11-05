@@ -6,7 +6,7 @@
 
 ## 1. agent-core — ядро агента
 
-**Граница:** `app/` без `app/server/` и `app/tools/`: `config.py`, `agent.py`, `guardrails.py`, `system_prompt.py`, `topic_gate.py`, `memory.py`, `event_protocol.py`, `runner_cli.py`, `__init__.py`.
+**Граница:** `app/` без `app/server/` и `app/tools/`: `config.py`, `agent.py`, `guardrails.py`, `system_prompt.py`, `topic_gate.py`, `memory.py`, `event_protocol.py`, `letter_writing.py`, `runner_cli.py`, `__init__.py`. *(дополнено вручную 2026-11-04: letter_writing.py — промпты писем, политика отделена от данных)*
 
 **Ответственность:** сборка ADK `LlmAgent` (координатор + суб-агенты search/analytics/writer — PLAN.md, этап «Расширение 01.11.2026»), guardrails в три слоя (1 — детерминированный пред-фильтр инъекций `guardrails.py`; 1.5 — классификатор тем на TF-IDF-центроидах `topic_gate.py`; 2 — системный промпт с белым списком тем `system_prompt.py`; 3 — пост-фильтр утечек промпта и заявлений об отправке `guardrails.py`), сжатие истории длинных диалогов в сводку (`memory.py`, детерминированный фолбэк без модели), конверт событий refusal/status/tool_call/think/delta/answer/done (`event_protocol.py`).
 
@@ -26,13 +26,13 @@
 
 **Граница:** `app/server/` (`main.py`, `store.py`, `static/app.js`, `static/index.html`, `static/style.css`).
 
-**Ответственность:** FastAPI (async): auth/регистрация (PBKDF2-HMAC-SHA256+соль, в БД только хэш токенов — `store.py`: `users.db`, `sessions.db`), SSE-чат с событиями хода рассуждений и вызовов инструментов, REST: диалоги (переименование/удаление, пустые не сохраняются), письма (правка/регенерация/скачивание), отклики с напоминаниями и экспортом CSV, резюме соискателя (per-user `u<id>.json`: форма + разбор PDF/TXT, изоляция по user_id). Изоляция данных по `user_id` из токена. Фронтенд — vanilla JS: вкладки Вакансии/Зарплаты/Навыки/Письма/Отклики в шапке (десктоп) и бургер-меню (мобильные), выдвижная панель диалогов, модальные окна, комбобоксы городов.
+**Ответственность:** FastAPI (async): auth/регистрация (PBKDF2-HMAC-SHA256+соль, в БД только хэш токенов — `store.py`: `users.db`, `sessions.db`), SSE-чат с событиями хода рассуждений и вызовов инструментов, REST: диалоги (переименование/удаление, пустые не сохраняются), письма (правка/регенерация/скачивание), отклики с напоминаниями и экспортом CSV, резюме соискателя (per-user `u<id>.json`: форма + разбор PDF/TXT, изоляция по user_id), словарь навыков (`GET /api/skills` из `vacancy_skills`; навыки в профиль — только из словаря, иначе 422). *(дополнено вручную 2026-11-04)* Изоляция данных по `user_id` из токена. Фронтенд — vanilla JS: вкладки Вакансии/Зарплаты/Навыки/Письма/Отклики в шапке (десктоп) и бургер-меню (мобильные), выдвижная панель диалогов, модальные окна, комбобоксы городов.
 
 **Точка входа:** `uvicorn app.server.main:app` (`run_server.bat`, порт 8000).
 
 ## 4. data-pipeline — конвейер данных
 
-**Граница:** `tools/` кроме `run_evals.py`: `hh_client.py`, `collect_hh.py`, `clean_merge.py`, `build_db.py`, `build_semantic.py`, `daily_increment.py`, `match_gap.py`, `parse_resume.py`, `stats_preview.py`, `check_token.py`; точки запуска `daily_collect.bat`.
+**Граница:** `tools/` кроме `run_evals.py`: `hh_client.py`, `collect_hh.py`, `clean_merge.py`, `build_db.py`, `build_semantic.py`, `daily_increment.py`, `match_gap.py`, `experience_matching.py`, `parse_resume.py`, `stats_preview.py`, `check_token.py`; точки запуска `daily_collect.bat`. *(дополнено вручную 2026-11-04: experience_matching.py — общий счёт «требования вакансии ↔ опыт работы»)*
 
 **Ответственность:** сбор вакансий с hh API (application-токен, только GET; списки → JSONL/CSV, `--details` — описания, дедуп, ретраи на 429/5xx), склейка трёх слоёв Kaggle+API в `data/clean/vacancies_unified.csv` (курсы ЦБ на фиксированную дату, канонизация опыта, chunked-чтение 1.5 ГБ CSV), сборка `data/app.db` (FTS5, `vacancy_skills`, `salary_agg`; `--full`/`--incremental`), семантический индекс (`data/semantic_model.joblib`, `semantic_tfidf.npz`, `semantic_index.npz`), офлайн-разбор PDF-резюме в профиль, ежедневная цепочка `daily_increment.py` → `data/collect.log`.
 

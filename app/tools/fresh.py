@@ -50,8 +50,10 @@ def fresh_vacancies(profile_id: str = "", days: int = 7, employer: str = "",
                    "WHERE vacancy_fts MATCH ?)")
         emp_params = [_employer_fts(employer.strip())]
     rows = con.execute(f"""
-        SELECT v.*, group_concat(s.skill_canon) AS sk
-        FROM vacancies v JOIN vacancy_skills s ON s.vacancy_id = v.vacancy_id
+        SELECT v.*, group_concat(s.skill_canon) AS sk, d.description AS desc_full
+        FROM vacancies v
+        JOIN vacancy_skills s ON s.vacancy_id = v.vacancy_id
+        LEFT JOIN vacancy_details d ON d.vacancy_id = v.vacancy_id
         WHERE v.source_layer = 'api_live_2026_10'
           AND v.published_at >= date('now', ?){emp_sql}
         GROUP BY v.vacancy_id""", ["-" + str(days) + " days"] + emp_params).fetchall()
@@ -63,6 +65,9 @@ def fresh_vacancies(profile_id: str = "", days: int = 7, employer: str = "",
              "salary_from": r["salary_from"], "salary_to": r["salary_to"],
              "salary_currency": r["currency"], "salary_gross": r["gross"],
              "url": r["url"], "published_at": r["published_at"],
+             "description": r["desc_full"] or "",
+             "requirement_snippet": r["requirement_snippet"],
+             "responsibility_snippet": r["responsibility_snippet"],
              "_skills": set((r["sk"] or "").split(","))}
         score, cov, matched, missing, sf_net, st_net = score_vacancy(v, prof)
         scored.append((score, cov, matched, missing, r))
@@ -82,5 +87,7 @@ def fresh_vacancies(profile_id: str = "", days: int = 7, employer: str = "",
         "vacancies": out,
         "method": f"вакансии за последние {days} дн. (api_live), ранжирование под профиль "
                   f"'{profile_id}': 0.45·покрытие навыков + 0.20·название + 0.20·город/график "
-                  f"+ 0.15·зарплата, штраф за опыт; свежих всего {len(scored)}, показано {len(out)}",
+                  f"+ 0.15·зарплата, штраф за опыт и поправка по опыту работы "
+                  f"(подтверждённые требования описания); свежих всего {len(scored)}, "
+                  f"показано {len(out)}",
     }

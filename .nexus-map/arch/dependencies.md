@@ -48,7 +48,7 @@ server-ui (app/server/main.py) ──► agent-core (agent.py, event_protocol.py
 - `app/tools/fresh.py` → `app/tools/match.py` (методика скоринга) и `app/tools/search.py` (`_row_to_card`).
 - `app/tools/salary.py` → `app/tools/search.py` (`EXP_MAP`, `GROSS_K` — общие константы нормализации).
 - `app/tools/semantic.py` → `app/tools/search.py` (`_row_to_card`).
-- `app/tools/match.py` ↔ `tools/match_gap.py` — **дублирование логики** канонических навыков и скоринга между слоями (комментарий в `app/tools/fresh.py:13`): при изменении формулы скоринга править оба места.
+- `app/tools/match.py` ↔ `tools/match_gap.py` — **дублирование логики** канонических навыков и базового скоринга между слоями; поправка по опыту вынесена в общий `tools/experience_matching.py` (`adjust_score`), импортируется `tools/match_gap.py` и через него инструментами. *(обновлено вручную 2026-11-04; комментарий в `app/tools/fresh.py:13`)*
 
 ## Внешние зависимости (по импортам AST)
 

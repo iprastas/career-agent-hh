@@ -16,6 +16,7 @@ FastAPI-бэкенд карьерного агента.
 """
 import json
 import os
+import sqlite3
 import sys
 import types
 
@@ -76,6 +77,11 @@ class TrackerIn(BaseModel):
     follow_up: str = ""
 
 
+class WorkPlaceIn(BaseModel):
+    company: str = ""
+    experience: str = ""
+
+
 class ProfileIn(BaseModel):
     profile_id: str = ""  # пусто — собственный профиль; чужие id не изменяются
     name: str = ""
@@ -83,7 +89,9 @@ class ProfileIn(BaseModel):
     location: str = ""
     experience_years: int = 0
     salary_net: int = 0
-    summary: str = ""
+    summary: str = ""  # поле «Опыт работы» в форме (устаревшее одиночное; см. work_places)
+    companies: list[str] = []  # устаревшее; выводится из work_places
+    work_places: list[WorkPlaceIn] = []  # пары «место работы + опыт работы»
     skills: list[str] = []
 
 
@@ -376,7 +384,8 @@ def _empty_profile(pid):
     return {
         "profile_id": pid, "source": "", "name": "", "title": "", "location": "",
         "relocation": False, "business_trips": False, "experience_years": 0,
-        "summary": "", "education": [], "languages": {"Русский": "родной"},
+        "summary": "", "work_experience": "", "companies": [], "work_places": [],
+        "education": [], "languages": {"Русский": "родной"},
         "skills": [],
         "preferences": {"salary_net": 0, "salary_note": "",
                         "employment": ["полная занятость"],
@@ -397,19 +406,77 @@ def _is_empty(data):
     return not (data.get("title") or data.get("skills") or data.get("experience_years"))
 
 
+# ------------------------------------------------ словарь навыков (из БД)
+_SKILL_DICT_CACHE = {}
+
+
+def _skill_dictionary():
+    """Словарь навыков из data/app.db: канонические имена (skill_canon) и их алиасы
+    (skill_raw вида 'Machine Learning|ML'). Кэш по (путь, mtime) — в тестах APP_DB
+    подменяется, реальный словарь читается один раз на снимок БД."""
+    db = config.APP_DB
+    key = (db, os.path.getmtime(db) if os.path.exists(db) else 0)
+    if key in _SKILL_DICT_CACHE:
+        return _SKILL_DICT_CACHE[key]
+    canon, alias = {}, {}
+    if os.path.exists(db):
+        con = sqlite3.connect(db, timeout=30)
+        con.execute("PRAGMA query_only=ON")
+        for c, raw in con.execute(
+                "SELECT DISTINCT skill_canon, skill_raw FROM vacancy_skills"):
+            c = (c or "").strip()
+            if not c:
+                continue
+            canon.setdefault(c.casefold(), c)
+            for a in (raw or "").split("|"):
+                a = a.strip()
+                if a:
+                    alias.setdefault(a.casefold(), c)
+        con.close()
+    _SKILL_DICT_CACHE[key] = (canon, alias)
+    return canon, alias
+
+
+def _curated_canon(key):
+    """Запасная канонизация по общей карте алиасов (tools/match_gap.py): навыки,
+    распознанные парсером резюме, всегда сохраняемы, даже если их ещё нет в БД."""
+    sys.path.insert(0, os.path.join(config.PROJECT, "tools"))
+    import match_gap
+    return match_gap.ALIASES.get(key) or (key if key in match_gap.CANON else "")
+
+
 def _clean_skills(skills):
-    """['C#', 'docker', ...] -> [{'name': 'C#', 'weight': 'core'}, ...] без дублей."""
-    out, seen = [], set()
+    """['C#', 'docker', ...] -> ([{'name': канон, 'weight': 'core'}, ...], unknown).
+    Только навыки из словаря БД (или общей карты алиасов): посторонний текст
+    пользователь внести не может — он возвращается в unknown и сохранение
+    отклоняется (422), профиль не перезаписывается."""
+    canon, alias = _skill_dictionary()
+    out, seen, unknown = [], set(), []
     for s in skills or []:
         name = str(s or "").strip()[:60]
-        key = name.lower()
-        if not name or key in seen:
+        if not name:
             continue
-        seen.add(key)
-        out.append({"name": name, "weight": "core"})
+        key = name.casefold()
+        resolved = canon.get(key) or alias.get(key) or _curated_canon(key)
+        if not resolved:
+            unknown.append(name)
+            continue
+        rkey = resolved.casefold()
+        if rkey in seen:
+            continue
+        seen.add(rkey)
+        out.append({"name": resolved, "weight": "core"})
         if len(out) >= 40:
             break
-    return out
+    return out, unknown
+
+
+@app.get("/api/skills")
+def skills_dictionary(user=Depends(current_user)):
+    """Словарь навыков из БД — для раскрывающегося списка в форме резюме.
+    Только чтение: выбрать можно лишь навык из этого списка."""
+    canon, _ = _skill_dictionary()
+    return {"skills": sorted(set(canon.values()), key=str.casefold)}
 
 
 @app.get("/api/profile")
@@ -447,8 +514,29 @@ def profile_put(body: ProfileIn, user=Depends(current_user)):
     data["title"] = (body.title or "").strip()[:120]
     data["location"] = (body.location or "").strip()[:80]
     data["experience_years"] = max(0, int(body.experience_years or 0))
-    data["summary"] = (body.summary or "").strip()[:2000]
-    data["skills"] = _clean_skills(body.skills)
+    # пары «место работы + опыт»; зеркала companies/summary выводятся из них
+    places = []
+    for wp in body.work_places:
+        company = (wp.company or "").strip()[:120]
+        exp = (wp.experience or "").strip()[:6000]
+        if company or exp:
+            places.append({"company": company, "experience": exp})
+    if places:
+        data["work_places"] = places[:20]
+        data["companies"] = [p["company"] for p in data["work_places"] if p["company"]]
+        combined = "\n\n".join(p["experience"] for p in data["work_places"] if p["experience"])
+        data["summary"] = combined[:2000]
+        data["work_experience"] = combined[:6000]
+    else:  # обратная совместимость: одиночное поле «Опыт работы» + список компаний
+        data["work_places"] = []
+        data["summary"] = (body.summary or "").strip()[:2000]
+        data["work_experience"] = data["summary"]
+        data["companies"] = [c.strip() for c in (body.companies or []) if c.strip()][:20]
+    cleaned, unknown = _clean_skills(body.skills)
+    if unknown:
+        raise HTTPException(422, "навыки не найдены в словаре — выберите из списка: "
+                                + ", ".join(unknown))
+    data["skills"] = cleaned
     pref = data.setdefault("preferences", {})
     pref["salary_net"] = max(0, int(body.salary_net or 0))
     os.makedirs(config.PROFILES_DIR, exist_ok=True)
@@ -469,7 +557,9 @@ def _draft_from_text(text, source=""):
         "location": _pr.detect_city(text),
         "experience_years": _pr.detect_experience_years(text),
         "skills": skills[:40],
-        "summary": "",
+        "summary": _pr.detect_work_experience(text)[:2000],
+        "companies": _pr.detect_companies(text)[:20],
+        "work_places": _pr.detect_work_places(text)[:20],
     }
     return {"draft": draft, "source": source,
             "note": "Поля разобраны из резюме автоматически — проверьте и поправьте "
@@ -541,14 +631,6 @@ def _letter_out(fname, path):
             "modified": os.path.getmtime(path)}
 
 
-_REGEN_PROMPT = """Ты редактируешь сопроводительные письма работодателям от имени соискателя.
-Перепиши письмо так, чтобы оно звучало естественно и по-человечески, а не как нейросеть:
-короткие простые предложения, конкретика из резюме и вакансии, никакого канцелярита и
-штампов («хотел(а) бы выразить интерес», «в заключение», «команда мечты»), без эмодзи и
-восклицательных знаков. Сохрани смысл, тон и структуру (обращение, 2–4 абзаца, подпись).
-Верни ТОЛЬКО новый текст письма — без пояснений, заголовков и кавычек."""
-
-
 @app.get("/api/outbox")
 def outbox_list(user=Depends(current_user)):
     user_dir = os.path.join(config.OUTBOX_DIR, _uid(user))
@@ -589,23 +671,27 @@ def outbox_patch(fname: str, body: LetterPatch, user=Depends(current_user)):
 
 @app.post("/api/outbox/{fname}/regenerate")
 async def outbox_regenerate(fname: str, user=Depends(current_user)):
-    """Перегенерировать текст письма (LLM, человеческий тон). Ничего не отправляется."""
+    """Перегенерировать текст письма (LLM, человеческий тон). Ничего не отправляется.
+    Промпт — app/letter_writing.py: политика отделена от данных, данные (включая
+    описание вакансии) идут недоверенным контентом в user-сообщении."""
     import litellm
+    from ..letter_writing import build_rewrite_messages
     fname, path = _letter_path(user, fname)
     data = parse_letter(open(path, encoding="utf-8").read())
     meta = data["meta"]
-    from ..system_prompt import profile_summary
-    user_parts = [f"Вакансия: {meta.get('вакансия', '')}",
-                  f"Работодатель: {meta.get('работодатель', '')}",
-                  f"Ссылка: {meta.get('ссылка', '')}",
-                  f"Тон: {meta.get('тон', 'деловой')}",
-                  profile_summary(_uid(user)),
-                  "Текущий вариант письма:\n" + data["body"]]
+    prof_path, _ = _own_profile_path(user)
+    profile = _read_profile(prof_path) or {}
+    vacancy = {"name": meta.get("вакансия", ""), "employer": meta.get("работодатель", ""),
+               "url": meta.get("ссылка", "")}
+    vid = fname.split("_", 1)[0]
+    card = vacancy_details(vid) if vid else {}
+    if isinstance(card, dict) and "error" not in card:
+        vacancy = card
+    messages = build_rewrite_messages(profile, vacancy, data["body"],
+                                      tone=meta.get("тон", "деловой"))
     try:
         resp = await litellm.acompletion(
-            model=config.model_name(),
-            messages=[{"role": "system", "content": _REGEN_PROMPT},
-                      {"role": "user", "content": "\n\n".join(p for p in user_parts if p)}],
+            model=config.model_name(), messages=messages,
             temperature=0.7, max_tokens=800, timeout=90)
         text = (resp.choices[0].message.content or "").strip()
     except Exception as e:

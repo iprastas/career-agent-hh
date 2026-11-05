@@ -955,6 +955,109 @@ async function loadTrend() {
 /* ================= моё резюме (вкладка «Навыки») ================= */
 let profileSkills = [];   // [{name, weight}] — чипсы в форме
 let profileDirty = false; // форма изменена и ещё не сохранена на сервер
+let skillDict = [];       // словарь навыков из БД (GET /api/skills)
+let skillHintIdx = -1;    // подсвеченная строка в выпадающем списке
+let workPlaces = [{ company: "", experience: "" }]; // пары «место работы + опыт»
+
+function workPlacesFromData(d) {
+  if (d.work_places && d.work_places.length) {
+    return d.work_places.map((p) => ({ company: p.company || "", experience: p.experience || "" }));
+  }
+  // миграция старых профилей: companies + общий summary -> пары
+  const cs = d.companies || [];
+  const exp = d.summary || d.work_experience || "";
+  if (cs.length) return cs.map((c, i) => ({ company: c, experience: i === 0 ? exp : "" }));
+  return [{ company: "", experience: exp }];
+}
+
+function renderWorkPlaces() {
+  const box = $("#p-places");
+  box.innerHTML = "";
+  workPlaces.forEach((p, idx) => {
+    const div = document.createElement("div");
+    div.className = "work-place";
+    div.innerHTML = `
+      <div class="wp-head">
+        <input class="wp-company" placeholder="Название компании">
+        <button type="button" class="wp-remove" title="убрать место работы">✕</button>
+      </div>
+      <textarea class="wp-exp" rows="3"
+        placeholder="Опыт работы: задачи, проекты, результаты"></textarea>`;
+    const company = div.querySelector(".wp-company");
+    const exp = div.querySelector(".wp-exp");
+    company.value = p.company;
+    exp.value = p.experience;
+    company.oninput = () => { p.company = company.value; profileDirty = true; };
+    exp.oninput = () => { p.experience = exp.value; profileDirty = true; };
+    div.querySelector(".wp-remove").onclick = () => {
+      workPlaces.splice(idx, 1);
+      if (!workPlaces.length) workPlaces.push({ company: "", experience: "" });
+      profileDirty = true;
+      renderWorkPlaces();
+    };
+    box.appendChild(div);
+  });
+}
+
+function addWorkPlace() {
+  workPlaces.push({ company: "", experience: "" });
+  profileDirty = true;
+  renderWorkPlaces();
+  const inputs = document.querySelectorAll("#p-places .wp-company");
+  if (inputs.length) inputs[inputs.length - 1].focus();
+}
+
+async function loadSkillDict() {
+  try {
+    const data = await api("/api/skills");
+    skillDict = data.skills || [];
+  } catch (err) {
+    skillDict = [];
+  }
+}
+
+function skillMatches(q) {
+  q = (q || "").trim().toLowerCase();
+  if (!q) return [];
+  return skillDict
+    .filter((s) => s.toLowerCase().includes(q))
+    .sort((a, b) => {
+      const ai = a.toLowerCase().indexOf(q), bi = b.toLowerCase().indexOf(q);
+      return ai - bi || a.length - b.length;
+    })
+    .slice(0, 8);
+}
+
+function showSkillHints() {
+  const box = $("#p-skill-hints");
+  const list = skillMatches($("#p-skill-input").value);
+  if (!list.length) { hideSkillHints(); return; }
+  if (skillHintIdx >= list.length) skillHintIdx = list.length - 1;
+  box.innerHTML = list.map((s, i) =>
+    `<div class="skill-hint${i === skillHintIdx ? " active" : ""}" data-name="${esc(s)}">${esc(s)}</div>`
+  ).join("");
+  box.querySelectorAll(".skill-hint").forEach((el) => {
+    el.onmousedown = (e) => { e.preventDefault(); pickSkill(el.dataset.name); };
+  });
+  box.classList.remove("hidden");
+}
+
+function hideSkillHints() {
+  $("#p-skill-hints").classList.add("hidden");
+  skillHintIdx = -1;
+}
+
+function pickSkill(name) {
+  hideSkillHints();
+  if (!profileSkills.some((s) => s.name.toLowerCase() === name.toLowerCase())) {
+    profileSkills.push({ name, weight: "core" });
+    profileDirty = true;
+    renderSkillChips();
+  }
+  const input = $("#p-skill-input");
+  input.value = "";
+  input.focus();
+}
 
 function renderSkillChips() {
   const box = $("#p-skills");
@@ -977,19 +1080,47 @@ function renderSkillChips() {
 }
 
 function addSkillKey(e) {
-  if (e.key === "Enter") { e.preventDefault(); addSkill(); return false; }
+  const hints = [...$("#p-skill-hints").querySelectorAll(".skill-hint")];
+  if (e.key === "ArrowDown" && hints.length) {
+    e.preventDefault();
+    skillHintIdx = Math.min(skillHintIdx + 1, hints.length - 1);
+    showSkillHints();
+    return false;
+  }
+  if (e.key === "ArrowUp" && hints.length) {
+    e.preventDefault();
+    skillHintIdx = Math.max(skillHintIdx - 1, 0);
+    showSkillHints();
+    return false;
+  }
+  if (e.key === "Escape") { hideSkillHints(); return false; }
+  if (e.key === "Enter") {
+    e.preventDefault();
+    const active = hints[skillHintIdx];
+    if (active) pickSkill(active.dataset.name);
+    else addSkill();
+    return false;
+  }
 }
+
 function addSkill() {
   const input = $("#p-skill-input");
   const name = (input.value || "").trim();
   if (!name) return;
-  if (!profileSkills.some((s) => s.name.toLowerCase() === name.toLowerCase())) {
-    profileSkills.push({ name, weight: "core" });
-    profileDirty = true;
-    renderSkillChips();
+  // только словарь БД: точное совпадение или единственное явное совпадение префикса
+  const exact = skillDict.find((s) => s.toLowerCase() === name.toLowerCase());
+  const near = skillMatches(name);
+  const hit = exact || (near.length === 1 && near[0].toLowerCase().startsWith(name.toLowerCase()))
+    ? (exact || near[0]) : null;
+  if (!hit) {
+    $("#p-status").textContent = near.length
+      ? "выберите навык из списка совпадений — своё значение внести нельзя"
+      : "навык «" + name + "» не найден в словаре — выберите из списка";
+    showSkillHints();
+    return;
   }
-  input.value = "";
-  input.focus();
+  $("#p-status").textContent = "";
+  pickSkill(hit);
 }
 
 function focusProfileForm() {
@@ -999,6 +1130,7 @@ function focusProfileForm() {
 
 async function loadProfile() {
   try {
+    if (!skillDict.length) await loadSkillDict();
     const data = await api("/api/profile");
     const d = data.data;
     state.profileId = data.profile_id;
@@ -1007,7 +1139,8 @@ async function loadProfile() {
     $("#p-city").value = d.location || "";
     $("#p-exp").value = d.experience_years || "";
     $("#p-salary").value = (d.preferences && d.preferences.salary_net) || "";
-    $("#p-summary").value = d.summary || "";
+    workPlaces = workPlacesFromData(d);
+    renderWorkPlaces();
     profileSkills = (d.skills || []).map((s) =>
       typeof s === "string" ? { name: s, weight: "core" } : { name: s.name, weight: s.weight || "core" });
     profileDirty = false;
@@ -1032,10 +1165,12 @@ async function saveProfile(quiet) {
         location: $("#p-city").value,
         experience_years: parseInt($("#p-exp").value || "0", 10),
         salary_net: parseInt($("#p-salary").value || "0", 10),
-        summary: $("#p-summary").value,
+        work_places: workPlaces.filter((p) => (p.company + p.experience).trim()),
         skills: profileSkills.map((s) => s.name),
       }),
     });
+    workPlaces = workPlacesFromData(r.data);
+    renderWorkPlaces();
     profileSkills = (r.data.skills || []).map((s) =>
       typeof s === "string" ? { name: s, weight: "core" } : { name: s.name, weight: s.weight || "core" });
     profileDirty = false;
@@ -1060,7 +1195,11 @@ function applyDraft(draft, note) {
   if (draft.title) $("#p-title").value = draft.title;
   if (draft.location) $("#p-city").value = draft.location;
   if (draft.experience_years) $("#p-exp").value = draft.experience_years;
-  if (draft.summary) $("#p-summary").value = draft.summary;
+  if ((draft.work_places && draft.work_places.length) || draft.summary ||
+      (draft.companies || []).length) {
+    workPlaces = workPlacesFromData(draft);
+    renderWorkPlaces();
+  }
   const parsed = draft.skills || [];
   if (parsed.length) {
     profileSkills = parsed.map((n) => ({ name: n, weight: "core" }));

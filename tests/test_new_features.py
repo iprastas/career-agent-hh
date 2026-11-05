@@ -174,8 +174,8 @@ class TestProfileAPI:
         assert upd.json()["empty"] is False
         saved = json.load(open(prof_dir / "u1.json", encoding="utf-8"))
         assert saved["location"] == "Казань" and saved["preferences"]["salary_net"] == 150000
-        # дубль навыка складывается, порядок сохраняется
-        assert [s["name"] for s in saved["skills"]] == ["C#", ".NET", "docker"]
+        # дубль навыка складывается, порядок сохраняется; имена — канонические (словарь БД)
+        assert [s["name"] for s in saved["skills"]] == ["c#", ".net", "docker"]
         # чужое резюме изменить нельзя
         assert client.put("/api/profile", headers=h,
                           json={"profile_id": "anastasia", "title": "x",
@@ -214,3 +214,36 @@ class TestProfileAPI:
         # слишком короткий текст — отказ
         assert client.post("/api/profile/parse", json={"text": "мало"},
                            headers=h).status_code == 400
+
+    def test_work_places_saved_per_company(self, tmp_path, monkeypatch):
+        """Опыт работы хранится по местам: пары «компания + опыт»,
+        зеркала companies/summary/work_experience выводятся из них."""
+        from fastapi.testclient import TestClient
+        from app.server import store
+        import app.server.main as main
+        monkeypatch.setattr(store, "USERS_DB", str(tmp_path / "users.db"))
+        monkeypatch.setattr(config, "DATA", str(tmp_path))
+        monkeypatch.setattr(config, "PROFILES_DIR", str(tmp_path / "profiles"))
+        monkeypatch.setattr(main, "_RUNNER", None)
+        client = TestClient(main.app)
+        tok = client.post("/api/register", json={"email": "wp@test.ru",
+                                                 "password": "password123"}).json()["token"]
+        h = {"Authorization": "Bearer " + tok}
+        places = [{"company": "Т-Банк", "experience": "Делал банковские сервисы."},
+                  {"company": "Экситон", "experience": "Писал приложения на .NET."}]
+        r = client.put("/api/profile", json={"title": "Разработчик",
+                                             "work_places": places,
+                                             "skills": ["C#"]}, headers=h)
+        assert r.status_code == 200
+        saved = json.load(open(tmp_path / "profiles" / "u1.json", encoding="utf-8"))
+        assert [p["company"] for p in saved["work_places"]] == ["Т-Банк", "Экситон"]
+        assert saved["companies"] == ["Т-Банк", "Экситон"]
+        assert "банковские сервисы" in saved["summary"] and ".NET" in saved["summary"]
+        assert saved["work_experience"] == saved["summary"]  # зеркало
+        # старый формат (одиночное summary + companies) тоже принимается
+        r = client.put("/api/profile", json={"title": "Разработчик",
+                                             "summary": "Один текст опыта.",
+                                             "companies": ["ООО Пример"]}, headers=h)
+        assert r.status_code == 200
+        saved = json.load(open(tmp_path / "profiles" / "u1.json", encoding="utf-8"))
+        assert saved["work_places"] == [] and saved["summary"] == "Один текст опыта."

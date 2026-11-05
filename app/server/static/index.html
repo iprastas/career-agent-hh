@@ -219,15 +219,23 @@
           <input id="p-salary" type="number" min="0" placeholder="напр. 100000"></label>
         <div class="field w100"><span>Навыки</span>
           <div class="skill-chips" id="p-skills"></div>
-          <div class="skill-add">
-            <input id="p-skill-input" placeholder="добавить навык и нажать Enter"
-                   onkeydown="return addSkillKey(event)">
+          <div class="skill-add skill-combo">
+            <input id="p-skill-input" placeholder="начните вводить навык — появятся совпадения"
+                   autocomplete="off" onkeydown="return addSkillKey(event)"
+                   oninput="showSkillHints()" onfocus="showSkillHints()"
+                   onblur="hideSkillHints()">
             <button type="button" class="btn-ghost" onclick="addSkill()">Добавить</button>
+            <div id="p-skill-hints" class="skill-hints hidden"></div>
           </div>
+          <div class="tiny muted">Навык выбирается только из словаря (по данным hh): начните
+            вводить и кликните по совпадению. Своё значение внести нельзя.</div>
         </div>
-        <label class="field w100"><span>О себе (кратко)</span>
-          <textarea id="p-summary" rows="3"
-                    placeholder="Пара предложений о себе — пригодится для сопроводительных писем"></textarea></label>
+        <div class="field w100"><span>Опыт работы</span>
+          <div id="p-places" class="work-places"></div>
+          <button type="button" class="btn-ghost" onclick="addWorkPlace()">+ Добавить место работы</button>
+          <div class="tiny muted">Каждому месту работы — свой опыт: задачи, проекты, результаты.
+            Влияет на подбор вакансий и текст писем.</div>
+        </div>
         <div class="row-actions">
           <button class="btn-primary" onclick="saveProfile()">Сохранить резюме</button>
           <button class="btn-ghost" onclick="document.getElementById('resume-file').click()">Заменить файлом</button>
