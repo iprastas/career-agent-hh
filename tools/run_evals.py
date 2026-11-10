@@ -66,7 +66,7 @@ async def judge(model, question, answer):
             model=model,
             messages=[{"role": "system", "content": JUDGE_PROMPT},
                       {"role": "user", "content": f"Вопрос: {question}\n\nОтвет агента:\n{answer[:3000]}"}],
-            temperature=0.0, max_tokens=200, timeout=60)
+            temperature=0.0, max_tokens=200, timeout=config.llm_timeout(60))
         raw = (resp.choices[0].message.content or "").strip()
         raw = raw[raw.find("{"):raw.rfind("}") + 1]
         d = json.loads(raw)

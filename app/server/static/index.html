@@ -34,6 +34,11 @@
 <div id="app" class="app hidden">
   <header class="topbar">
     <div class="brand"><span class="logo">◎</span> Карьерный агент <span class="muted tiny">hh.ru</span></div>
+    <label class="llm-toggle" title="Локальная модель (Qwen) работает без интернета; облачная — по ключу API">
+      <input type="checkbox" id="llm-local" onchange="toggleLlm(this)">
+      <span class="llm-switch-label">Локальная модель</span>
+      <span id="llm-dot" class="llm-dot" title=""></span>
+    </label>
     <span id="user-email" class="account-email muted tiny"></span>
     <button id="logout-btn" class="btn-ghost tiny-btn" onclick="logout()">Выход</button>
     <div class="nav-wrap">

@@ -1495,6 +1495,42 @@ async function updateStatus(vid, status) {
   loadTracker();
 }
 
+/* ================= модель: облако / локально ================= */
+async function loadLlmStatus() {
+  try {
+    const s = await api("/api/llm/status");
+    $("#llm-local").checked = s.mode === "local";
+    const dot = $("#llm-dot");
+    if (s.mode !== "local") {
+      dot.className = "llm-dot cloud";
+      dot.title = "Облачная модель (по ключу API)";
+    } else if (s.running) {
+      dot.className = "llm-dot ok";
+      dot.title = "Локальная модель запущена";
+    } else {
+      dot.className = "llm-dot off";
+      dot.title = "Локальная модель не запущена";
+    }
+  } catch (e) { /* не авторизован — иконка неактуальна */ }
+}
+
+async function toggleLlm(input) {
+  const mode = input.checked ? "local" : "cloud";
+  input.disabled = true;
+  const dot = $("#llm-dot");
+  dot.className = "llm-dot wait";
+  dot.title = mode === "local" ? "Запуск локальной модели (первый старт — до минуты)…" : "Переключение…";
+  try {
+    const r = await api("/api/llm/mode", { method: "POST", body: JSON.stringify({ mode }) });
+    if (r.ok === false) alert(r.message || "не удалось переключить модель");
+  } catch (e) {
+    alert("Не удалось переключить модель: " + e.message);
+    input.checked = mode !== "local";
+  }
+  input.disabled = false;
+  loadLlmStatus();
+}
+
 /* ================= старт ================= */
 async function startApp() {
   try {
@@ -1507,6 +1543,7 @@ async function startApp() {
   if (!$("#messages").children.length) addWelcome();
   initEnhancements();
   loadSessions();
+  loadLlmStatus();
 }
 
 if (state.token) startApp();

@@ -584,3 +584,21 @@ select.mini {
   body.sessions-open .sessions { display: flex; }
   .chat-toolbar { padding: 8px 12px; }
 }
+
+/* ---- переключатель LLM (облако / локально) ---- */
+.llm-toggle {
+  display: inline-flex; align-items: center; gap: 7px;
+  cursor: pointer; user-select: none; white-space: nowrap;
+}
+.llm-toggle input { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
+.llm-switch-label { font-size: 12px; color: var(--text-3); }
+.llm-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-4); }
+.llm-dot.cloud { background: var(--accent); }
+.llm-dot.ok { background: var(--green); }
+.llm-dot.off { background: var(--red); }
+.llm-dot.wait { background: var(--amber); animation: llm-pulse 1.2s ease-in-out infinite; }
+@keyframes llm-pulse { 50% { opacity: 0.35; } }
+@media (max-width: 760px) {
+  .llm-switch-label { display: none; }
+  .llm-toggle { gap: 5px; }
+}

@@ -18,7 +18,9 @@ import json
 import os
 import sqlite3
 import sys
+import threading
 import types
+from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, File, Header, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -31,6 +33,7 @@ from .. import config
 config.apply_env()  # ключи провайдера — до импорта litellm/ADK (см. app/agent.py)
 
 from .. import guardrails  # noqa: E402
+from .. import llm_local  # noqa: E402
 from ..agent import build_agent, APP_NAME  # noqa: E402
 from ..event_protocol import stream_turn  # noqa: E402
 from ..memory import compact_if_needed, dialog_title, extract_messages  # noqa: E402
@@ -40,7 +43,16 @@ from ..tools import (draft_letter, fresh_vacancies, match_profile,  # noqa: E402
 from ..tools.letters import make_letter_title, parse_letter, render_letter  # noqa: E402
 from . import store  # noqa: E402
 
-app = FastAPI(title="Карьерный агент hh.ru", version="0.1")
+@asynccontextmanager
+async def _lifespan(_app):
+    """В local-режиме поднять llama-server в фоне (не блокируя старт сервера)."""
+    if config.llm_mode() == config.LLM_MODE_LOCAL:
+        threading.Thread(target=llm_local.ensure_running, daemon=True).start()
+    yield
+    llm_local.stop()  # гасим только запущенный нами llama-server
+
+
+app = FastAPI(title="Карьерный агент hh.ru", version="0.1", lifespan=_lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"],
                    allow_headers=["*"])
 
@@ -152,6 +164,33 @@ def logout(authorization: str = Header(None)):
 @app.get("/api/me")
 def me(user=Depends(current_user)):
     return {"user": user}
+
+
+# ---------------------------------------------------------------- модель: облако / локально
+class LlmModeIn(BaseModel):
+    mode: str
+
+
+@app.get("/api/llm/status")
+def llm_status(user=Depends(current_user)):
+    """Режим модели (cloud/local) и состояние локального llama-server."""
+    return llm_local.status()
+
+
+@app.post("/api/llm/mode")
+def llm_set_mode(body: LlmModeIn, user=Depends(current_user)):
+    """Переключение облако ↔ локальная модель. Локальную запускает и ждёт готовности
+    (первый старт грузит gguf ~20-60 с). Агент пересобирается при следующем ходе."""
+    global _RUNNER
+    mode = (body.mode or "").strip().lower()
+    if mode not in (config.LLM_MODE_CLOUD, config.LLM_MODE_LOCAL):
+        raise HTTPException(422, "режим должен быть 'cloud' или 'local'")
+    config.set_llm_mode(mode)  # выбор сохраняется в DATA/llm_mode.json
+    _RUNNER = None
+    if mode == config.LLM_MODE_LOCAL:
+        ok, msg = llm_local.ensure_running(timeout=240)
+        return {"ok": ok, "message": msg, **llm_local.status()}
+    return {"ok": True, "message": "облачная модель (по ключу API)", **llm_local.status()}
 
 
 # ---------------------------------------------------------------- сессии диалога
@@ -692,7 +731,7 @@ async def outbox_regenerate(fname: str, user=Depends(current_user)):
     try:
         resp = await litellm.acompletion(
             model=config.model_name(), messages=messages,
-            temperature=0.7, max_tokens=800, timeout=90)
+            temperature=0.7, max_tokens=800, timeout=config.llm_timeout(90))
         text = (resp.choices[0].message.content or "").strip()
     except Exception as e:
         raise HTTPException(502, "не удалось перегенерировать текст: " + str(e)[:200])

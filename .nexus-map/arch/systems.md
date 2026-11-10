@@ -6,13 +6,13 @@
 
 ## 1. agent-core — ядро агента
 
-**Граница:** `app/` без `app/server/` и `app/tools/`: `config.py`, `agent.py`, `guardrails.py`, `system_prompt.py`, `topic_gate.py`, `memory.py`, `event_protocol.py`, `letter_writing.py`, `runner_cli.py`, `__init__.py`. *(дополнено вручную 2026-11-04: letter_writing.py — промпты писем, политика отделена от данных)*
+**Граница:** `app/` без `app/server/` и `app/tools/`: `config.py`, `agent.py`, `guardrails.py`, `system_prompt.py`, `topic_gate.py`, `memory.py`, `event_protocol.py`, `letter_writing.py`, `runner_cli.py`, `llm_local.py`, `__init__.py`. *(дополнено вручную 2026-11-04: letter_writing.py — промпты писем, политика отделена от данных; 2026-11-09: llm_local.py — локальная LLM llama.cpp для offline-режима)*
 
 **Ответственность:** сборка ADK `LlmAgent` (координатор + суб-агенты search/analytics/writer — PLAN.md, этап «Расширение 01.11.2026»), guardrails в три слоя (1 — детерминированный пред-фильтр инъекций `guardrails.py`; 1.5 — классификатор тем на TF-IDF-центроидах `topic_gate.py`; 2 — системный промпт с белым списком тем `system_prompt.py`; 3 — пост-фильтр утечек промпта и заявлений об отправке `guardrails.py`), сжатие истории длинных диалогов в сводку (`memory.py`, детерминированный фолбэк без модели), конверт событий refusal/status/tool_call/think/delta/answer/done (`event_protocol.py`).
 
 **Точки входа:** `agent.py: build_agent, APP_NAME`; консольный прогон `python -m app.runner_cli`.
 
-**Факты:** `config.py` — базовый модуль уровня 0, импортируется почти всеми (проверено чтением исходников); модель резолвится реестром ADK только с префиксом `openai/<MODEL>` (PLAN.md, проверено живьём).
+**Факты:** `config.py` — базовый модуль уровня 0, импортируется почти всеми (проверено чтением исходников); модель резолвится реестром ADK только с префиксом `openai/<MODEL>` (PLAN.md, проверено живьём). *(дополнено вручную 2026-11-09)* `config.py` также выбирает режим LLM `cloud|local` (DATA/llm_mode.json > LLM_MODE) и таймауты; в local-режиме litellm/ADK ходят в локальный llama.cpp `llama-server` (127.0.0.1:8080, gguf из `models/`, рантайм в `vendor/llama-cpp` — вне git), переключатель — `GET/POST /api/llm/*` в server-ui.
 
 ## 2. agent-tools — инструменты агента
 
