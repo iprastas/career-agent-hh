@@ -70,6 +70,22 @@ def api_get(path, params=None, retries=4):
     raise RuntimeError("Исчерпаны повторы: " + url)
 
 
+def _schedule(it):
+    """Формат работы: старое поле schedule, а если его нет — work_format (hh перенёс
+    формат работы туда; из-за этого schedule был пуст у всех собранных вакансий)."""
+    old = (it.get("schedule") or {}).get("id", "")
+    if old:
+        return old
+    ids = {(x or {}).get("id", "") for x in (it.get("work_format") or [])}
+    if "REMOTE" in ids:
+        return "remote"
+    if "HYBRID" in ids:
+        return "hybrid"
+    if "ON_SITE" in ids:
+        return "onSite"
+    return ""
+
+
 def norm_item(it, query):
     sal = it.get("salary") or {}
     return {
@@ -85,8 +101,9 @@ def norm_item(it, query):
         "salary_currency": sal.get("currency", ""),
         "salary_gross": sal.get("gross"),
         "experience": (it.get("experience") or {}).get("id", ""),
-        "employment": (it.get("employment") or {}).get("id", ""),
-        "schedule": (it.get("schedule") or {}).get("id", ""),
+        "employment": ((it.get("employment") or {}).get("id", "")
+                       or (it.get("employment_form") or {}).get("id", "").lower()),
+        "schedule": _schedule(it),
         "published_at": it.get("published_at", ""),
         "requirement_snippet": ((it.get("snippet") or {}).get("requirement") or ""),
         "responsibility_snippet": ((it.get("snippet") or {}).get("responsibility") or ""),

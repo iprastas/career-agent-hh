@@ -29,6 +29,7 @@ LOCAL_API_KEY = "sk-local-offline"           # litellm требует непус
 LOCAL_GGUF = os.path.join(PROJECT, "models", "Qwen3.5-4B-Q4_K_M.gguf")
 LLAMA_CPP_DIR = os.path.join(PROJECT, "vendor", "llama-cpp")
 _MODE_FILE = "llm_mode.json"                 # в DATA: выбор режима переживает перезапуск
+_BASE_KEYS = ("OPENAI_API_BASE", "OPENAI_BASE_URL")  # litellm читает оба имени
 
 
 def llm_mode():
@@ -58,7 +59,7 @@ def set_llm_mode(mode):
 
 def llm_timeout(base=60):
     """Таймаут запроса к LLM: локальная CPU-модель медленнее облачной."""
-    return max(base, 300) if llm_mode() == LLM_MODE_LOCAL else base
+    return max(base * 2, 300) if llm_mode() == LLM_MODE_LOCAL else base
 
 
 def load_env(path=None):
@@ -86,8 +87,15 @@ def apply_env():
     ключ и интернет не нужны. Свои же локальные override'ы при возврате в
     облако снимаются, чтобы не перекрыть настройки .env."""
     env = load_env()
+    # litellm при импорте качает карту цен моделей из интернета (офлайн — таймаут,
+    # при системном socks-прокси — падение импорта); берём встроенную копию
+    os.environ.setdefault("LITELLM_LOCAL_MODEL_COST_MAP", "True")
     if llm_mode() == LLM_MODE_LOCAL:
-        os.environ["OPENAI_API_BASE"] = LOCAL_API_BASE
+        # litellm сам подгружает .env (load_dotenv) и берёт OPENAI_BASE_URL РАНЬШЕ
+        # OPENAI_API_BASE: без перекрытия обоих имён запрос с локальным ключом уходил
+        # в облачный шлюз (aitunnel: «Недействительный токен»)
+        for key in _BASE_KEYS:
+            os.environ[key] = LOCAL_API_BASE
         os.environ["OPENAI_API_KEY"] = LOCAL_API_KEY
         # localhost не должен ходить через прокси: на части машин системный прокси
         # (реестр Windows) перехватывает запросы к llama-server и ломает httpx
@@ -98,7 +106,7 @@ def apply_env():
                     hosts.append(host)
             os.environ[key] = ",".join(hosts)
         return env
-    for key, ours in (("OPENAI_API_BASE", LOCAL_API_BASE), ("OPENAI_API_KEY", LOCAL_API_KEY)):
+    for key, ours in [(k, LOCAL_API_BASE) for k in _BASE_KEYS] + [("OPENAI_API_KEY", LOCAL_API_KEY)]:
         if os.environ.get(key) == ours:
             del os.environ[key]
     for key in ("OPENAI_API_KEY", "OPENAI_BASE_URL"):
@@ -108,6 +116,26 @@ def apply_env():
         # litellm читает OPENAI_API_BASE; оба имени не взаимозаменяемы между версиями
         os.environ.setdefault("OPENAI_API_BASE", env["OPENAI_BASE_URL"])
     return env
+
+
+def llm_kwargs():
+    """Явные endpoint/ключ для litellm/ADK: в local-режиме запрос гарантированно идёт
+    в llama-server, что бы ни лежало в окружении и .env. В облаке — пусто
+    (провайдер из окружения)."""
+    if llm_mode() == LLM_MODE_LOCAL:
+        return {"api_base": LOCAL_API_BASE, "api_key": LOCAL_API_KEY}
+    return {}
+
+
+def agent_gen_kwargs():
+    """Параметры генерации агентов ADK. Лимит токенов — всегда: без него маленькая
+    модель при обязательном вызове инструмента могла генерировать бесконечно
+    (замечено: 14 000+ токенов на одном шаге). Для локальной модели — ниже температура
+    (у llama-server по умолчанию 0.8 — 4B-модель сбивается в вызовах инструментов)."""
+    kw = {"max_tokens": 2048}
+    if llm_mode() == LLM_MODE_LOCAL:
+        kw.update({"temperature": 0.3, "max_tokens": 1536})
+    return kw
 
 
 def model_name():

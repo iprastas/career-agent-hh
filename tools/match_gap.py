@@ -15,7 +15,7 @@ DATA = os.path.join(PROJECT, "data")
 REPORTS = os.path.join(DATA, "reports")
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from experience_matching import METHOD as EXP_METHOD, adjust_score  # noqa: E402  счёт по опыту
+from experience_matching import METHOD as EXP_METHOD, adjust_score, assess  # noqa: E402,F401  счёт по опыту
 
 # ---------- канонические навыки и алиасы ----------
 ALIASES = {
@@ -62,6 +62,8 @@ for _c in CANON:
         r"(?<![a-zа-я0-9])(?:" + "|".join(re.escape(a) for a in al) + r")(?![a-zа-я0-9])")
 
 TAG_RE = re.compile(r"<[^>]+>")
+_REMOTE_RE = re.compile(r"удал[её]нн\w*\s+(?:работ|формат|режим)|удал[её]нк|remote|"
+                        r"полностью удал[её]нн|дистанционн\w* работ", re.I)
 
 
 def canon(name):
@@ -119,6 +121,7 @@ def load_profiles(pdir=None):
                             "work_experience": p.get("work_experience", ""),
                             "companies": p.get("companies", []),
                             "work_places": p.get("work_places", []),
+                            "experience": p.get("experience", []),
                             "experience_years": p.get("experience_years", 0)})
             continue
         skills = {}
@@ -135,6 +138,8 @@ def load_profiles(pdir=None):
                     "work_experience": d.get("work_experience", ""),
                     "companies": d.get("companies", []),
                     "work_places": d.get("work_places", []),
+                    # структурный опыт из PDF-резюме: должности и достижения
+                    "experience": d.get("experience", []),
                     "experience_years": d.get("experience_years", 0)})
     return out
 
@@ -187,15 +192,21 @@ def score_vacancy(v, prof):
 
     schedule = v.get("schedule") or ""
     city = v.get("city") or ""
-    if schedule == "remote" or city == prof["location"]:
+    # поле schedule в собранных данных пустое (hh перенёс формат в work_format) —
+    # удалёнку распознаём и по тексту вакансии
+    remote = schedule == "remote" or bool(_REMOTE_RE.search(" ".join(
+        str(v.get(k) or "") for k in ("name", "description", "requirement_snippet",
+                                      "responsibility_snippet"))))
+    if remote or city == prof["location"]:
         city_score = 1.0
     elif city in ("Москва", "Санкт-Петербург"):
         city_score = 0.7
     else:
         city_score = 0.5
 
-    exp = v.get("experience") or ""
-    penalty = {"moreThan6": 0.5, "between3And6": 0.95}.get(exp, 1.0)
+    # штраф за стаж — относительно резюме (experience_matching.assess), а не по полю
+    # вакансии вслепую: раньше senior с 8 годами получал ×0.5 за «moreThan6»
+    penalty = 1.0
 
     sf, st, cur, gross = v.get("salary_from"), v.get("salary_to"), v.get("salary_currency"), v.get("salary_gross")
     if (sf is None and st is None) or cur not in ("RUR", "RUB"):

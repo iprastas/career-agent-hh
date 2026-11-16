@@ -5,10 +5,19 @@
 Платный банк зарплат hh недоступен (403 user_auth_expected) — считаем сами по свежему
 срезу api_live и честно подписываем методику и размер выборки.
 """
+import os
+import re
 import sqlite3
+import sys
 
 from .. import config
-from .search import EXP_MAP, GROSS_K
+from .search import GROSS_K, canon_city, norm_experience
+
+sys.path.insert(0, os.path.join(config.PROJECT, "tools"))
+import match_gap  # noqa: E402  единая карта алиасов навыков
+
+# кириллица, похожая на латиницу: «С#» набран русской «С» -> «C#»
+_LOOKALIKE = str.maketrans("СсАаЕеОоРрХхТКМВН", "CcAaEeOoPpXxTKMBH")
 
 
 def _con_ro():
@@ -16,6 +25,27 @@ def _con_ro():
     con.execute("PRAGMA query_only=ON")
     con.row_factory = sqlite3.Row
     return con
+
+
+def canon_skill(con, skill):
+    """Навык как в vacancy_skills: «C#»/«С#»/«C Sharp» -> c#, «.NET Core» -> .net,
+    «ASP.NET Core» -> asp.net, «Postgres» -> postgresql. Без этого статистика по
+    алиасу возвращала n=0, хотя данные есть."""
+    s = (skill or "").strip()
+    if not s:
+        return ""
+    cands = [s]
+    if re.search(r"[A-Za-z#+.]", s):
+        cands.append(s.translate(_LOOKALIKE))
+    for c in cands:
+        low = c.lower()
+        if con.execute("SELECT 1 FROM vacancy_skills WHERE skill_canon = ? LIMIT 1",
+                       (low,)).fetchone():
+            return low
+        m = match_gap.canon(low)
+        if m in match_gap.CANON:
+            return m
+    return s.lower()
 
 
 def _quantiles(vals):
@@ -40,20 +70,22 @@ def salary_stats(skill: str = "", city: str = "", experience: str = "", period_d
     where = ["v.source_layer = 'api_live_2026_10'",
              "(v.salary_rur_from IS NOT NULL OR v.salary_rur_to IS NOT NULL)"]
     params = []
+    con = _con_ro()
     if city:
+        city = canon_city(con, city)
         where.append("v.city = ?")
         params.append(city)
-    if experience:
+    if experience and norm_experience(experience):
         where.append("v.experience = ?")
-        params.append(EXP_MAP.get(experience.strip().lower(), experience))
+        params.append(norm_experience(experience))
     if period_days and int(period_days) > 0:
         where.append("v.published_at >= date('now', ?)")
         params.append("-" + str(int(period_days)) + " days")
     if skill:
+        skill = canon_skill(con, skill)
         where.append("v.vacancy_id IN (SELECT vacancy_id FROM vacancy_skills "
-                     "WHERE skill_canon = ? COLLATE NOCASE)")
-        params.append(skill.strip())
-    con = _con_ro()
+                     "WHERE skill_canon = ?)")
+        params.append(skill)
     rows = con.execute(
         f"SELECT v.salary_rur_from, v.salary_rur_to, v.gross FROM vacancies v "
         f"WHERE {' AND '.join(where)}", params).fetchall()
@@ -102,14 +134,16 @@ def salary_trend(skill: str = "", city: str = "", months: int = 24):
     where = ["(v.salary_rur_from IS NOT NULL OR v.salary_rur_to IS NOT NULL)",
              "v.published_at IS NOT NULL AND v.published_at != ''"]
     params = []
+    con = _con_ro()
     if city:
+        city = canon_city(con, city)
         where.append("v.city = ?")
         params.append(city)
     if skill:
+        skill = canon_skill(con, skill)
         where.append("v.vacancy_id IN (SELECT vacancy_id FROM vacancy_skills "
-                     "WHERE skill_canon = ? COLLATE NOCASE)")
-        params.append(skill.strip())
-    con = _con_ro()
+                     "WHERE skill_canon = ?)")
+        params.append(skill)
     rows = con.execute(
         f"SELECT substr(v.published_at, 1, 7) AS m, v.salary_rur_from, v.salary_rur_to, v.gross "
         f"FROM vacancies v WHERE {' AND '.join(where)}", params).fetchall()

@@ -85,6 +85,31 @@ class TestLlmMode:
         with pytest.raises(RuntimeError):
             config.model_name()
 
+    def test_local_overrides_cloud_base_url(self, client, monkeypatch):
+        """Регрессия «aitunnel: Недействительный токен»: litellm берёт OPENAI_BASE_URL
+        раньше OPENAI_API_BASE, а сам подгружает его из .env. В local-режиме оба имени
+        и явные kwargs должны указывать на llama-server."""
+        monkeypatch.setattr(config, "load_env", lambda path=None: {
+            "OPENAI_API_KEY": "sk-cloud", "OPENAI_BASE_URL": "https://api.cloud.example/v1",
+            "MODEL": "vendor/model"})
+        config.apply_env()  # старт в облаке: облачный шлюз в окружении
+        assert os.environ["OPENAI_BASE_URL"] == "https://api.cloud.example/v1"
+        h = _reg(client)
+        client.post("/api/llm/mode", json={"mode": "local"}, headers=h)
+        assert os.environ["OPENAI_BASE_URL"] == config.LOCAL_API_BASE
+        assert os.environ["OPENAI_API_BASE"] == config.LOCAL_API_BASE
+        assert config.llm_kwargs() == {"api_base": config.LOCAL_API_BASE,
+                                       "api_key": config.LOCAL_API_KEY}
+        from app.agent import build_agent
+        agent = build_agent()
+        for a in [agent] + list(agent.sub_agents):
+            assert a.model._additional_args["api_base"] == config.LOCAL_API_BASE
+        # обратно в облако — шлюз и ключ из .env возвращаются
+        client.post("/api/llm/mode", json={"mode": "cloud"}, headers=h)
+        assert os.environ["OPENAI_BASE_URL"] == "https://api.cloud.example/v1"
+        assert os.environ["OPENAI_API_KEY"] == "sk-cloud"
+        assert config.llm_kwargs() == {}
+
     def test_bad_mode_422(self, client):
         h = _reg(client)
         r = client.post("/api/llm/mode", json={"mode": "gpu"}, headers=h)

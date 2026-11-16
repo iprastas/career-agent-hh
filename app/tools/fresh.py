@@ -12,7 +12,8 @@ import sqlite3
 from google.adk.tools import ToolContext
 
 from .. import config
-from .match import _load_profile, resolve_profile_id, score_vacancy  # единая методика (см. tools/match_gap.py)
+from .match import (_load_profile, assess, resolve_profile_id,  # единая методика (tools/match_gap.py)
+                    score_vacancy, stack_filter)
 from .search import _row_to_card
 
 
@@ -21,8 +22,8 @@ def fresh_vacancies(profile_id: str = "", days: int = 7, employer: str = "",
     """Новые вакансии за последние N дней, отсортированные под профиль соискателя.
 
     Args:
-        profile_id: id профиля ("anastasia", "junior", "mid", "senior"); пусто —
-            профиль пользователя из контекста (его собственное резюме).
+        profile_id: оставь пустым — используется резюме пользователя. Только если
+            пользователь просит пример: "junior" / "mid" / "senior".
         days: за сколько последних дней смотреть (1-30).
         employer: компания-работодатель (например "Яндекс") — только её вакансии;
             пусто — любые компании.
@@ -50,7 +51,8 @@ def fresh_vacancies(profile_id: str = "", days: int = 7, employer: str = "",
                    "WHERE vacancy_fts MATCH ?)")
         emp_params = [_employer_fts(employer.strip())]
     rows = con.execute(f"""
-        SELECT v.*, group_concat(s.skill_canon) AS sk, d.description AS desc_full
+        SELECT v.*, group_concat(s.skill_canon) AS sk, d.description AS desc_full,
+               d.requirement AS req_full
         FROM vacancies v
         JOIN vacancy_skills s ON s.vacancy_id = v.vacancy_id
         LEFT JOIN vacancy_details d ON d.vacancy_id = v.vacancy_id
@@ -58,6 +60,7 @@ def fresh_vacancies(profile_id: str = "", days: int = 7, employer: str = "",
           AND v.published_at >= date('now', ?){emp_sql}
         GROUP BY v.vacancy_id""", ["-" + str(days) + " days"] + emp_params).fetchall()
 
+    in_stack = stack_filter(prof)  # та же выборка, что у match_profile
     scored = []
     for r in rows:
         v = {"vacancy_id": r["vacancy_id"], "name": r["name"], "employer_name": r["employer"],
@@ -66,19 +69,23 @@ def fresh_vacancies(profile_id: str = "", days: int = 7, employer: str = "",
              "salary_currency": r["currency"], "salary_gross": r["gross"],
              "url": r["url"], "published_at": r["published_at"],
              "description": r["desc_full"] or "",
+             "requirement": r["req_full"] or "",
              "requirement_snippet": r["requirement_snippet"],
              "responsibility_snippet": r["responsibility_snippet"],
              "_skills": set((r["sk"] or "").split(","))}
+        if not in_stack(v):
+            continue
         score, cov, matched, missing, sf_net, st_net = score_vacancy(v, prof)
-        scored.append((score, cov, matched, missing, r))
+        scored.append((score, cov, matched, missing, r, v))
     scored.sort(key=lambda x: x[0], reverse=True)
 
     out = []
-    for score, cov, matched, missing, r in scored[:limit]:
+    for score, cov, matched, missing, r, v in scored[:limit]:
         card = _row_to_card(r, sorted(matched)[:6])
         card["score"] = round(score * 100)
         card["matched_skills"] = sorted(matched)[:6]
         card["missing_skills"] = sorted(missing)[:4]
+        card["experience_notes"] = assess(v, prof)[2]
         out.append(card)
     con.close()
     return {
@@ -86,7 +93,7 @@ def fresh_vacancies(profile_id: str = "", days: int = 7, employer: str = "",
         "days": days,
         "vacancies": out,
         "method": f"вакансии за последние {days} дн. (api_live), ранжирование под профиль "
-                  f"'{profile_id}': 0.45·покрытие навыков + 0.20·название + 0.20·город/график "
+                  f"'{pid}': 0.45·покрытие навыков + 0.20·название + 0.20·город/график "
                   f"+ 0.15·зарплата, штраф за опыт и поправка по опыту работы "
                   f"(подтверждённые требования описания); свежих всего {len(scored)}, "
                   f"показано {len(out)}",

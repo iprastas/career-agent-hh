@@ -113,7 +113,8 @@ async def _llm_summarize(text):
         model=config.model_name(),
         messages=[{"role": "system", "content": _SUMMARIZE_PROMPT},
                   {"role": "user", "content": text[:20_000]}],
-        temperature=0.2, max_tokens=500, timeout=config.llm_timeout(60))
+        temperature=0.2, max_tokens=500, timeout=config.llm_timeout(60),
+        **config.llm_kwargs())
     return (resp.choices[0].message.content or "").strip()
 
 

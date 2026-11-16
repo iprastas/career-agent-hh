@@ -92,8 +92,12 @@ def _shingles(s, n=8):
     return {" ".join(words[i:i + n]) for i in range(max(0, len(words) - n + 1))}
 
 
-def post_filter(answer, system_prompt):
-    """Слой 3. Утечка промпта / заявление о запрещённом действии -> готовый отказ."""
+def post_filter(answer, system_prompt, tool_text=""):
+    """Слой 3. Утечка промпта / заявление о запрещённом действии -> готовый отказ.
+
+    tool_text — выдача инструментов этого хода: цитата из неё (например, заметка
+    пользователя в трекере «письмо отправлено работодателю») — не заявление агента."""
+    quoted = _norm(tool_text)
     a = answer or ""
     # утечка системного промпта: общий фрагмент в 8 слов подряд.
     # Готовые фразы отказа исключены: они входят в промпт, но их воспроизведение — НЕ утечка.
@@ -103,7 +107,7 @@ def post_filter(answer, system_prompt):
         if _shingles(a) & prompt_sh:
             return REFUSAL_LEAK
     for rx in FORBIDDEN_CLAIMS:
-        if rx.search(a):
+        if any(_norm(m.group(0)) not in quoted for m in rx.finditer(a)):
             return ("Ответ отклонён: агент не отправляет отклики и письма. "
                     "Текст можно только сохранить локально и скопировать. " + REFUSAL_TOPIC)
     return a

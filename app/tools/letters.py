@@ -128,20 +128,36 @@ def parse_follow_up(text):
     t = (text or "").strip().lower()
     if not t:
         return ""
+    today = _dt.date.today()
     m = re.match(r"^(\d{4})-(\d{2})-(\d{2})$", t)
     if m:
-        return t
-    words = {"неделю": 7, "недели": 7, "неделя": 7, "месяц": 30, "месяца": 30,
-             "два месяца": 60, "две недели": 14, "дня": 2, "день": 1, "дней": 7}
-    m = re.search(r"через\s+(\d+)\s+(дн\w*|недел\w*|месяц\w*)", t)
+        try:  # «2026-13-45» — не дата
+            return _dt.date(int(m.group(1)), int(m.group(2)), int(m.group(3))).isoformat()
+        except ValueError:
+            return ""
+    m = re.match(r"^(\d{1,2})\.(\d{1,2})(?:\.(\d{4}))?$", t)  # 07.11 / 07.11.2026
     if m:
-        n = int(m.group(1))
+        try:
+            d = _dt.date(int(m.group(3) or today.year), int(m.group(2)), int(m.group(1)))
+        except ValueError:
+            return ""
+        if not m.group(3) and d < today:
+            d = d.replace(year=d.year + 1)
+        return d.isoformat()
+    if t == "завтра":
+        return (today + _dt.timedelta(days=1)).isoformat()
+    if t == "послезавтра":
+        return (today + _dt.timedelta(days=2)).isoformat()
+    nums = {"один": 1, "одну": 1, "два": 2, "две": 2, "три": 3, "четыре": 4, "пять": 5,
+            "шесть": 6, "семь": 7, "десять": 10, "пару": 2}
+    m = re.search(r"через\s+(\d+|[а-яё]+)?\s*(дн\w*|день|недел\w*|месяц\w*)", t)
+    if m:
+        raw = m.group(1)
+        n = int(raw) if raw and raw.isdigit() else nums.get(raw or "", 1 if not raw else 0)
         unit = m.group(2)
-        mult = 1 if unit.startswith("дн") else (7 if unit.startswith("недел") else 30)
-        return (_dt.date.today() + _dt.timedelta(days=n * mult)).isoformat()
-    m = re.search(r"через\s+(\S+)", t)
-    if m and m.group(1) in words:
-        return (_dt.date.today() + _dt.timedelta(days=words[m.group(1)])).isoformat()
+        mult = 1 if unit.startswith(("дн", "день")) else (7 if unit.startswith("недел") else 30)
+        if n > 0:
+            return (today + _dt.timedelta(days=n * mult)).isoformat()
     return ""
 
 
@@ -213,7 +229,9 @@ def track_response(vacancy_id: str = "", status: str = "", note: str = "",
     con.execute("""INSERT INTO responses (vacancy_id, user_id, name, status, note, updated_at, follow_up_at)
                    VALUES (?,?,?,?,?,?,?)
                    ON CONFLICT(user_id, vacancy_id) DO UPDATE SET status=excluded.status,
-                       note=excluded.note, updated_at=excluded.updated_at,
+                       note=CASE WHEN excluded.note != '' THEN excluded.note
+                                 ELSE responses.note END,
+                       updated_at=excluded.updated_at,
                        follow_up_at=CASE WHEN excluded.follow_up_at != ''
                                          THEN excluded.follow_up_at
                                          ELSE responses.follow_up_at END""",

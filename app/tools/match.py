@@ -16,7 +16,7 @@ from .. import config
 
 sys.path.insert(0, os.path.join(config.PROJECT, "tools"))
 from match_gap import (score_vacancy, load_profiles, STACK, _PATTERNS,  # noqa: E402
-                       EXP_METHOD)
+                       EXP_METHOD, assess)
 
 
 def _con_ro():
@@ -26,7 +26,12 @@ def _con_ro():
     return con
 
 
+_EXAMPLE_ALIASES = {"junior": "synthetic_junior", "mid": "synthetic_mid",
+                    "senior": "synthetic_senior"}  # UI/промпт называют примеры коротко
+
+
 def _load_profile(profile_id):
+    profile_id = _EXAMPLE_ALIASES.get(profile_id, profile_id)
     profs = load_profiles(config.PROFILES_DIR)
     for p in profs:
         if p["id"] == profile_id:
@@ -40,14 +45,31 @@ def resolve_profile_id(profile_id: str = "", tool_context: ToolContext = None):
     для прямых вызовов без контекста (консоль, старые тесты). Изоляция: один
     пользователь никогда не видит резюме другого — своя запись или ошибка."""
     pid = (profile_id or "").strip()
-    if pid:
+    if tool_context is None:  # консоль/офлайн-скрипты: явный id или демо-профиль
+        return pid or "anastasia"
+    uid = getattr(tool_context, "user_id", "") or ""
+    # из контекста пользователя доступны только его резюме и общие примеры
+    # junior/mid/senior. Любой другой id (чужой u<id>, «anastasia», выдуманный моделью)
+    # заменяется своим резюме: модель часто подставляла «anastasia» из примеров в
+    # описании инструмента, а REST /api/match?profile=u1 читал чужое резюме
+    if pid in _EXAMPLE_ALIASES or pid in _EXAMPLE_ALIASES.values():
         return pid
-    uid = (getattr(tool_context, "user_id", "") or "") if tool_context is not None else ""
-    if uid and os.path.exists(os.path.join(config.PROFILES_DIR, uid + ".json")):
-        return uid
-    if tool_context is None:
-        return "anastasia"
-    return uid  # у этого пользователя профиля ещё нет -> вызывающий получит ошибку+подсказку
+    own = bool(uid) and os.path.exists(os.path.join(config.PROFILES_DIR, uid + ".json"))
+    if pid == "anastasia" and not own:
+        return pid  # демо-резюме — общий пример для пользователя без своего резюме
+    return uid  # профиля ещё нет -> вызывающий получит ошибку+подсказку
+
+
+def stack_filter(prof):
+    """Предикат «вакансия в стеке профиля» (навык ядра в навыках или в названии):
+    иначе SQL/аналитические вакансии с 1-2 совпадениями вытесняют профильные."""
+    core_stack = {s for s, w in prof["skills"].items() if w == "core" and s in STACK} or set(STACK)
+    pats = [_PATTERNS[s] for s in core_stack if s in _PATTERNS]
+
+    def ok(v):
+        name_low = (v.get("name") or "").lower()
+        return bool(v["_skills"] & core_stack) or any(p.search(name_low) for p in pats)
+    return ok
 
 
 def _candidates(con):
@@ -84,8 +106,8 @@ def match_profile(profile_id: str = "", top_n: int = 5, tool_context: ToolContex
     """Подбор вакансий под профиль соискателя с прозрачным счётом и объяснением.
 
     Args:
-        profile_id: id профиля ("anastasia", "junior"/"mid"/"senior" — примеры);
-            пусто — собственный профиль пользователя из контекста (его резюме).
+        profile_id: оставь пустым — используется резюме пользователя. Только если
+            пользователь просит пример: "junior" / "mid" / "senior".
         top_n: сколько вакансий вернуть (1-10).
 
     Returns:
@@ -103,13 +125,8 @@ def match_profile(profile_id: str = "", top_n: int = 5, tool_context: ToolContex
     vacs = _candidates(con)
     con.close()
 
-    core_stack = {s for s, w in prof["skills"].items() if w == "core" and s in STACK} or set(STACK)
-    cand = []
-    for v in vacs:
-        name_low = (v["name"] or "").lower()
-        if (v["_skills"] & core_stack) or any(
-                _PATTERNS[s].search(name_low) for s in core_stack if s in _PATTERNS):
-            cand.append(v)
+    in_stack = stack_filter(prof)
+    cand = [v for v in vacs if in_stack(v)]
     scored = []
     for v in cand:
         score, cov, matched, missing, sf, st = score_vacancy(v, prof)
@@ -122,6 +139,9 @@ def match_profile(profile_id: str = "", top_n: int = 5, tool_context: ToolContex
             "city": v["city"], "score": round(score, 3), "coverage": round(cov, 3),
             "matched_skills": sorted(matched), "missing_skills": sorted(missing),
             "salary_net_from": sf, "salary_net_to": st, "url": v["url"],
+            "experience_required": v["experience"],
+            # почему вакансия выше/ниже: требования описания ↔ опыт, стаж, уровень роли
+            "experience_notes": assess(v, prof)[2],
         })
     return {
         "profile": pid, "candidates": len(cand), "shown": len(top), "vacancies": top,
@@ -134,8 +154,8 @@ def skill_gap(profile_id: str = "", top_n: int = 10, tool_context: ToolContext =
     """Разрыв в навыках: какие навыки рынка есть в вакансиях стека, но отсутствуют в профиле.
 
     Args:
-        profile_id: id профиля ("anastasia", "junior"/"mid"/"senior" — примеры);
-            пусто — собственный профиль пользователя из контекста (его резюме).
+        profile_id: оставь пустым — используется резюме пользователя. Только если
+            пользователь просит пример: "junior" / "mid" / "senior".
         top_n: сколько строк вернуть (1-25).
 
     Returns:

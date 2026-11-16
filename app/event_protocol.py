@@ -41,6 +41,7 @@ async def stream_turn(runner, user_id, session_id, text):
     buf = []          # сегмент текста между границами (вызовами инструментов)
     saw_partial = False
     answer_text = ""
+    tool_texts = []   # выдача инструментов хода — цитаты из неё не «заявления агента»
 
     msg = types.Content(role="user", parts=[types.Part(text=text)])
     async for ev in runner.run_async(user_id=user_id, session_id=session_id, new_message=msg):
@@ -61,6 +62,7 @@ async def stream_turn(runner, user_id, session_id, text):
             if fr is not None:
                 raw = getattr(fr, "response", None)
                 s = raw if isinstance(raw, str) else str(raw)
+                tool_texts.append(s)
                 yield {"type": "tool_result", "name": getattr(fr, "name", "?"),
                        "text": s[:_TOOL_RESULT_MAX],
                        # полный результат — для карточек UI (контекст модели это не кормит)
@@ -85,7 +87,7 @@ async def stream_turn(runner, user_id, session_id, text):
     if answer_text:
         from .system_prompt import all_instructions
         # пост-фильтр знает все инструкции дерева агентов (координатор + суб-агенты)
-        safe = guardrails.post_filter(answer_text, all_instructions())
+        safe = guardrails.post_filter(answer_text, all_instructions(), "\n".join(tool_texts))
         if safe != answer_text:
             yield {"type": "refusal", "reason": "post_filter", "text": safe}
             answer_text = ""

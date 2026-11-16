@@ -535,6 +535,11 @@ def profile_get(profile_id: str = "", user=Depends(current_user)):
     else:
         path, pid = _shared_profile_path(profile_id)
         data = _read_profile(path)
+        if data is None and pid in ("junior", "mid", "senior"):
+            # примеры junior/mid/senior лежат набором в synthetic.json
+            pack = _read_profile(os.path.join(config.PROFILES_DIR, "synthetic.json")) or {}
+            data = next((p for p in pack.get("profiles", [])
+                         if p.get("profile_id") == "synthetic_" + pid), None)
         if data is None:
             raise HTTPException(404, "профиль не найден: " + pid)
     return {"profile_id": pid, "own": own, "empty": _is_empty(data), "data": data,
@@ -731,7 +736,8 @@ async def outbox_regenerate(fname: str, user=Depends(current_user)):
     try:
         resp = await litellm.acompletion(
             model=config.model_name(), messages=messages,
-            temperature=0.7, max_tokens=800, timeout=config.llm_timeout(90))
+            temperature=0.7, max_tokens=800, timeout=config.llm_timeout(90),
+            **config.llm_kwargs())
         text = (resp.choices[0].message.content or "").strip()
     except Exception as e:
         raise HTTPException(502, "не удалось перегенерировать текст: " + str(e)[:200])

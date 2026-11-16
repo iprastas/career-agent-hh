@@ -19,11 +19,81 @@ EXP_MAP = {
     "от 3 до 6 лет": "between3And6", "3-6": "between3And6", "senior": "between3And6", "сеньор": "between3And6",
     "более 6 лет": "moreThan6", "6+": "moreThan6", "lead": "moreThan6",
 }
+EXP_IDS = ("noExperience", "between1And3", "between3And6", "moreThan6")
 SCHEDULE_MAP = {
     "удалённо": "remote", "удаленка": "remote", "remote": "remote",
     "полный день": "fullDay", "fullDay": "fullDay",
-    "гибрид": "flexible", "сменный": "shift", "вахта": "flyInFlyOut",
+    "гибрид": "hybrid", "сменный": "shift", "вахта": "flyInFlyOut",
 }
+# Формат работы в тексте вакансии: в датасете поле schedule пустое (hh перенёс формат
+# работы в work_format), поэтому «удалённо/гибрид» ищется и по тексту вакансии
+_SCHEDULE_TEXT = {
+    "remote": '"удаленн"* OR "удалённ"* OR "удаленк"* OR "удалёнк"* OR remote OR "дистанционн"*',
+    "hybrid": '"гибрид"* OR hybrid',
+}
+_CITY_ALIASES = {"мск": "Москва", "спб": "Санкт-Петербург", "питер": "Санкт-Петербург",
+                 "санкт петербург": "Санкт-Петербург", "екб": "Екатеринбург",
+                 "ростов": "Ростов-на-Дону", "нск": "Новосибирск", "нижний": "Нижний Новгород"}
+_CITY_CACHE = {}
+
+
+def _fold(s):
+    return re.sub(r"\s+", " ", (s or "").strip().casefold().replace("ё", "е"))
+
+
+def canon_city(con, city):
+    """Город как в датасете: «москва», «МОСКВА», «спб» -> «Москва», «Санкт-Петербург».
+    Сравнение в SQLite регистрозависимо для кириллицы (NOCASE — только ASCII)."""
+    c = (city or "").strip()
+    if not c:
+        return ""
+    import os
+    key = (config.APP_DB, os.path.getmtime(config.APP_DB) if os.path.exists(config.APP_DB) else 0)
+    if key not in _CITY_CACHE:
+        _CITY_CACHE.clear()
+        # самое частое написание побеждает («Москва», а не редкое «москва» из архива)
+        _CITY_CACHE[key] = {_fold(r[0]): r[0] for r in con.execute(
+            "SELECT city FROM vacancies WHERE city != '' GROUP BY city ORDER BY count(*)")}
+    m = _CITY_CACHE[key]
+    f = _fold(c)
+    return m.get(f) or _CITY_ALIASES.get(f) or m.get(_fold(f.replace(" ", "-"))) or c
+
+
+def norm_experience(value):
+    """Опыт в id hh: «1-3 года», «от 3 до 6», «senior», «без опыта» -> between1And3 и т.д.
+    Нераспознанное -> '' (фильтр не применяется, а не «0 вакансий»)."""
+    t = (value or "").strip()
+    if t in EXP_IDS:
+        return t
+    t = _fold(t)
+    if t in EXP_MAP:
+        return EXP_MAP[t]
+    if re.search(r"нет опыт|без опыт|junior|джун|стаж|intern|начинающ|no ?experience", t):
+        return "noExperience"
+    if re.search(r"(более|больше|свыше|от)\s*6|6\s*\+|\blead\b|лид|morethan6", t):
+        return "moreThan6"
+    if re.search(r"3\D{0,10}6|senior|сеньор|between3and6", t):
+        return "between3And6"
+    if re.search(r"1\D{0,10}3|\bmid|мидл|middle|between1and3", t):
+        return "between1And3"
+    return ""
+
+
+def norm_schedule(value):
+    t = _fold(value)
+    if not t:
+        return ""
+    if t in SCHEDULE_MAP:
+        return SCHEDULE_MAP[t]
+    if re.search(r"удал|remote|дистанц|из дома", t):
+        return "remote"
+    if re.search(r"гибрид|hybrid", t):
+        return "hybrid"
+    if re.search(r"офис|на месте|onsite|on_site", t):
+        return "onSite"
+    if re.search(r"полн\w* день|fullday", t):
+        return "fullDay"
+    return value.strip()
 GROSS_K = 0.87  # gross -> net (та же методика, что в match_gap и salary_agg)
 
 # Слова запроса, которые не могут быть названием компании (общие и технические)
@@ -101,21 +171,104 @@ def _employer_fts(emp):
         " AND ".join(_fts_quote(w) for w in words) + "))"
 
 
+# Служебные слова запроса: не несут смысла для FTS (иначе «вакансии в Яндексе» требовал
+# слова «вакансии» в тексте, а расширение «любое слово» тянуло десятки тысяч строк)
+_NOISE = {
+    "вакансия", "вакансии", "вакансию", "вакансий", "вакансиях", "вакансиям", "работа",
+    "работу", "работы", "поиск", "ищу", "найти", "найди", "найдите", "поищи", "подбор",
+    "подбери", "покажи", "показать", "свежие", "свежих", "актуальные", "актуальных",
+    "новые", "новых", "последние", "последних", "сегодня", "сейчас", "вчера", "в", "во",
+    "на", "для", "с", "со", "по", "от", "до", "из", "и", "или", "мне", "меня", "я", "какие",
+    "есть", "компании", "компания", "компанию", "работодатель", "работодателя", "город",
+    "городе", "г", "г.",
+}
+_BIG_CITY_MIN = 100  # город из текста запроса — только заметные (иначе «Анна» и т.п.)
+_BIG_CITIES = {}
+
+
+_RU_ENDING = re.compile(r"(?:ами|ями|ого|его|ому|ему|ыми|ими|ой|ей|ий|ый|ая|яя|ое|ее|ые|ие|"
+                        r"ов|ев|ам|ям|ах|ях|ом|ем|а|я|ы|и|у|ю|е|о|ь)$")
+
+
+def _stem(token):
+    """Лёгкий стемминг для FTS (unicode61 без морфологии): «аналитика» -> «аналитик»*,
+    чтобы запрос в любом падеже находил названия вакансий."""
+    if len(token) >= 5 and re.fullmatch(r"[а-яё\-]+", token):
+        s = _RU_ENDING.sub("", token)
+        if len(s) >= 4:
+            return s
+    return token
+
+
+def _fts_term(token):
+    s = _stem(token)
+    return _fts_quote(s) + ("*" if s != token else "")
+
+
+def _skill_token(token):
+    """«c#», «c++», «.net»: FTS режет символы (c# -> «c» совпадает с C++/Java/JS) —
+    такие токены ищем по каноническому навыку и названию, а не через FTS."""
+    if not re.search(r"[#+]|^\.", token):
+        return ""
+    import os
+    import sys
+    sys.path.insert(0, os.path.join(config.PROJECT, "tools"))
+    import match_gap
+    c = match_gap.canon(token)
+    return c if c in match_gap.CANON else token
+
+
+def _stems(word):
+    """Падежные формы -> кандидаты основы: «яндексе» -> яндекс, «москве» -> москва."""
+    out = [word]
+    if re.fullmatch(r"[а-яё\-]{5,}", word):
+        out += [word[:-1], word[:-1] + "а", word[:-1] + "ь", word[:-2], word[:-2] + "а"]
+    return out
+
+
+def _city_in_query(con, tokens):
+    """(город, слово запроса) — город, названный прямо в тексте запроса."""
+    import os
+    key = (config.APP_DB, os.path.getmtime(config.APP_DB) if os.path.exists(config.APP_DB) else 0)
+    if key not in _BIG_CITIES:
+        _BIG_CITIES.clear()
+        _BIG_CITIES[key] = {_fold(r[0]): r[0] for r in con.execute(
+            "SELECT city FROM vacancies WHERE city != '' GROUP BY city HAVING count(*) >= ? "
+            "ORDER BY count(*)", (_BIG_CITY_MIN,))}
+    big = _BIG_CITIES[key]
+    for t in tokens:
+        if len(t) < 3 or not re.search(r"[а-яё]", t):
+            continue
+        for s in _stems(t):
+            f = _fold(s)
+            city = big.get(f) or _CITY_ALIASES.get(f)
+            if city:
+                return city, t
+    return "", ""
+
+
 def _detect_employer(con, tokens):
-    """Определить компанию из запроса: слово запроса встречается среди названий
-    работодателей (например «Яндекс» -> Яндекс, Яндекс.Такси). Возвращает '' если
-    компаний в запросе нет — тогда фильтр по работодателю не применяется.
-    Технические токены («.net», «c#») пропускаются — FTS токенизирует их иначе
-    («net» совпал бы с Neuro.net и т.п.)."""
+    """(компания, слово запроса): слово считается работодателем, только если оно чаще
+    встречается в поле «работодатель», чем в названиях вакансий («Яндекс», «Сбер», «МТС»),
+    а не профессия/город («водитель», «аналитика», «москва» — раньше они превращались
+    в фильтр по компании и выдача становилась мусорной). Падежи: «в Яндексе» -> яндекс.
+    Технические токены («.net», «c#») пропускаются — FTS токенизирует их иначе."""
     candidates = [t for t in tokens
-                  if len(t) >= 4 and t not in _STOPWORDS and "." not in t and "#" not in t][:3]
+                  if len(t) >= 3 and t not in _STOPWORDS and t not in _NOISE
+                  and "." not in t and "#" not in t and not t.isdigit()][:4]
+
+    def count(col, w):
+        return con.execute("SELECT count(*) FROM vacancy_fts WHERE vacancy_fts MATCH ?",
+                           ("{" + col + "}: " + _fts_quote(w),)).fetchone()[0]
+
     for t in sorted(set(candidates), key=len, reverse=True):
-        q = "{employer}: " + _fts_quote(t)
-        row = con.execute(
-            "SELECT 1 FROM vacancy_fts WHERE vacancy_fts MATCH ? LIMIT 1", (q,)).fetchone()
-        if row:
-            return t
-    return ""
+        for s in _stems(t):
+            if len(s) < (3 if s == t else 5):  # усечённая основа — не короче 5 букв
+                continue
+            e = count("employer", s)
+            if e >= 20 and e >= count("name", s):
+                return s, t
+    return "", ""
 
 
 def _looks_fresh(tokens):
@@ -150,25 +303,59 @@ def search_vacancies(query: str, city: str = "", experience: str = "", salary_mi
     con = _con_ro()
 
     filters, params = [], []
+    notes = []
+    fresh_query = _looks_fresh(tokens)
+    if not (city or "").strip():
+        q_city, city_word = _city_in_query(con, tokens)
+        if q_city:  # «C# разработчик Ростов» -> фильтр по городу, а не слово в FTS
+            city = q_city
+            tokens = [t for t in tokens if t != city_word]
+            notes.append(f"город «{q_city}» взят из запроса")
     emp = (employer or "").strip()
     if not emp:
-        emp = _detect_employer(con, tokens)
+        emp, emp_word = _detect_employer(con, tokens)
+        if emp_word:
+            tokens = [t for t in tokens if t != emp_word]
+    tokens = [t for t in tokens if t not in _NOISE]
+    skill_terms = []  # (каноническое имя, исходный токен) для c#/c++/.net
+    for t in list(tokens):
+        sk = _skill_token(t)
+        if sk:
+            skill_terms.append((sk, t))
+            tokens.remove(t)
+            filters.append("(v.vacancy_id IN (SELECT vacancy_id FROM vacancy_skills "
+                           "WHERE skill_canon = ?) OR lower(v.name) LIKE ?)")
+            params += [sk, "%" + t + "%"]
     if emp:
         filters.append("v.vacancy_id IN (SELECT vacancy_id FROM vacancy_fts "
                        "WHERE vacancy_fts MATCH ?)")
         params.append(_employer_fts(emp))
-    if actual_only or _looks_fresh(tokens):
+    if actual_only or fresh_query:
         actual_only = True
         filters.append("v.source_layer != 'kaggle_raw_2023'")  # архив 2023 не используем
     if city:
+        city = canon_city(con, city)
         filters.append("v.city = ?")
         params.append(city)
     if experience:
-        filters.append("v.experience = ?")
-        params.append(EXP_MAP.get(experience.strip().lower(), experience))
+        exp_id = norm_experience(experience)
+        if exp_id:
+            filters.append("v.experience = ?")
+            params.append(exp_id)
+        else:
+            notes.append(f"опыт «{experience}» не распознан — фильтр по опыту не применён")
     if schedule:
-        filters.append("v.schedule = ?")
-        params.append(SCHEDULE_MAP.get(schedule.strip().lower(), schedule))
+        sch = norm_schedule(schedule)
+        if sch in _SCHEDULE_TEXT:
+            filters.append("(v.schedule = ? OR v.vacancy_id IN (SELECT vacancy_id FROM vacancy_fts "
+                           "WHERE vacancy_fts MATCH ?))")
+            params += [sch, "{name description}: (" + _SCHEDULE_TEXT[sch] + ")"]
+            notes.append("формат работы определён по тексту вакансии")
+        elif con.execute("SELECT 1 FROM vacancies WHERE schedule = ? LIMIT 1", (sch,)).fetchone():
+            filters.append("v.schedule = ?")
+            params.append(sch)
+        else:
+            notes.append(f"график «{schedule}» в датасете не размечен — фильтр не применён")
     if salary_min and int(salary_min) > 0:
         filters.append("max(coalesce(v.salary_rur_from, 0) * (CASE WHEN v.gross = 1 THEN 0.87 ELSE 1 END), "
                        "coalesce(v.salary_rur_to, 0) * (CASE WHEN v.gross = 1 THEN 0.87 ELSE 1 END)) >= ?")
@@ -197,14 +384,17 @@ def search_vacancies(query: str, city: str = "", experience: str = "", salary_mi
             employer_low = (r["employer"] or "").lower()
             sk = " ".join(s[0] for s in con.execute(
                 "SELECT skill_canon FROM vacancy_skills WHERE vacancy_id=?", (r["vacancy_id"],)))
-            score = 3 * sum(1 for t in tokens if t in name) \
-                + 3 * sum(1 for t in tokens if t in employer_low) \
-                + sum(1 for t in tokens if t in sk)
+            words = [_stem(t) for t in tokens] + [t for _, t in skill_terms]
+
+            def hits(text):  # начало слова, а не подстрока: «водител» ≠ «руководитель»
+                ws = re.findall(r"[\w#+.]+", text)
+                return sum(1 for t in words if any(w.startswith(t) for w in ws))
+            score = 3 * hits(name) + 3 * hits(employer_low) + hits(sk)
             return (score, 1 if r["source_layer"] == "api_live_2026_10" else 0, r["published_at"])
         return sorted(rows, key=key, reverse=True)
 
     if tokens:
-        quoted = ['"' + t.replace('"', '""') + '"' for t in tokens]
+        quoted = [_fts_term(t) for t in tokens]
         fetch = max(limit * 8, 40)
         total, rows = run(" AND ".join(quoted), fetch=fetch)
         used = "FTS: все слова запроса"
@@ -217,22 +407,21 @@ def search_vacancies(query: str, city: str = "", experience: str = "", salary_mi
         rows = rerank(rows)[:limit]
         used += ", реранжинг: слова в названии и компании×3 + навыки×1"
     else:
-        like = "%" + (query or "") + "%"
-        cond = "v.name LIKE ?" + ((" AND " + " AND ".join(filters)) if filters else "")
-        p = [like] + params
-        total = con.execute(f"SELECT count(*) FROM vacancies v WHERE {cond}", p).fetchone()[0]
+        # в запросе только компания/город/служебные слова — выдача по фильтрам
+        cond = " AND ".join(filters) if filters else "1"
+        total = con.execute(f"SELECT count(*) FROM vacancies v WHERE {cond}", params).fetchone()[0]
         rows = con.execute(
             f"""SELECT v.* FROM vacancies v WHERE {cond}
                 ORDER BY (v.source_layer = 'api_live_2026_10') DESC, v.published_at DESC
-                LIMIT ?""", p + [limit]).fetchall()
-        used = "поиск по названию"
+                LIMIT ?""", params + [limit]).fetchall()
+        used = "выдача по фильтрам (ключевых слов в запросе нет)"
     out = []
     for r in rows:
         sk = [s[0] for s in con.execute(
             "SELECT skill_canon FROM vacancy_skills WHERE vacancy_id=? LIMIT 6", (r["vacancy_id"],))]
         out.append(_row_to_card(r, sk))
     con.close()
-    extra = []
+    extra = list(notes)
     if emp:
         extra.append(f"работодатель: «{emp}» (вакансии других компаний не показаны)")
     if actual_only:

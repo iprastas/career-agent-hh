@@ -14,7 +14,7 @@ import threading
 import numpy as np
 
 from .. import config
-from .search import _row_to_card
+from .search import _row_to_card, canon_city
 
 _LOCK = threading.Lock()
 _CACHE = {}  # {"X", "ids", "vectorizer", "svd", "meta"}
@@ -78,18 +78,16 @@ def _cards(vacancy_ids, with_skills=True):
     return out
 
 
-def _filter_city(candidates, idx, city):
-    if not city:
-        return candidates
+def _city_mask(idx, city):
+    """Маска индекса по городу. Раньше город фильтровал только топ-200 общей выдачи —
+    в небольших городах подходящие вакансии не находились вовсе."""
     con = sqlite3.connect(config.APP_DB, timeout=30)
     con.execute("PRAGMA query_only=ON")
-    keep = []
-    for score, vid in candidates:
-        row = con.execute("SELECT city FROM vacancies WHERE vacancy_id=?", (vid,)).fetchone()
-        if row and (row[0] or "").lower() == city.strip().lower():
-            keep.append((score, vid))
+    city = canon_city(con, city)
+    in_city = {r[0] for r in con.execute("SELECT vacancy_id FROM vacancies WHERE city = ?",
+                                         (city,))}
     con.close()
-    return keep
+    return np.fromiter((i in in_city for i in idx["ids"]), dtype=bool, count=len(idx["ids"]))
 
 
 def semantic_search(query: str, city: str = "", limit: int = 5):
@@ -112,9 +110,10 @@ def semantic_search(query: str, city: str = "", limit: int = 5):
                 "vacancies": []}
     limit = max(1, min(int(limit or 5), 10))
     sims = _sims(idx, query)
-    order = np.argsort(-sims)[:200]
+    if (city or "").strip():
+        sims = np.where(_city_mask(idx, city), sims, -1.0)
+    order = np.argsort(-sims)[:limit]
     cand = [(float(sims[i]), idx["ids"][i]) for i in order if sims[i] > 0]
-    cand = _filter_city(cand, idx, city)[:limit]
     return {
         "found": len(cand),
         "vacancies": _cards([v for _, v in cand]),

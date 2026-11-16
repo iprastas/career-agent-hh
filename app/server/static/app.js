@@ -687,6 +687,8 @@ function vacancyCard(v) {
         ${skills.map((s) => `<span class="tag">${esc(s)}</span>`).join("")}
         ${missing.map((s) => `<span class="tag miss">нет: ${esc(s)}</span>`).join("")}
       </div>
+      ${(v.experience_notes || []).length
+        ? `<div class="tiny muted">${v.experience_notes.slice(0, 3).map(esc).join(" · ")}</div>` : ""}
       <div class="foot">
         <span class="tiny muted">${esc(v.published_at || "")}</span>
         <button class="link-btn" onclick="event.stopPropagation(); similarTo('${esc(v.vacancy_id)}')">похожие ↻</button>

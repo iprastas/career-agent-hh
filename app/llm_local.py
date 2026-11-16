@@ -26,6 +26,11 @@ def _pid_path():
     return os.path.join(config.DATA, _PID_FILE)
 
 
+def _log_path():
+    """Вывод llama-server (загрузка модели, ошибки, скорость) — для диагностики."""
+    return os.path.join(config.DATA, "llama_server.log")
+
+
 def _terminate(pid):
     try:
         subprocess.run(["taskkill", "/PID", str(pid), "/F"], capture_output=True, timeout=15)
@@ -77,14 +82,20 @@ def ensure_running(timeout=180):
     global _PROC
     args = [exe, "-m", config.LOCAL_GGUF,
             "--host", config.LOCAL_HOST, "--port", str(config.LOCAL_PORT),
-            "-c", "8192",           # контекст: инструкции агентов + история диалога
+            # общий KV-кэш на все слоты: у каждого агента (координатор + 3 суб-агента)
+            # свой системный промпт ~2-3k токенов; при 8192 они вытесняли друг друга и
+            # на CPU каждый шаг заново считал весь промпт (минуты на ход)
+            "-c", os.environ.get("LLAMA_CTX", "20480"),
+            "-np", "4", "--kv-unified",  # слот на агента: префикс промпта переиспользуется
             "--reasoning", "off",   # иначе Qwen3.5 «думает» и всё уходит в reasoning_content
             "--no-warmup"]
     if "cuda" in exe.lower() or os.environ.get("LLAMA_NGL"):
         # выгрузка слоёв на GPU; CPU-сборка флаг не получает (живёт на CPU)
         args += ["-ngl", os.environ.get("LLAMA_NGL", "99")]
     try:
-        _PROC = subprocess.Popen(args, cwd=config.PROJECT,
+        os.makedirs(config.DATA, exist_ok=True)
+        log = open(_log_path(), "w", encoding="utf-8", errors="replace")
+        _PROC = subprocess.Popen(args, cwd=config.PROJECT, stdout=log, stderr=subprocess.STDOUT,
                                  creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
     except OSError as e:
         return False, "не удалось запустить llama-server: " + str(e)[:200]
@@ -99,7 +110,8 @@ def ensure_running(timeout=180):
         if is_running():
             return True, "локальная модель запущена"
         if _PROC.poll() is not None:
-            return False, "llama-server завершился при запуске (код %s)" % _PROC.returncode
+            return False, ("llama-server завершился при запуске (код %s), подробности: %s"
+                           % (_PROC.returncode, _log_path()))
         time.sleep(2)
     return False, "модель не поднялась за %d с" % timeout
 
